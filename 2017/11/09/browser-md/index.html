@@ -1,0 +1,86 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="浏览器解析过程"><meta name="keywords" content="浏览器运行机制"><meta name="author" content="webaifei"><meta name="copyright" content="webaifei"><title>浏览器解析过程 | 个人博客</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><meta name="format-detection" content="telephone=no"><meta http-equiv="x-dns-prefetch-control" content="on"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  }
+} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="切换文章详情">切换站点概览</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#浏览器的组成"><span class="toc-number">1.</span> <span class="toc-text">浏览器的组成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#页面解析过程"><span class="toc-number">2.</span> <span class="toc-text">页面解析过程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#验证demo地址"><span class="toc-number">2.1.</span> <span class="toc-text">验证demo地址</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#js脚本异步加载"><span class="toc-number">3.</span> <span class="toc-text">js脚本异步加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#css的解析"><span class="toc-number">4.</span> <span class="toc-text">css的解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#注意点"><span class="toc-number">5.</span> <span class="toc-text">注意点</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="images/avater.jpeg"></div><div class="author-info__name text-center">webaifei</div><div class="author-info__description text-center"></div><div class="follow-button"><a href="https://github.com/webaifei">Follow Me</a></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">文章</span><span class="pull-right">48</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">标签</span><span class="pull-right">45</span></a></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(images/bg.jpg)"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">个人博客</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus">   <a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span><span class="pull-right"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> 搜索</span></a></span></div><div id="post-info"><div id="post-title">浏览器解析过程</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h3 id="浏览器的组成"><a href="#浏览器的组成" class="headerlink" title="浏览器的组成"></a>浏览器的组成</h3><p>浏览器就是请求资源 展示到用户面前</p>
+<ol>
+<li>用户界面 UI</li>
+<li>呈现引擎 负责显示请求的内容</li>
+<li>网络 用于网络调用</li>
+<li>用户界面后端</li>
+<li>JavaScript 解释器</li>
+<li>数据存储</li>
+</ol>
+<h3 id="页面解析过程"><a href="#页面解析过程" class="headerlink" title="页面解析过程"></a>页面解析过程</h3><ol>
+<li>浏览器地址栏输入url </li>
+<li>DNS解析(DNS解析会查找浏览器的缓存，本地缓存等等)</li>
+<li>浏览器使用网络模块发起请求</li>
+<li>server返回html，下载完成</li>
+<li>浏览器开始Parse HTML（解析一部分，就会渲染，并不是全部解析完成之后再去渲染）</li>
+<li>浏览器发现一个加载css的外链， 发起一个请求加载这个样式表文件，期间（下载css文件和解析css文件期间）， 不阻塞Parse HTML（可以使用添加async的js脚本来验证）,但是因为css tree 没有构建完成，所以无法和DOM tree 一起构成render tree，后面的 layout, paint 也无法进行，所以文档后面内容无法展现到浏览器上</li>
+<li>发现一个外链js文件，发起一个请求，去请求js,期间（下载js解析执行js脚本）会阻塞document的解析，所以会导致阻塞后面dom tree和后面的css tree的构建，最终导致阻塞 render tree的形成，所以浏览器上看不到显示（注意：这个时候现代浏览器都会启动另外的线程去解析剩余的document，去加载后面的外部资源，但是不会影响dom tree）</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>文件类型</th>
+<th>是否阻塞后续DOM tree解析</th>
+<th>是否阻塞后续 css tree</th>
+<th>是否阻塞后续 render tree</th>
+<th>是否影响最终展现屏幕上</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>css样式</td>
+<td>👍</td>
+<td>👎</td>
+<td>👎</td>
+<td>👎</td>
+<td>阻塞js的执行</td>
+</tr>
+<tr>
+<td>js脚本</td>
+<td>👎</td>
+<td>👎</td>
+<td>👎</td>
+<td>👎</td>
+<td>js的下载和执行会阻塞dom 解析，自然会阻塞css tree的解析， 但是现代浏览器都会启动另外的线程去解析剩下的dom，但是只会下载需要的资源</td>
+</tr>
+</tbody>
+</table>
+<h4 id="验证demo地址"><a href="#验证demo地址" class="headerlink" title="验证demo地址"></a><a href="https://github.com/webaifei/js-topics/tree/master/browser-parsing-process" target="_blank" rel="noopener">验证demo地址</a></h4><h3 id="js脚本异步加载"><a href="#js脚本异步加载" class="headerlink" title="js脚本异步加载"></a>js脚本异步加载</h3><ol>
+<li>使用defer属性 作用是：异步的加载js脚本<ol>
+<li>不会阻塞页面的渲染 会异步的加载 等到dom构建完成之后 再去执行脚本（异步的下载 dom之后执行）</li>
+</ol>
+</li>
+<li>使用async属性（html5新增）<ol>
+<li>不会阻塞页面的渲染 并且下载完成之后异步的解析执行（异步下载 异步执行）</li>
+</ol>
+</li>
+</ol>
+<p>同时拥有async 和 defer的时候 , async优先级高</p>
+<h3 id="css的解析"><a href="#css的解析" class="headerlink" title="css的解析"></a>css的解析</h3><blockquote>
+<p>css解析规则 是从右向左</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">div p em&#123;&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>另一方面，样式表的处理有这不同的模型。理论上来说，由于样式表不会改变dom结构，所以没有必要等待他们而停止文档解析。但是有一个问题：在文档解析阶段，脚本访问了样式信息，如果样式表没有下载完成，解析完毕，脚本将得到错误的答案，这样会引起很多问题。貌似是一个极端情况，却很常见。</p>
+</blockquote>
+<ol>
+<li>firfox将会阻止所有的脚本，当还有没下载和解析的脚本时。</li>
+<li>WebKit仅在用户尝试访问未加载样式表可能影响的某些样式属性时阻止脚本。</li>
+</ol>
+<h3 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h3><p>1.http协议的网页加载https的外部资源（非跨域情况）都能无伤加载<br>2.https协议的网页不能加载http的外部资源</p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">webaifei</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://yoursite.com/2017/11/09/browser-md/">http://yoursite.com/2017/11/09/browser-md/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://yoursite.com">个人博客</a>！</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/浏览器运行机制/">浏览器运行机制</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2017/11/09/h5-video/"><i class="fa fa-chevron-left">  </i><span>h5-video</span></a></div><div class="next-post pull-right"><a href="/2017/11/09/history-md/"><span>history对比hash 【前端路由】</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer class="footer-bg" style="background-image: url(images/bg.jpg)"><div class="layout" id="footer"><div class="copyright">&copy;2016 - 2019 By webaifei</div><div class="framework-info"><span>驱动 - </span><a href="http://hexo.io"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+  $('#top-container').addClass('is-mobile')
+}</script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>

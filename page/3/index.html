@@ -1,0 +1,221 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content><meta name="keywords" content><meta name="author" content="webaifei"><meta name="copyright" content="webaifei"><title>个人博客</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><meta name="format-detection" content="telephone=no"><meta http-equiv="x-dns-prefetch-control" content="on"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  }
+} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="author-info"><div class="author-info__avatar text-center"><img src="images/avater.jpeg"></div><div class="author-info__name text-center">webaifei</div><div class="author-info__description text-center"></div><div class="follow-button"><a href="https://github.com/webaifei">Follow Me</a></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">文章</span><span class="pull-right">48</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">标签</span><span class="pull-right">45</span></a></div></div></div><nav id="nav" style="background-image: url(images/bg.jpg)"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">个人博客</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus">   <a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span><span class="pull-right"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> 搜索</span></a></span></div><div id="site-info"><div id="site-title">个人博客</div><div id="site-sub-title"></div><div id="site-social-icons"><a class="social-icon" href="https://github.com/webaifei" target="_blank"><i class="fa-github fa"></i></a></div></div></nav><div id="content-outer"><div class="layout" id="content-inner"><div class="recent-post-item article-container"><a class="article-title" href="/2018/05/19/mvvm/">MV*架构</a><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/mv/">mv*</a></span><div class="content"><p>前端的洪荒时代只是提供表单提交验证等简单的功能，随着异步加载技术的出现，前端在客户端&lt;=&gt;服务器交互中扮演的角色越来越重要，其最终的目的是为用户提供更优的体验，同时也促进了前端职业化进程（我们不再只是切图仔！）在CS结构向桌面应用程序接近的同时，越来越复杂的业务逻辑使得前端人员开始思考将桌面应用的思想搬到前端实践中。</p>
+<blockquote>
+<p>复杂的程序设计 必须有清晰合理的架构， 否则很难开发和维护</p>
+</blockquote>
+<h2 id="发展历程"><a href="#发展历程" class="headerlink" title="发展历程"></a>发展历程</h2><h3 id="MVC"><a href="#MVC" class="headerlink" title="MVC"></a>MVC</h3><p> 应该是应用最广的架构模式了吧，或者说是最基本的架构模式，很多其他的模式都是基于它衍生而来。<br>    MVC 大家都了解， Model+View+Controller, 离用户最近的是View，这里接受用户的操作，给出反馈，然后View把相关的操作交给Controller，Controller去影响Model，然后再反馈到View，特点就是通信是单向的。</p>
+<p> 但是实际过程中，可能比较灵活，因为前端开发中很大的工作量都在操作DOM。<br> 早期比较火的MVC库有<a href="http://backbonejs.org/" target="_blank" rel="noopener">backbone.js</a></p>
+<p> 当前火爆的<a href="https://reactjs.org/" target="_blank" rel="noopener">React</a> 以及 <a href="https://cn.vuejs.org/" target="_blank" rel="noopener">vuejs</a><br> 其实将React和vuejs列入MVC框架中，不太妥当，两者都是用于构架ui层（view），并不包含模块加载，路由，数据管理，异步等utils集合。</p>
+<h3 id="MVP"><a href="#MVP" class="headerlink" title="MVP"></a>MVP</h3><p> 将C替换成了P （presenter），他像一个控制调度中心，和View、Model进行双向通信，但是，View和Model之间不发生通信，这样 整个业务逻辑都在P这一层。<br>  前端实现库<a href="http://riotjs.com/" target="_blank" rel="noopener">riotjs</a></p>
+<h3 id="MVVM"><a href="#MVVM" class="headerlink" title="MVVM"></a>MVVM</h3><p> 将P改成了VM（viewModel），基本上和MVP相同，不同的地方是VM和View之间双向绑定。<br>    比较流行的如： <a href="https://angularjs.org/" target="_blank" rel="noopener">angular.js</a></p>
+<h2 id="react-和-vuejs对比"><a href="#react-和-vuejs对比" class="headerlink" title="react 和 vuejs对比"></a>react 和 vuejs对比</h2><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>react</th>
+<th>vuejs</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>组件化、声明式</td>
+<td>🆗</td>
+<td>🆗</td>
+<td></td>
+</tr>
+<tr>
+<td>模板语法</td>
+<td>jsx</td>
+<td>默认使用模板语法，也支持jsx</td>
+<td></td>
+</tr>
+<tr>
+<td>virtual dom + diff algorithm</td>
+<td>🆗</td>
+<td>🆗</td>
+<td></td>
+</tr>
+<tr>
+<td>组件性能优化</td>
+<td>🆗</td>
+<td>🆗</td>
+<td>vue实现了自动依赖追踪技术，不需要手动的实现shouldComponentUpdate，更加容易，同时也更加依赖底层，自由度较低</td>
+</tr>
+<tr>
+<td>服务端渲染</td>
+<td>🆗</td>
+<td>🆗</td>
+<td></td>
+</tr>
+<tr>
+<td>跨终端</td>
+<td>🆗</td>
+<td>🆗</td>
+<td>相比而言 RN要比 Weex更加成熟</td>
+</tr>
+<tr>
+<td>社区活跃度</td>
+<td>🔆🔆🔆</td>
+<td>🔆🔆</td>
+<td>相比而言 react的社区更加活跃</td>
+</tr>
+<tr>
+<td>脚手架</td>
+<td>🔆</td>
+<td>🔆🔆</td>
+<td>相比而言 vue的脚手架做的更加完善</td>
+</tr>
+</tbody>
+</table>
+</div><hr></div><div class="recent-post-item article-container"><a class="article-title" href="/2018/05/19/http-protocal/">http协议</a><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/http-计算机网络/">http 计算机网络</a></span><div class="content"><h3 id="http协议"><a href="#http协议" class="headerlink" title="http协议"></a>http协议</h3><p>http协议是应用层协议族中的一员，是web通信基础。http协议建立在TCP（TCP是网络传输层的一个协议）协议之上。</p>
+<h3 id="http报文格式"><a href="#http报文格式" class="headerlink" title="http报文格式"></a>http报文格式</h3><p>http报文分为请求报文和响应报文，报文包含了起始行、首部、实体的主题三个部分，其中起始行和首部都是ASCII文本，主体部分可以是任意数据格式的数据块。</p>
+<h4 id="请求报文格式"><a href="#请求报文格式" class="headerlink" title="请求报文格式"></a>请求报文格式</h4><ol>
+<li>请求起始行：包含 请求方法、请求url、HTTP协议和版本</li>
+<li>请求首部，以key: value形式的结构</li>
+<li>空行（必须有）</li>
+<li>请求实体：任意数据组成的数据块（可以是ASCII文本或者是二进制数据等等）<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">GET /home HTTP/1.1</span><br><span class="line">HOST: www.baidu.com</span><br><span class="line">Connection: keep-alive</span><br><span class="line">Cache-Control: max-age=100000</span><br><span class="line">Cookie: xxxx=sss;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="响应报文格式"><a href="#响应报文格式" class="headerlink" title="响应报文格式"></a>响应报文格式</h4><ol>
+<li>响应起始行：包含 HTTP协议版本、响应状态码、原因短语</li>
+<li>响应首部：以行分割的 key: value格式</li>
+<li>响应实体<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 ok</span><br><span class="line">Connection: keep-alive</span><br><span class="line">Cache-Control: no-cache</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 1100</span><br><span class="line">Set-Cookie: name=ngnice;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="请求方法"><a href="#请求方法" class="headerlink" title="请求方法"></a>请求方法</h3><p>GET,POST,HEAD,PUT,DELETE,OPTIONS,TRACE,<br>常见的是GET,POST,HEAD,OPTIONS</p>
+<h3 id="响应状态码"><a href="#响应状态码" class="headerlink" title="响应状态码"></a>响应状态码</h3><ol>
+<li><p>200系列</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">200 OK</span><br><span class="line">204 No Content (CORS跨域设置中针对 OPTIONS的请求有这个设置)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>300系列</p>
+</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>状态描述</th>
+<th>含义</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>301</td>
+<td>Moved Permanently</td>
+<td>永久重定向</td>
+<td></td>
+</tr>
+<tr>
+<td>302</td>
+<td>Found</td>
+<td>临时重定向</td>
+<td>将来的请求还是使用老的URL</td>
+</tr>
+<tr>
+<td>307</td>
+<td>Temporary Redirect</td>
+<td>临时重定向</td>
+<td>将来的请求还是使用老的URL</td>
+</tr>
+<tr>
+<td>304</td>
+<td>Not Modified</td>
+<td>协商缓存</td>
+<td>1. 响应主体不返回内容 <br> 2. 必须是GET请求</td>
+</tr>
+</tbody>
+</table>
+<p>TIPS:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. 如果是重定向的code 但是没有给Location首部字段 那么响应还是之前的（因为不知道重定向到了什么地方）</span><br><span class="line">2. 302和307都是告诉浏览器请求的资源临时重定向到其他的地址了，下次请求还是请求老的地址，区别是302在HTTP/1.0中使用，307是HTTP/1.1中使用的</span><br><span class="line">3. 302和307的另外一个表现是：如果客户端发起一个POST请求，服务器返回一个302或者307 ，客户端将使用GET方法请求重定向的地址</span><br></pre></td></tr></table></figure></p>
+<ol start="3">
+<li>400系列</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>状态描述</th>
+<th>含义</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>403</td>
+<td>Forbidden</td>
+<td>被服务器拒绝</td>
+<td></td>
+</tr>
+<tr>
+<td>404</td>
+<td>Not Found</td>
+<td>没有找到对应的资源</td>
+<td></td>
+</tr>
+<tr>
+<td>405</td>
+<td>Method Not Allowed</td>
+<td>请求的方法不支持</td>
+<td></td>
+</tr>
+<tr>
+<td>408</td>
+<td>Time out</td>
+<td>超时</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>500系列</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>状态描述</th>
+<th>含义</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>500</td>
+<td>Internal Server Error</td>
+<td>一般是服务器代码出错</td>
+<td></td>
+</tr>
+<tr>
+<td>404</td>
+<td>Not Found</td>
+<td>没有找到对应的资源</td>
+<td></td>
+</tr>
+<tr>
+<td>405</td>
+<td>Method Not Allowed</td>
+<td>请求的方法不支持</td>
+<td></td>
+</tr>
+<tr>
+<td>408</td>
+<td>Time out</td>
+<td>超时</td>
+</tr>
+</tbody>
+</table>
+<h3 id="http缓存"><a href="#http缓存" class="headerlink" title="http缓存"></a>http缓存</h3><p>关于http缓存header这个文章讲的不错[http缓存]</p>
+</div><hr></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-chevron-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer class="footer-bg" style="background-image: url(images/bg.jpg)"><div class="layout" id="footer"><div class="copyright">&copy;2016 - 2019 By webaifei</div><div class="framework-info"><span>驱动 - </span><a href="http://hexo.io"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_site_uv"><i class="fa fa-user"></i><span id="busuanzi_value_site_uv"></span><span></span></span><span class="footer-separator">|</span><span id="busuanzi_container_site_pv"><i class="fa fa-eye"></i><span id="busuanzi_value_site_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+  $('#top-container').addClass('is-mobile')
+}</script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>
