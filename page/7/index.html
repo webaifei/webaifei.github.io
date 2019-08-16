@@ -7,44 +7,55 @@
     error: '复制错误',
     noSupport: '浏览器不支持'
   }
-} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="author-info"><div class="author-info__avatar text-center"><img src="images/avater.jpeg"></div><div class="author-info__name text-center">webaifei</div><div class="author-info__description text-center"></div><div class="follow-button"><a href="https://github.com/webaifei">Follow Me</a></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">文章</span><span class="pull-right">48</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">标签</span><span class="pull-right">45</span></a></div></div></div><nav id="nav" style="background-image: url(images/bg.jpg)"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">个人博客</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus">   <a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span><span class="pull-right"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> 搜索</span></a></span></div><div id="site-info"><div id="site-title">个人博客</div><div id="site-sub-title"></div><div id="site-social-icons"><a class="social-icon" href="https://github.com/webaifei" target="_blank"><i class="fa-github fa"></i></a></div></div></nav><div id="content-outer"><div class="layout" id="content-inner"><div class="recent-post-item article-container"><a class="article-title" href="/2017/11/09/network-ip/">ip协议</a><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/计算机网络/">计算机网络</a></span><div class="content"><blockquote>
-<p>IP 协议是TCP/IP协议栈中非常重要的一个协议</p>
-</blockquote>
-<h3 id="组成"><a href="#组成" class="headerlink" title="组成"></a>组成</h3><p>ip 地址 由 32位二进制数字组成（IPV4版本），分成两个部分： 网络ID 和 主机ID</p>
-<blockquote>
-<p> 网络id 在整个互联网是唯一的，而主机id在所在的网络id中是唯一的， 这样每一个ip地址都是唯一的。</p>
-</blockquote>
-<h3 id="ip地址分类"><a href="#ip地址分类" class="headerlink" title="ip地址分类"></a>ip地址分类</h3><ol>
-<li>A类地址： 网络id占用一个字节，首位固定0，可用编号 0-127</li>
-<li>B类地址： 网络id占用两个字节，前两位固定10 ，可用编号 128-191</li>
-<li>C类地址： 网络id占用三个字节，前三位固定110 ，可用编号 192-223</li>
-<li>D类地址：多播</li>
-<li>E类 研究</li>
-</ol>
-<h3 id="IP地址的结构为啥是分级组成"><a href="#IP地址的结构为啥是分级组成" class="headerlink" title="IP地址的结构为啥是分级组成"></a>IP地址的结构为啥是分级组成</h3><ol>
-<li>方便管理，ip地址分配管理者只需要把网络id分配出去，即可，否则每一个主机的ip都需要分配的话，会死人的。</li>
-<li>减少路由器内存，减少路由查询时间。不同的网络之间通信，通过路由器查询网络id来找到要送达的网络，而至于送到某个主机则由所在网络的路由器去完成，这样能很大程度上减少路由表的数据，减少路由查找时间。</li>
-</ol>
-<h3 id="ip地址为啥要分成这些类"><a href="#ip地址为啥要分成这些类" class="headerlink" title="ip地址为啥要分成这些类"></a>ip地址为啥要分成这些类</h3><ol>
-<li>因为需求不一样，有些公司接入的主机很多，需要一个能容纳很多主机的ip地址，有些则需要比较少的ip地址。</li>
-</ol>
-<h3 id="ip数据报传输过程"><a href="#ip数据报传输过程" class="headerlink" title="ip数据报传输过程"></a>ip数据报传输过程</h3><ol>
-<li>主机A发送数据报，本网络路由器查看路由表，目的主机B是否在同一网络，如果是同一个网络，那么就直接交付，不需要经过其他的路由器；如果不是，本网络路由器查找路由表找出下一跳的路由器，直到找到主机B所在网络的路由器，由它进行直接交付。</li>
-</ol>
-<blockquote>
-<p>IP地址是逻辑上的地址，类似小明家这个概念。你去小明家肯定去的是一个具体的物理地址（坐标）。IP数据报在真正传输的过程中也需要找到目的主机IP地址对应的物理地址，才能交付。ARP（address resolution protocal）地址解析协议就是做这个工作的。对应的还有RARP（逆地址解析协议， 已经被DHCP协议替代）</p>
-</blockquote>
-<h3 id="ARP协议实现原理"><a href="#ARP协议实现原理" class="headerlink" title="ARP协议实现原理"></a>ARP协议实现原理</h3><ol>
-<li>每一个主机都有一个ARP高速缓存（ARP cache），存储着各个主机和路由器的ip地址和硬件地址的映射表。那这个主机是怎么知道这些数据的呢？<br>利用广播的原理，当一次通信请求过来时候，需要找下一跳的目的主机，如果发现目的主机的ip地址和物理地址不在自己的cache中的时候 就自动运行ARP进程发出一个广播：我是主机A，IP地址是128.0.1.xxx (可能通过逆地址解析出来)，物理地址是xxx，想要找IP地址是128.0.1.xxx的硬件地址。</li>
-<li>然后本局域网中的所有主机都会收到这个广播，发现找的是自己就记录下主机A的ip地址和物理地址（以备后用），并响应：我的IP是xxx，物理地址是xxx。</li>
-</ol>
-<h3 id="TIPS"><a href="#TIPS" class="headerlink" title="TIPS:"></a>TIPS:</h3><ol>
-<li>高速缓存有生存周期，方便物理地址发生更改的时候，再次发起ARP广播，否则一直都是走cache 就over了。</li>
-<li>ARP协议只是解决了局域网内ip地址到物理地址的转换。不同网络的传输，交给路由器来完成ARP解析。</li>
-</ol>
-</div><hr></div><div class="recent-post-item article-container"><a class="article-title" href="/2017/11/09/network-http/">http缓存</a><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/计算机网络/">计算机网络</a><span class="article-meta__link">-</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/缓存/">缓存</a><span class="article-meta__link">-</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/http/">http</a></span><div class="content"><p>http 协议是整个 互联网的基石之一。<br>是web开发者必须关注的一个协议。</p>
-<p>关于http缓存header这个文章讲的不错<a href="http://louiszhai.github.io/2017/04/07/http-cache/" target="_blank" rel="noopener">http缓存</a></p>
-</div><hr></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-chevron-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer class="footer-bg" style="background-image: url(images/bg.jpg)"><div class="layout" id="footer"><div class="copyright">&copy;2016 - 2019 By webaifei</div><div class="framework-info"><span>驱动 - </span><a href="http://hexo.io"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_site_uv"><i class="fa fa-user"></i><span id="busuanzi_value_site_uv"></span><span></span></span><span class="footer-separator">|</span><span id="busuanzi_container_site_pv"><i class="fa fa-eye"></i><span id="busuanzi_value_site_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent)) {
+} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="author-info"><div class="author-info__avatar text-center"><img src="images/avater.jpeg"></div><div class="author-info__name text-center">webaifei</div><div class="author-info__description text-center"></div><div class="follow-button"><a href="https://github.com/webaifei">Follow Me</a></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">文章</span><span class="pull-right">48</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">标签</span><span class="pull-right">45</span></a></div></div></div><nav id="nav" style="background-image: url(images/bg.jpg)"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">个人博客</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus">   <a class="site-page" href="/">首页</a><a class="site-page" href="/archives">归档</a><a class="site-page" href="/tags">标签</a><a class="site-page" href="/categories">分类</a></span><span class="pull-right"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> 搜索</span></a></span></div><div id="site-info"><div id="site-title">个人博客</div><div id="site-sub-title"></div><div id="site-social-icons"><a class="social-icon" href="https://github.com/webaifei" target="_blank"><i class="fa-github fa"></i></a></div></div></nav><div id="content-outer"><div class="layout" id="content-inner"><div class="recent-post-item article-container"><a class="article-title" href="/2017/11/09/h5-video/">h5-video</a><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time><div class="content"></div><a class="more" href="/2017/11/09/h5-video/#more" style="margin-top: 14px">阅读更多</a><hr></div><div class="recent-post-item article-container"><a class="article-title" href="/2017/11/09/browser-md/">浏览器解析过程</a><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/浏览器运行机制/">浏览器运行机制</a></span><div class="content">浏览器的组成浏览器就是请求资源 展示到用户面前
+
+用户界面 UI
+呈现引擎 负责显示请求的内容
+网络 用于网络调用
+用户界面后端
+JavaScript 解释器
+数据存储
+
+页面解析过程
+浏览器地址栏输入url 
+DNS解析(DNS解析会查找浏览器的缓存，本地缓存等等)
+浏览器使用网络模块发起请求
+s ...</div><a class="more" href="/2017/11/09/browser-md/#more" style="margin-top: 14px">阅读更多</a><hr></div><div class="recent-post-item article-container"><a class="article-title" href="/2017/11/09/history-md/">history对比hash 【前端路由】</a><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/前端路由/">前端路由</a></span><div class="content">pushState replaceState 对比hash切换
+
+
+
+option
+h5 history
+hash
+
+
+
+
+只要不去点击刷新或者重新载入页面不刷新页面
+✅
+✅
+
+
+都能够产生history历史记录
+✅
+✅
+
+
+能够分享出去连接 传播性
+✅
+✅
+
+
+是否能被爬虫
+✅（需要服务端对对应的 ...</div><a class="more" href="/2017/11/09/history-md/#more" style="margin-top: 14px">阅读更多</a><hr></div><div class="recent-post-item article-container"><a class="article-title" href="/2017/11/09/jiqiao/">xml获取html, js ,css</a><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/javascript/">javascript</a><span class="article-meta__link">-</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/异步/">异步</a></span><div class="content">问题源于一个面试题：
+
+通过xhr获取一html片段，其中包含html，css，js ，请问三种是否都能正常的解析执行？
+
+代码：12345678910111213141516171819202122232425var xhr = new XMLHttpRequest();  xhr.open(&a ...</div><a class="more" href="/2017/11/09/jiqiao/#more" style="margin-top: 14px">阅读更多</a><hr></div><div class="recent-post-item article-container"><a class="article-title" href="/2017/11/09/html2/">居中布局</a><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-08-16</time><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/html/">html</a><span class="article-meta__link">-</span><i class="fa fa-tag article-meta__icon" aria-hidden="true"></i><a class="article-meta__tags" href="/tags/css/">css</a></span><div class="content">居中布局
+不论是面试还是工作中 我们经常遇到的问题就是居中（水平 垂直居中）
+
+外部容器固定高度 需要居中的元素也固定高度1因为都是固定值 所以能够通过设置固定值来定位， 不论是通过margin还是position等
+外部容器高度不固定 内部元素的高度固定1234567891011/*(无兼容问题) ...</div><a class="more" href="/2017/11/09/html2/#more" style="margin-top: 14px">阅读更多</a><hr></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-chevron-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer class="footer-bg" style="background-image: url(images/bg.jpg)"><div class="layout" id="footer"><div class="copyright">&copy;2016 - 2019 By webaifei</div><div class="framework-info"><span>驱动 - </span><a href="http://hexo.io"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_site_uv"><i class="fa fa-user"></i><span id="busuanzi_value_site_uv"></span><span></span></span><span class="footer-separator">|</span><span id="busuanzi_container_site_pv"><i class="fa fa-eye"></i><span id="busuanzi_value_site_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent)) {
   $('#nav').addClass('is-mobile')
   $('footer').addClass('is-mobile')
   $('#top-container').addClass('is-mobile')
