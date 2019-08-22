@@ -4,6 +4,32 @@
   
     
     <entry>
+      <title>ios-视图导航</title>
+      <link href="/2019/08/21/ios-navigator/"/>
+      <url>/2019/08/21/ios-navigator/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>如果ViewController是分隔用户界面的载体，那么导航就是讲这些界面串联起来的工具</p></blockquote><h3 id="模态导航"><a href="#模态导航" class="headerlink" title="模态导航"></a>模态导航</h3><ol><li><p>打开一个新的视图</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 初始化视图控制器</span><br><span class="line">ModalViewController *modalVc = [[ModalViewController alloc] init];</span><br><span class="line">// 设置转场风格</span><br><span class="line">modalVc.modalTransitionStyle = UIModalTransitionStyleFlipHorizontal;</span><br><span class="line">// 执行导航</span><br><span class="line">[self presentViewController:modalVc animated:YES completion:nil];</span><br></pre></td></tr></table></figure></li><li><p>返回上一个视图</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// 返回上一个视图</span><br><span class="line">[self dismissViewControllerAnimated:YES completion:nil];</span><br></pre></td></tr></table></figure></li><li><p>模态视图传值方式1 - 代理模式<br>本质上还是利用了代理实现在被代理者中调用代理者的方法的原理。</p></li></ol>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>oc中的代理模式</title>
+      <link href="/2019/08/21/objective-c-daili/"/>
+      <url>/2019/08/21/objective-c-daili/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>代理模式</p></blockquote><h3 id="如何实现代理者模式"><a href="#如何实现代理者模式" class="headerlink" title="如何实现代理者模式"></a>如何实现代理者模式</h3><ol><li><p>需要被代理的类在接口定义<code>@interface</code>中定义自己的协议</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// xxx.h </span><br><span class="line">@protocol MyTabbarDelegate &lt;NSObject&gt;</span><br><span class="line">// 定义代理者需要实现的方法集合</span><br><span class="line">- (void)onClick:(MyTabbar *)mytabbar clickIndex: (NSInteger) index;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line">// 类</span><br><span class="line">@interface MyTabbar : UIView</span><br><span class="line"></span><br><span class="line">@property (strong, nonatomic) NSArray *tabs;</span><br><span class="line">@property (nonatomic, strong) MyButton *lastSelectBtn;</span><br><span class="line">// 定义代理属性</span><br><span class="line">@property (nonatomic, weak) id&lt;MyTabbarDelegate&gt; delegate;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></li><li><p>在被代理的类中触发代理 对应的事件信号</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 如果代理者 实现了对应的方法</span><br><span class="line">if ([self.delegate respondsToSelector:@selector(onClick:clickIndex:)]) &#123;</span><br><span class="line">    [self.delegate onClick:self clickIndex:button.tag];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li><li><p>代理者类设置要实现的协议，并且实现对应的方法</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@interface TabViewController ()&lt;MyTabbarDelegate&gt;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">// 实现协议方法</span><br><span class="line">- (void)onClick:(MyTabbar *)mytabbar clickIndex:(NSInteger)index &#123;</span><br><span class="line">    NSLog(@&quot;cur index is %ld&quot;, (long)index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li></ol>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>lodash部分源码阅读</title>
       <link href="/2018/06/24/read-lodash/"/>
       <url>/2018/06/24/read-lodash/</url>
@@ -586,19 +612,6 @@
             <tag> 实体 </tag>
             
         </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>h5-video</title>
-      <link href="/2017/11/09/h5-video/"/>
-      <url>/2017/11/09/h5-video/</url>
-      
-        <content type="html"><![CDATA[]]></content>
-      
-      
       
     </entry>
     
