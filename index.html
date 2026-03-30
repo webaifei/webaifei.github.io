@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Economy Research</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #222;
+  background: #fff;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+#sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #2b2b2b;
+  color: #ccc;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+#sidebar-logo {
+  background: #1a1a1a;
+  padding: 20px 18px;
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  color: #f0a500;
+  font-weight: 700;
+  letter-spacing: .03em;
+  border-bottom: 2px solid #f0a500;
+}
+#sidebar-logo span {
+  color: #888;
+  font-size: 11px;
+  font-weight: 400;
+  display: block;
+  margin-top: 4px;
+  letter-spacing: 0;
+}
+.sidebar-section { padding: 10px 0 4px; }
+.sidebar-section-label {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #666;
+  padding: 8px 18px 4px;
+  font-weight: 700;
+}
+.sidebar-section a {
+  display: block;
+  padding: 5px 18px 5px 22px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #bbb;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: all .15s;
+}
+.sidebar-section a:hover,
+.sidebar-section a.active {
+  color: #f0a500;
+  border-left-color: #f0a500;
+  background: rgba(240,165,0,.06);
+}
+.sidebar-section a.sub {
+  padding-left: 34px;
+  font-size: 13px;
+  color: #888;
+}
+.sidebar-section a.sub:hover { color: #f0a500; }
+hr.sidebar-hr { border: none; border-top: 1px solid #3a3a3a; margin: 6px 0; }
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 18px;
+  font-size: 12px;
+  color: #555;
+  font-family: 'Courier New', monospace;
+  border-top: 1px solid #3a3a3a;
+}
+
+/* ── Main ── */
+#main {
+  flex: 1;
+  max-width: 900px;
+  padding: 60px 64px 100px;
+  min-width: 0;
+}
+
+/* ── Hero ── */
+.hero {
+  padding-bottom: 40px;
+  margin-bottom: 50px;
+  border-bottom: 2px solid #111;
+}
+.hero-eyebrow {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  color: #f0a500;
+  margin-bottom: 14px;
+}
+.hero h1 {
+  font-size: 2.8rem;
+  color: #111;
+  line-height: 1.15;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+.hero p {
+  font-size: 1.1rem;
+  color: #555;
+  max-width: 600px;
+  line-height: 1.7;
+}
+
+/* ── Section heading ── */
+.section-heading {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  color: #999;
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+/* ── Article Cards ── */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+  margin-bottom: 60px;
+}
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 28px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: #f0a500;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .2s;
+}
+.card:hover {
+  border-color: #bbb;
+  box-shadow: 0 4px 20px rgba(0,0,0,.08);
+  transform: translateY(-2px);
+}
+.card:hover::before { transform: scaleX(1); }
+.card-tag {
+  display: inline-block;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #f0a500;
+  background: rgba(240,165,0,.1);
+  border: 1px solid rgba(240,165,0,.3);
+  border-radius: 3px;
+  padding: 2px 8px;
+  margin-bottom: 14px;
+  align-self: flex-start;
+}
+.card h2 {
+  font-size: 1.25rem;
+  color: #111;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+.card p {
+  font-size: .95rem;
+  color: #666;
+  line-height: 1.65;
+  flex: 1;
+  margin-bottom: 20px;
+}
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #aaa;
+}
+.card-meta .dot { color: #ddd; }
+.card-arrow {
+  font-size: 18px;
+  color: #ccc;
+  transition: color .15s, transform .15s;
+  margin-left: auto;
+}
+.card:hover .card-arrow { color: #f0a500; transform: translateX(3px); }
+
+/* ── Concept Grid ── */
+.concept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 60px;
+}
+.concept-item {
+  background: #f7f7f7;
+  border-radius: 5px;
+  padding: 14px 16px;
+  border-left: 3px solid #e0e0e0;
+  transition: border-color .15s;
+}
+.concept-item:hover { border-left-color: #f0a500; }
+.concept-item .term {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 4px;
+}
+.concept-item .def {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  #sidebar { display: none; }
+  #main { padding: 32px 24px 60px; }
+  .hero h1 { font-size: 2rem; }
+  .cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div id="sidebar-logo">
+    Agent Economy
+    <span>Research Notes</span>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Navigation</div>
+    <a href="index.html" class="active">Home</a>
+  </div>
+
+  <hr class="sidebar-hr">
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">ERC Standards</div>
+    <a href="erc-8004-guide.html">ERC-8004 Identity</a>
+    <a class="sub" href="erc-8004-guide.html#overview">— Overview</a>
+    <a class="sub" href="erc-8004-guide.html#structure">— Structure</a>
+    <a class="sub" href="erc-8004-guide.html#trust-score">— Trust Score</a>
+    <a href="erc-8183-guide.html">ERC-8183 Commerce</a>
+    <a class="sub" href="erc-8183-guide.html#overview">— Overview</a>
+    <a class="sub" href="erc-8183-guide.html#acp-states">— ACP States</a>
+    <a class="sub" href="erc-8183-guide.html#escrow">— Escrow</a>
+  </div>
+
+  <div class="sidebar-footer">
+    Built on X Layer · OKG
+  </div>
+</nav>
+
+<main id="main">
+
+  <div class="hero">
+    <div class="hero-eyebrow">Agent Economy Research</div>
+    <h1>On-chain Infrastructure<br>for AI Agents</h1>
+    <p>深入解析 AI Agent 经济所需的链上基础设施——身份信任体系与商业协作协议的完整技术指南。</p>
+  </div>
+
+  <div class="section-heading">ERC Standards</div>
+
+  <div class="cards">
+
+    <a class="card" href="erc-8004-guide.html">
+      <span class="card-tag">ERC-8004</span>
+      <h2>去中心化 AI Agent<br>身份与信任协议</h2>
+      <p>Agent 身份注册、链上信任评分体系、防马甲机制。OKX.AI 任务市场的反欺诈底座。</p>
+      <div class="card-meta">
+        <span>Identity · Trust · Reputation</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card" href="erc-8183-guide.html">
+      <span class="card-tag">ERC-8183</span>
+      <h2>AI Agent 商业协议<br>完全指南</h2>
+      <p>链上任务市场双向撮合、ACP 状态机、三方评估与 Escrow 结算机制的完整技术规范。</p>
+      <div class="card-meta">
+        <span>Commerce · Escrow · ACP</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-heading">Key Concepts</div>
+
+  <div class="concept-grid">
+    <div class="concept-item">
+      <div class="term">Agent Identity</div>
+      <div class="def">基于 ERC-8004 的链上唯一身份标识，防止 Sybil 攻击</div>
+    </div>
+    <div class="concept-item">
+      <div class="term">Trust Score</div>
+      <div class="def">链上行为驱动的信任评分，用于任务市场准入与排序</div>
+    </div>
+    <div class="concept-item">
+      <div class="term">ACP State Machine</div>
+      <div class="def">Agent Commerce Protocol，任务从发布到结算的完整状态流转</div>
+    </div>
+    <div class="concept-item">
+      <div class="term">Escrow Settlement</div>
+      <div class="def">三方评估 + 智能合约担保结算，消除交易信任风险</div>
+    </div>
+    <div class="concept-item">
+      <div class="term">Dual Matching</div>
+      <div class="def">客户发任务 ↔ 服务商挂牌，双向撮合的链上市场机制</div>
+    </div>
+    <div class="concept-item">
+      <div class="term">X Layer</div>
+      <div class="def">OKG 的 Layer 2，Agent Economy 基础设施的运行链</div>
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>

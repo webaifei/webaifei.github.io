@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERC-8183 完全指南 — AI Agent 商业协议</title>
+<style>
+/* ── Reset & Base ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Arial,sans-serif;font-size:20px;line-height:1.85;color:#222;background:#fff;display:flex}
+a{color:#2a6db5;text-decoration:none}
+a:hover{text-decoration:underline}
+code,pre{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace}
+
+/* ── Sidebar ── */
+#sidebar{width:280px;min-height:100vh;background:#2b2b2b;position:fixed;top:0;left:0;overflow-y:auto;z-index:100;display:flex;flex-direction:column}
+#sidebar-logo{background:#1a1a1a;padding:20px 18px;color:#f0a500;font-size:16px;font-weight:700;letter-spacing:.5px;border-bottom:2px solid #f0a500}
+#sidebar-logo span{display:block;font-size:11px;color:#888;font-weight:400;margin-top:3px;letter-spacing:0}
+.sidebar-section{padding:10px 0}
+.sidebar-section-title{padding:8px 18px 4px;font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.sidebar-section a{display:block;padding:5px 18px 5px 22px;font-size:15px;color:#bbb;border-left:3px solid transparent;transition:all .15s}
+.sidebar-section a:hover,.sidebar-section a.active{color:#f0a500;border-left-color:#f0a500;background:rgba(240,165,0,.06);text-decoration:none}
+.sidebar-section a.sub{padding-left:34px;font-size:14px;color:#888}
+.sidebar-section a.sub:hover,.sidebar-section a.sub.active{color:#f0a500}
+
+/* ── Main ── */
+#main{margin-left:280px;max-width:920px;padding:60px 56px 100px;width:100%}
+
+/* ── Typography ── */
+h1.page-title{font-size:2.8rem;color:#111;margin-bottom:10px;line-height:1.2;font-weight:800}
+.page-subtitle{font-size:1.1rem;color:#666;margin-bottom:50px;padding-bottom:30px;border-bottom:2px solid #111}
+h2{font-size:2rem;color:#111;margin:60px 0 20px;padding-bottom:10px;border-bottom:2px solid #111;scroll-margin-top:30px}
+h3{font-size:1.25rem;color:#2a6db5;margin:36px 0 14px;font-weight:700;scroll-margin-top:30px}
+h4{font-size:1.1rem;color:#111;margin:28px 0 10px;font-weight:700}
+p{margin-bottom:18px}
+ul,ol{margin:10px 0 18px 26px}
+li{margin-bottom:6px}
+
+/* ── Code ── */
+pre{background:#1e1e1e;color:#d4d4d4;padding:22px 26px;border-radius:6px;overflow-x:auto;font-size:.88rem;line-height:1.65;margin:18px 0 24px}
+pre .cm{color:#6a9955}
+pre .kw{color:#569cd6}
+pre .fn{color:#dcdcaa}
+pre .st{color:#ce9178}
+pre .nu{color:#b5cea8}
+pre .ty{color:#4ec9b0}
+pre .op{color:#d4d4d4}
+pre .var{color:#9cdcfe}
+pre .at{color:#9cdcfe}
+code{background:#f0f0f0;color:#c7254e;padding:2px 6px;border-radius:3px;font-size:.9em}
+pre code{background:none;color:inherit;padding:0;border-radius:0}
+
+/* ── Boxes ── */
+.box{padding:18px 22px;border-radius:5px;margin:22px 0;border-left:4px solid}
+.box.note{border-color:#f0a500;background:#fffbea}
+.box.info{border-color:#2a6db5;background:#f0f6ff}
+.box.warn{border-color:#c0392b;background:#fff5f5}
+.box.good{border-color:#27ae60;background:#f0fff4}
+.box-title{font-weight:700;font-size:.95rem;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.box.note .box-title{color:#b8860b}
+.box.info .box-title{color:#1a5a9a}
+.box.warn .box-title{color:#c0392b}
+.box.good .box-title{color:#1e8449}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;margin:18px 0 26px;font-size:.95rem}
+th{background:#2b2b2b;color:#fff;padding:10px 14px;text-align:left;font-size:.88rem}
+td{padding:10px 14px;border-bottom:1px solid #e8e8e8;vertical-align:top}
+tr:nth-child(even) td{background:#f8f8f8}
+tr:hover td{background:#f0f6ff}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.78rem;font-weight:700}
+.tag.open{background:#d4edda;color:#155724}
+.tag.funded{background:#cce5ff;color:#004085}
+.tag.submitted{background:#fff3cd;color:#856404}
+.tag.done{background:#d1ecf1;color:#0c5460}
+.tag.rejected{background:#f8d7da;color:#721c24}
+.tag.expired{background:#e2e3e5;color:#383d41}
+.tag.orange{background:#fff3cd;color:#856404}
+.tag.blue{background:#cce5ff;color:#004085}
+.tag.green{background:#d4edda;color:#155724}
+.tag.red{background:#f8d7da;color:#721c24}
+.tag.gray{background:#e2e3e5;color:#383d41}
+
+/* ── Progress bar ── */
+#progressbar{position:fixed;top:0;left:0;height:3px;background:#f0a500;width:0;z-index:999;transition:width .1s}
+
+/* ── State machine diagram ── */
+.state-flow{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin:26px 0;padding:26px;background:#f8f9ff;border-radius:8px;border:1px solid #dde3f0;justify-content:center}
+.state-box{background:#2b2b2b;color:#fff;padding:10px 18px;border-radius:6px;font-weight:700;font-size:.95rem;text-align:center;min-width:100px}
+.state-box.s-open{background:#27ae60}
+.state-box.s-funded{background:#2a6db5}
+.state-box.s-submitted{background:#e67e22}
+.state-box.s-done{background:#16a085}
+.state-box.s-rejected{background:#c0392b}
+.state-box.s-expired{background:#7f8c8d}
+.state-box small{display:block;font-size:.7rem;font-weight:400;opacity:.85;margin-top:2px}
+.arrow{font-size:1.4rem;color:#999;padding:0 8px;line-height:1}
+.arrow-label{font-size:.75rem;color:#666;display:block;text-align:center;margin-top:3px}
+.arrow-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+/* ── TX block ── */
+.tx-block{background:#1a1a2e;border-radius:8px;padding:20px 24px;margin:18px 0;color:#e0e0e0}
+.tx-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #333}
+.tx-num{background:#f0a500;color:#111;border-radius:4px;padding:3px 10px;font-weight:700;font-size:.85rem}
+.tx-role{color:#888;font-size:.88rem}
+.tx-hash{font-family:monospace;font-size:.78rem;color:#666;margin-left:auto}
+.tx-event{background:#0f1117;border-radius:4px;padding:10px 14px;margin:8px 0;border-left:3px solid #f0a500;font-size:.88rem}
+.tx-event .ev-name{color:#f0a500;font-weight:700;font-size:.82rem;margin-bottom:4px}
+.tx-event .ev-field{color:#9cdcfe;display:flex;gap:10px;font-size:.83rem;line-height:1.7}
+.tx-event .ev-key{color:#888;min-width:120px}
+.tx-event .ev-val{color:#ce9178}
+.tx-event .ev-val.addr{color:#4ec9b0}
+.tx-event .ev-val.num{color:#b5cea8}
+.tx-event .ev-val.bool-t{color:#27ae60;font-weight:700}
+.tx-event .ev-val.phase{color:#dcdcaa;font-weight:700}
+.tx-transition{display:inline-flex;align-items:center;gap:6px;background:#1e3a2e;border:1px solid #27ae60;border-radius:4px;padding:4px 12px;font-size:.82rem;color:#fff;margin:6px 0}
+.tx-transition .from{color:#e74c3c}
+.tx-transition .to{color:#27ae60;font-weight:700}
+
+/* ── SDK call block ── */
+.sdk-call{border:1px solid #dde3f0;border-radius:6px;margin:16px 0;overflow:hidden}
+.sdk-call-header{background:#2b2b2b;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.sdk-call-method{color:#dcdcaa;font-family:monospace;font-weight:700;font-size:.9rem}
+.sdk-call-lang{background:#f0a500;color:#111;border-radius:3px;padding:1px 7px;font-size:.72rem;font-weight:700}
+.sdk-call-ops{color:#888;font-size:.8rem;margin-left:auto}
+.sdk-call-body{padding:14px 16px;font-size:.88rem;line-height:1.7}
+.op-list{list-style:none;margin:0;padding:0}
+.op-list li{display:flex;gap:10px;padding:4px 0;border-bottom:1px solid #f0f0f0}
+.op-list li:last-child{border:none}
+.op-num{background:#2a6db5;color:#fff;border-radius:3px;padding:1px 7px;font-size:.75rem;font-weight:700;flex-shrink:0;height:fit-content;margin-top:2px}
+.op-contract{color:#2a6db5;font-weight:700;min-width:140px;font-size:.85rem}
+.op-fn{font-family:monospace;font-size:.83rem;color:#444}
+.op-result{color:#27ae60;font-size:.8rem;margin-top:2px}
+
+/* ── Compare table ── */
+.cmp-table th:first-child{background:#1a1a2e}
+.cmp-table th:nth-child(2){background:#c0392b}
+.cmp-table th:nth-child(3){background:#1a5276}
+.cmp-score{font-weight:700;font-size:1.1rem}
+.cmp-score.hi{color:#27ae60}
+.cmp-score.mid{color:#e67e22}
+.cmp-score.lo{color:#c0392b}
+
+/* ── Contract interface block ── */
+.iface-block{border:1px solid #dde3f0;border-radius:6px;overflow:hidden;margin:18px 0}
+.iface-header{background:#1a1a2e;color:#fff;padding:10px 16px;font-family:monospace;font-size:.88rem;display:flex;align-items:center;gap:10px}
+.iface-tag{background:#f0a500;color:#111;border-radius:3px;padding:1px 7px;font-size:.72rem;font-weight:700}
+.iface-body{background:#0d1117;padding:20px 22px}
+.iface-body pre{background:transparent;margin:0;padding:0;font-size:.85rem;color:#d4d4d4}
+
+/* ── Flow chart SVG ── */
+.flow-wrap{background:#f8f9ff;border:1px solid #dde3f0;border-radius:8px;padding:20px;margin:24px 0;overflow-x:auto;text-align:center}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+
+/* ── Navbar breadcrumb ── */
+.section-intro{color:#666;font-size:1rem;margin-bottom:30px;padding:14px 18px;background:#f8f8f8;border-radius:5px;border-left:3px solid #2a6db5}
+</style>
+</head>
+<body>
+<div id="progressbar"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div id="sidebar-logo">ERC-8183<span>AI Agent 商业协议完全指南</span></div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">概述</div>
+    <a href="#what">什么是 ERC-8183？</a>
+    <a href="#why">为什么需要它？</a>
+    <a href="#roles">三大角色</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">核心机制</div>
+    <a href="#job">Job 原语</a>
+    <a href="#states">生命周期状态机</a>
+    <a href="#escrow">Escrow 托管机制</a>
+    <a href="#hooks">Hooks 扩展</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">合约接口</div>
+    <a href="#iface">IERC8183 接口</a>
+    <a href="#hook-iface">IACPHook 接口</a>
+    <a href="#events">Events 事件</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ACP (Virtuals) 实现</div>
+    <a href="#acp-arch">合约架构</a>
+    <a href="#memo">Memo 通信系统</a>
+    <a href="#acp-states">ACP 状态机（7阶段）</a>
+    <a href="#tx-trace">真实交易追踪</a>
+    <a href="#sdk-map">SDK 方法映射</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">APEX (BNB) 实现</div>
+    <a href="#apex-arch">APEX 架构</a>
+    <a href="#apex-sdk">Python SDK 调用</a>
+    <a href="#uma">UMA 争议机制</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">对比分析</div>
+    <a href="#compare">ACP vs APEX 对比</a>
+    <a href="#erc8004">ERC-8004 集成</a>
+    <a href="#security">安全模式</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+<!-- ══════════════════════════════════════════════════════ -->
+<h1 class="page-title">ERC-8183</h1>
+<p class="page-subtitle">AI Agent 链上商业协议完全指南 &mdash; 从标准规范到真实交易追踪</p>
+
+<!-- ── SECTION 1: WHAT ── -->
+<h2 id="what">什么是 ERC-8183？</h2>
+<p class="section-intro">ERC-8183 是由 Virtuals Protocol 与 Ethereum Foundation dAI 团队于 2026 年 2 月联合提出的 Ethereum Improvement Proposal，定义了 AI Agent 之间进行可信商业交易的链上标准。</p>
+
+<p>在没有 ERC-8183 之前，AI Agent 之间的"商业交易"要么依赖中心化平台的信任（例如某家公司的后端），要么根本无法实现原子化结算。ERC-8183 定义了一个标准化的<strong>链上任务原语</strong>，让任何两个 Agent 都可以在不信任对方的情况下完成交易。</p>
+
+<div class="box note">
+  <div class="box-title">📌 核心定义</div>
+  ERC-8183 定义了一种叫做 <strong>Job</strong>（任务）的链上原子商业单元。一个 Job 包含完整的生命周期：从任务规格说明、资金托管，到结果提交和最终结算——全程由智能合约管理，无需任何中心化中介。
+</div>
+
+<p>标准由两个合约接口组成：</p>
+<ul>
+  <li><strong>AgenticCommerce</strong>：核心 Job 原语，管理 Escrow 和状态机</li>
+  <li><strong>IACPHook</strong>：可选扩展接口，在 Job 生命周期各节点注入自定义逻辑</li>
+</ul>
+
+<!-- ── SECTION 2: WHY ── -->
+<h2 id="why">为什么需要它？</h2>
+
+<p>AI Agent 经济面临一个根本性的信任问题：</p>
+
+<table>
+  <tr><th>问题</th><th>传统解法</th><th>ERC-8183 解法</th></tr>
+  <tr><td>Agent A 先付款，Agent B 不交付</td><td>依赖平台仲裁</td><td>资金锁入 Escrow，Evaluator 确认后才释放</td></tr>
+  <tr><td>Agent B 先交付，Agent A 拒绝付款</td><td>法律追溯</td><td>Evaluator 审核后自动执行支付</td></tr>
+  <tr><td>结果质量无法验证</td><td>人工审核</td><td>可挂接 UMA 预言机等自动验证机制</td></tr>
+  <tr><td>跨平台身份不可信</td><td>KYC/平台账号</td><td>ERC-8004 链上身份注册</td></tr>
+</table>
+
+<!-- ── SECTION 3: ROLES ── -->
+<h2 id="roles">三大角色</h2>
+
+<table>
+  <tr><th>角色</th><th>英文</th><th>职责</th><th>典型行为</th></tr>
+  <tr>
+    <td><strong>客户方</strong></td><td>Client</td>
+    <td>发起 Job、提供资金、最终验收</td>
+    <td>createJob() → fundJob() → 等待结果</td>
+  </tr>
+  <tr>
+    <td><strong>服务方</strong></td><td>Provider</td>
+    <td>承接 Job、执行任务、提交结果哈希</td>
+    <td>监听 JobCreated 事件 → submit()</td>
+  </tr>
+  <tr>
+    <td><strong>评估方</strong></td><td>Evaluator / Assessor</td>
+    <td>独立验证结果，决定资金去向</td>
+    <td>审查 deliverable_hash → complete() / reject()</td>
+  </tr>
+</table>
+
+<div class="box info">
+  <div class="box-title">🔑 关键设计：Evaluator 独占裁决权</div>
+  标准规定只有 Evaluator 可以调用 <code>complete()</code> 或 <code>reject()</code>。Client 无法单方面拒绝付款，Provider 无法单方面宣称完成。这是无信任商业的核心保障。
+</div>
+
+<!-- ── SECTION 4: JOB ── -->
+<h2 id="job">Job 原语</h2>
+
+<p>Job 是 ERC-8183 的基本单元，每个 Job 是一个<strong>原子商业交易</strong>，包含以下字段：</p>
+
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明</th></tr>
+  <tr><td><code>jobId</code></td><td>uint256</td><td>唯一标识符</td></tr>
+  <tr><td><code>client</code></td><td>address</td><td>发起方地址</td></tr>
+  <tr><td><code>provider</code></td><td>address</td><td>执行方地址</td></tr>
+  <tr><td><code>evaluator</code></td><td>address</td><td>评估方地址（可为零地址触发自动审批）</td></tr>
+  <tr><td><code>token</code></td><td>address</td><td>支付代币（ERC-20）</td></tr>
+  <tr><td><code>budget</code></td><td>uint256</td><td>预算总额（托管金额）</td></tr>
+  <tr><td><code>amountClaimed</code></td><td>uint256</td><td>Provider 实际获得金额</td></tr>
+  <tr><td><code>expiredAt</code></td><td>uint256</td><td>超时时间戳，到期自动退款</td></tr>
+  <tr><td><code>state</code></td><td>enum State</td><td>当前状态（见下方状态机）</td></tr>
+  <tr><td><code>hook</code></td><td>address</td><td>可选 Hook 合约地址</td></tr>
+</table>
+
+<!-- ── SECTION 5: STATES ── -->
+<h2 id="states">生命周期状态机</h2>
+
+<p>ERC-8183 定义了 <strong>6 个状态</strong>，形成一个确定性状态机。每个状态只能由特定角色通过特定函数触发转换。</p>
+
+<!-- State flow diagram -->
+<div class="flow-wrap">
+<svg width="780" height="260" viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- OPEN -->
+  <rect x="10" y="100" width="110" height="60" rx="8" fill="#27ae60"/>
+  <text x="65" y="125" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">OPEN</text>
+  <text x="65" y="143" text-anchor="middle" fill="#cfffdf" font-size="11">state = 1</text>
+  <!-- arrow to FUNDED -->
+  <line x1="120" y1="130" x2="168" y2="130" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="144" y="122" text-anchor="middle" fill="#666" font-size="10">fundJob()</text>
+  <!-- FUNDED -->
+  <rect x="170" y="100" width="110" height="60" rx="8" fill="#2a6db5"/>
+  <text x="225" y="125" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">FUNDED</text>
+  <text x="225" y="143" text-anchor="middle" fill="#c8e0ff" font-size="11">state = 2</text>
+  <!-- arrow to SUBMITTED -->
+  <line x1="280" y1="130" x2="328" y2="130" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="304" y="122" text-anchor="middle" fill="#666" font-size="10">submit()</text>
+  <!-- SUBMITTED -->
+  <rect x="330" y="100" width="110" height="60" rx="8" fill="#e67e22"/>
+  <text x="385" y="125" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">SUBMITTED</text>
+  <text x="385" y="143" text-anchor="middle" fill="#ffddc8" font-size="11">state = 3</text>
+
+  <!-- SUBMITTED → COMPLETED -->
+  <line x1="440" y1="115" x2="533" y2="75" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="500" y="80" text-anchor="middle" fill="#666" font-size="10">complete()</text>
+  <!-- COMPLETED -->
+  <rect x="535" y="40" width="120" height="60" rx="8" fill="#16a085"/>
+  <text x="595" y="65" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">COMPLETED</text>
+  <text x="595" y="83" text-anchor="middle" fill="#c0fff0" font-size="11">state = 4</text>
+
+  <!-- SUBMITTED → REJECTED -->
+  <line x1="440" y1="145" x2="533" y2="165" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="500" y="168" text-anchor="middle" fill="#666" font-size="10">reject()</text>
+  <!-- REJECTED -->
+  <rect x="535" y="140" width="120" height="60" rx="8" fill="#c0392b"/>
+  <text x="595" y="165" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">REJECTED</text>
+  <text x="595" y="183" text-anchor="middle" fill="#ffd0d0" font-size="11">state = 5</text>
+
+  <!-- FUNDED → EXPIRED (timeout arc) -->
+  <path d="M 225 160 Q 225 220 385 220 Q 540 220 595 200" stroke="#888" stroke-width="1.5" stroke-dasharray="5,4" fill="none" marker-end="url(#arr)"/>
+  <text x="385" y="240" text-anchor="middle" fill="#888" font-size="10">expiredAt 到期 → 自动退款</text>
+  <!-- EXPIRED -->
+  <rect x="660" y="100" width="110" height="60" rx="8" fill="#7f8c8d"/>
+  <text x="715" y="125" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">EXPIRED</text>
+  <text x="715" y="143" text-anchor="middle" fill="#ddd" font-size="11">state = 6</text>
+  <!-- FUNDED → EXPIRED -->
+  <path d="M 225 100 Q 225 50 715 50 L 715 100" stroke="#aaa" stroke-width="1.5" stroke-dasharray="5,4" fill="none" marker-end="url(#arr)"/>
+  <text x="470" y="42" text-anchor="middle" fill="#888" font-size="10">expire() / 到期</text>
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
+    </marker>
+  </defs>
+</svg>
+</div>
+
+<table>
+  <tr><th>状态</th><th>值</th><th>触发函数</th><th>触发角色</th><th>资金状态</th></tr>
+  <tr><td><span class="tag open">OPEN</span></td><td>1</td><td>createJob()</td><td>Client</td><td>未锁定</td></tr>
+  <tr><td><span class="tag funded">FUNDED</span></td><td>2</td><td>fundJob()</td><td>Client</td><td>锁入 Escrow</td></tr>
+  <tr><td><span class="tag submitted">SUBMITTED</span></td><td>3</td><td>submit()</td><td>Provider</td><td>仍在 Escrow</td></tr>
+  <tr><td><span class="tag done">COMPLETED</span></td><td>4</td><td>complete()</td><td>Evaluator</td><td>→ Provider</td></tr>
+  <tr><td><span class="tag rejected">REJECTED</span></td><td>5</td><td>reject()</td><td>Evaluator</td><td>→ Client 退款</td></tr>
+  <tr><td><span class="tag expired">EXPIRED</span></td><td>6</td><td>expire() 或 超时</td><td>任何人 / 自动</td><td>→ Client 退款</td></tr>
+</table>
+
+<!-- ── SECTION 6: ESCROW ── -->
+<h2 id="escrow">Escrow 托管机制</h2>
+
+<p>资金流转是 ERC-8183 的信任核心。Client 在 <code>fundJob()</code> 时通过 <code>ERC-20 approve + transferFrom</code> 将资金锁入合约，此后资金只能通过以下三条路径释放：</p>
+
+<div class="flow-wrap">
+<svg width="680" height="180" viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+  <!-- Client wallet -->
+  <rect x="10" y="60" width="120" height="60" rx="8" fill="#2b2b2b"/>
+  <text x="70" y="85" text-anchor="middle" fill="#f0a500" font-weight="700" font-size="13">Client 钱包</text>
+  <text x="70" y="103" text-anchor="middle" fill="#ccc" font-size="11">approve() →</text>
+  <!-- Escrow -->
+  <rect x="240" y="40" width="180" height="100" rx="8" fill="#1a3a6e"/>
+  <text x="330" y="68" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">Escrow 合约</text>
+  <text x="330" y="88" text-anchor="middle" fill="#aac4ff" font-size="11">资金锁定</text>
+  <text x="330" y="108" text-anchor="middle" fill="#888" font-size="10">state ≥ FUNDED</text>
+  <text x="330" y="124" text-anchor="middle" fill="#888" font-size="10">只有 Evaluator 可释放</text>
+  <!-- arrows from client to escrow -->
+  <line x1="130" y1="90" x2="238" y2="90" stroke="#f0a500" stroke-width="2" marker-end="url(#arr2)"/>
+  <text x="184" y="82" text-anchor="middle" fill="#f0a500" font-size="10" font-weight="700">fundJob()</text>
+  <!-- Escrow → Provider (complete) -->
+  <line x1="420" y1="72" x2="540" y2="55" stroke="#27ae60" stroke-width="2" marker-end="url(#arr2)"/>
+  <text x="492" y="53" text-anchor="middle" fill="#27ae60" font-size="10" font-weight="700">complete()</text>
+  <rect x="542" y="32" width="120" height="50" rx="6" fill="#1e5c3d"/>
+  <text x="602" y="54" text-anchor="middle" fill="#fff" font-weight="700" font-size="12">Provider</text>
+  <text x="602" y="72" text-anchor="middle" fill="#8affc0" font-size="10">获得报酬</text>
+  <!-- Escrow → Client (reject/expire) -->
+  <line x1="420" y1="108" x2="540" y2="125" stroke="#c0392b" stroke-width="2" marker-end="url(#arr2)"/>
+  <text x="492" y="140" text-anchor="middle" fill="#c0392b" font-size="10" font-weight="700">reject() / expire()</text>
+  <rect x="542" y="110" width="120" height="50" rx="6" fill="#5c1e1e"/>
+  <text x="602" y="132" text-anchor="middle" fill="#fff" font-weight="700" font-size="12">Client</text>
+  <text x="602" y="150" text-anchor="middle" fill="#ffa0a0" font-size="10">退款</text>
+  <defs>
+    <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
+    </marker>
+  </defs>
+</svg>
+</div>
+
+<!-- ── SECTION 7: HOOKS ── -->
+<h2 id="hooks">Hooks 扩展机制</h2>
+
+<p>Hooks 是 ERC-8183 的模块化扩展点，允许在 Job 生命周期的关键节点注入自定义逻辑，而不需要修改核心合约。</p>
+
+<p>创建 Job 时传入可选的 <code>hook</code> 地址，合约在以下节点调用 Hook：</p>
+
+<table>
+  <tr><th>Hook 调用点</th><th>触发时机</th><th>典型用途</th></tr>
+  <tr><td><code>beforeFund()</code></td><td>资金进入 Escrow 前</td><td>KYC 检查、资金来源验证</td></tr>
+  <tr><td><code>afterFund()</code></td><td>资金锁入后</td><td>通知 Provider、触发任务分配</td></tr>
+  <tr><td><code>beforeSubmit()</code></td><td>Provider 提交结果前</td><td>结果格式校验</td></tr>
+  <tr><td><code>afterSubmit()</code></td><td>结果提交后</td><td>通知 Evaluator 开始审核</td></tr>
+  <tr><td><code>beforeComplete()</code></td><td>Evaluator 确认前</td><td>链上自动验证（UMA OOv3）</td></tr>
+  <tr><td><code>afterComplete()</code></td><td>结算完成后</td><td>声誉分更新、日志记录</td></tr>
+</table>
+
+<div class="box info">
+  <div class="box-title">💡 Hook 的实际价值</div>
+  APEX SDK 将 UMA 乐观预言机争议解决作为一个 Hook 实现（<code>APEXEvaluatorHook</code>）。这意味着核心 ERC-8183 合约不需要了解 UMA，两者通过标准 Hook 接口解耦。
+</div>
+
+<!-- ── SECTION 8: INTERFACE ── -->
+<h2 id="iface">IERC8183 合约接口</h2>
+
+<div class="iface-block">
+  <div class="iface-header"><span class="iface-tag">Solidity</span> AgenticCommerce — 核心接口</div>
+  <div class="iface-body">
+<pre><span class="cm">// SPDX-License-Identifier: MIT</span>
+<span class="cm">// ERC-8183: Agentic Commerce Standard (Feb 2026)</span>
+<span class="kw">pragma</span> solidity ^0.8.20;
+
+<span class="kw">interface</span> <span class="ty">IERC8183</span> {
+
+    <span class="cm">// ── Job State Enum ──────────────────────────────────</span>
+    <span class="kw">enum</span> <span class="ty">State</span> {
+        <span class="at">NONE</span>,        <span class="cm">// 0 — 不存在</span>
+        <span class="at">OPEN</span>,        <span class="cm">// 1 — 已创建，等待资金</span>
+        <span class="at">FUNDED</span>,      <span class="cm">// 2 — 资金已托管</span>
+        <span class="at">SUBMITTED</span>,   <span class="cm">// 3 — Provider 已提交结果</span>
+        <span class="at">COMPLETED</span>,   <span class="cm">// 4 — Evaluator 已确认，资金 → Provider</span>
+        <span class="at">REJECTED</span>,    <span class="cm">// 5 — Evaluator 已拒绝，资金 → Client</span>
+        <span class="at">EXPIRED</span>      <span class="cm">// 6 — 超时，资金自动 → Client</span>
+    }
+
+    <span class="cm">// ── Job Struct ──────────────────────────────────────</span>
+    <span class="kw">struct</span> <span class="ty">Job</span> {
+        <span class="kw">uint256</span> <span class="var">jobId</span>;
+        <span class="kw">address</span> <span class="var">client</span>;
+        <span class="kw">address</span> <span class="var">provider</span>;
+        <span class="kw">address</span> <span class="var">evaluator</span>;   <span class="cm">// address(0) = 自动审批</span>
+        <span class="kw">address</span> <span class="var">token</span>;       <span class="cm">// ERC-20 支付代币</span>
+        <span class="kw">uint256</span> <span class="var">budget</span>;
+        <span class="kw">uint256</span> <span class="var">amountClaimed</span>;
+        <span class="kw">uint256</span> <span class="var">expiredAt</span>;
+        <span class="ty">State</span>   <span class="var">state</span>;
+        <span class="kw">address</span> <span class="var">hook</span>;         <span class="cm">// 可选 IACPHook 合约</span>
+    }
+
+    <span class="cm">// ── Core Functions ──────────────────────────────────</span>
+
+    <span class="cm">/// @dev Client 创建 Job（state: NONE → OPEN）</span>
+    <span class="kw">function</span> <span class="fn">createJob</span>(
+        <span class="kw">address</span> <span class="var">provider</span>,
+        <span class="kw">address</span> <span class="var">evaluator</span>,
+        <span class="kw">address</span> <span class="var">token</span>,
+        <span class="kw">uint256</span> <span class="var">budget</span>,
+        <span class="kw">uint256</span> <span class="var">expiredAt</span>,
+        <span class="kw">address</span> <span class="var">hook</span>
+    ) <span class="kw">external returns</span> (<span class="kw">uint256</span> <span class="var">jobId</span>);
+
+    <span class="cm">/// @dev Client 注资（state: OPEN → FUNDED）</span>
+    <span class="kw">function</span> <span class="fn">fundJob</span>(<span class="kw">uint256</span> <span class="var">jobId</span>) <span class="kw">external</span>;
+
+    <span class="cm">/// @dev Provider 提交结果哈希（state: FUNDED → SUBMITTED）</span>
+    <span class="kw">function</span> <span class="fn">submit</span>(
+        <span class="kw">uint256</span> <span class="var">jobId</span>,
+        <span class="kw">bytes32</span> <span class="var">deliverableHash</span>   <span class="cm">// keccak256 of deliverable content</span>
+    ) <span class="kw">external</span>;
+
+    <span class="cm">/// @dev Evaluator 确认完成（state: SUBMITTED → COMPLETED）</span>
+    <span class="kw">function</span> <span class="fn">complete</span>(<span class="kw">uint256</span> <span class="var">jobId</span>) <span class="kw">external</span>;
+
+    <span class="cm">/// @dev Evaluator 拒绝（state: SUBMITTED → REJECTED）</span>
+    <span class="kw">function</span> <span class="fn">reject</span>(<span class="kw">uint256</span> <span class="var">jobId</span>) <span class="kw">external</span>;
+
+    <span class="cm">/// @dev 任何人可调用，处理超时（state: FUNDED/SUBMITTED → EXPIRED）</span>
+    <span class="kw">function</span> <span class="fn">expire</span>(<span class="kw">uint256</span> <span class="var">jobId</span>) <span class="kw">external</span>;
+
+    <span class="cm">/// @dev 查询 Job 信息</span>
+    <span class="kw">function</span> <span class="fn">getJob</span>(<span class="kw">uint256</span> <span class="var">jobId</span>) <span class="kw">external view returns</span> (<span class="ty">Job</span> <span class="kw">memory</span>);
+}</pre>
+  </div>
+</div>
+
+<h2 id="hook-iface">IACPHook 接口</h2>
+
+<div class="iface-block">
+  <div class="iface-header"><span class="iface-tag">Solidity</span> IACPHook — 扩展 Hook 接口</div>
+  <div class="iface-body">
+<pre><span class="kw">interface</span> <span class="ty">IACPHook</span> {
+    <span class="cm">/// 在 fundJob() 前调用，可 revert 阻止注资</span>
+    <span class="kw">function</span> <span class="fn">beforeFund</span>(<span class="kw">uint256</span> <span class="var">jobId</span>, <span class="kw">address</span> <span class="var">client</span>) <span class="kw">external</span>;
+
+    <span class="cm">/// 在 fundJob() 后调用</span>
+    <span class="kw">function</span> <span class="fn">afterFund</span>(<span class="kw">uint256</span> <span class="var">jobId</span>) <span class="kw">external</span>;
+
+    <span class="cm">/// 在 submit() 前调用</span>
+    <span class="kw">function</span> <span class="fn">beforeSubmit</span>(<span class="kw">uint256</span> <span class="var">jobId</span>, <span class="kw">bytes32</span> <span class="var">deliverableHash</span>) <span class="kw">external</span>;
+
+    <span class="cm">/// 在 submit() 后调用</span>
+    <span class="kw">function</span> <span class="fn">afterSubmit</span>(<span class="kw">uint256</span> <span class="var">jobId</span>) <span class="kw">external</span>;
+
+    <span class="cm">/// 在 complete() 前调用，可 revert 阻止确认</span>
+    <span class="kw">function</span> <span class="fn">beforeComplete</span>(<span class="kw">uint256</span> <span class="var">jobId</span>) <span class="kw">external</span>;
+
+    <span class="cm">/// 在 complete() 后调用（资金已转移）</span>
+    <span class="kw">function</span> <span class="fn">afterComplete</span>(<span class="kw">uint256</span> <span class="var">jobId</span>) <span class="kw">external</span>;
+}</pre>
+  </div>
+</div>
+
+<h2 id="events">合约事件（Events）</h2>
+
+<div class="iface-block">
+  <div class="iface-header"><span class="iface-tag">Solidity</span> Events</div>
+  <div class="iface-body">
+<pre><span class="cm">// ERC-8183 标准事件</span>
+<span class="kw">event</span> <span class="fn">JobCreated</span>(
+    <span class="kw">uint256 indexed</span> <span class="var">jobId</span>,
+    <span class="kw">address indexed</span> <span class="var">client</span>,
+    <span class="kw">address indexed</span> <span class="var">provider</span>,
+    <span class="kw">address</span> <span class="var">evaluator</span>,
+    <span class="kw">address</span> <span class="var">token</span>,
+    <span class="kw">uint256</span> <span class="var">budget</span>
+);
+
+<span class="kw">event</span> <span class="fn">JobFunded</span>(<span class="kw">uint256 indexed</span> <span class="var">jobId</span>);
+
+<span class="kw">event</span> <span class="fn">JobSubmitted</span>(
+    <span class="kw">uint256 indexed</span> <span class="var">jobId</span>,
+    <span class="kw">bytes32</span> <span class="var">deliverableHash</span>
+);
+
+<span class="kw">event</span> <span class="fn">JobCompleted</span>(<span class="kw">uint256 indexed</span> <span class="var">jobId</span>, <span class="kw">uint256</span> <span class="var">amountPaid</span>);
+<span class="kw">event</span> <span class="fn">JobRejected</span>(<span class="kw">uint256 indexed</span> <span class="var">jobId</span>);
+<span class="kw">event</span> <span class="fn">JobExpired</span>(<span class="kw">uint256 indexed</span> <span class="var">jobId</span>);
+
+<span class="cm">// ACP (Virtuals) 私有扩展事件</span>
+<span class="kw">event</span> <span class="fn">NewMemo</span>(
+    <span class="kw">uint256 indexed</span> <span class="var">memoId</span>,
+    <span class="kw">uint256 indexed</span> <span class="var">jobId</span>,
+    <span class="kw">address</span>         <span class="var">sender</span>,
+    <span class="kw">uint8</span>            <span class="var">memoType</span>,   <span class="cm">// 0=MESSAGE, 1=CONTEXT_URL, ...</span>
+    <span class="kw">uint8</span>            <span class="var">nextPhase</span>,
+    <span class="kw">string</span>           <span class="var">content</span>
+);
+<span class="kw">event</span> <span class="fn">MemoSigned</span>(<span class="kw">uint256 indexed</span> <span class="var">memoId</span>, <span class="kw">address</span> <span class="var">approver</span>, <span class="kw">bool</span> <span class="var">approved</span>);
+<span class="kw">event</span> <span class="fn">JobPhaseUpdated</span>(<span class="kw">uint256 indexed</span> <span class="var">jobId</span>, <span class="kw">uint8</span> <span class="var">oldPhase</span>, <span class="kw">uint8</span> <span class="var">newPhase</span>);</pre>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- ACP IMPLEMENTATION -->
+<!-- ══════════════════════════════════════════════════════ -->
+
+<h2 id="acp-arch">ACP (Virtuals) — 合约架构</h2>
+<p class="section-intro">Virtuals Protocol 的 ACP 是 ERC-8183 的第一个主网实现（Base 链），引入了比标准更丰富的 Memo 通信系统和 7 阶段状态机。</p>
+
+<p>ACP 采用<strong>模块化子合约架构</strong>，由一个 Router 合约统一对外暴露，内部分三个专职合约：</p>
+
+<table>
+  <tr><th>合约</th><th>地址（Base 主网）</th><th>职责</th></tr>
+  <tr><td><strong>ACP Router</strong></td><td><code>0xa6C9BA866992cfD7fd6460ba912bfa405adA9df0</code></td><td>主入口，路由到子合约；SDK 配置的地址</td></tr>
+  <tr><td><strong>Memo Manager</strong></td><td><code>0x9c6c5a7125934cc6a711a7bf44f3cdcccf91f30c</code></td><td>所有链上通信（Memo 的创建与签名）</td></tr>
+  <tr><td><strong>Job Manager</strong></td><td><code>0x9c690c267f20c385f8a053f62bc8c7e2d4b83744</code></td><td>Job 阶段状态追踪，发出 JobPhaseUpdated</td></tr>
+  <tr><td><strong>Entry Point v0.7.0</strong></td><td><code>0x0000000071727de22e5e9d8baf0edac6f37da032</code></td><td>ERC-4337 账户抽象入口（行业标准合约）</td></tr>
+  <tr><td><strong>Paymaster</strong></td><td><code>0x2cc0c7981D846b9F2a16276556f6e8cb52BfB633</code></td><td>Gas 赞助（Alchemy 策略），Agent 无需持有 ETH</td></tr>
+  <tr><td><strong>USDC (Base)</strong></td><td><code>0x833589fcd6edb6e08f4c7c32d4f71b54bda02913</code></td><td>支付代币</td></tr>
+</table>
+
+<div class="box note">
+  <div class="box-title">⚙️ 合约发现机制</div>
+  SDK 在初始化时动态从 ACP Router 读取子合约地址：<code>router.jobManager()</code>、<code>router.memoManager()</code>、<code>router.accountManager()</code>。无需硬编码子合约地址，升级时只更新 Router。
+</div>
+
+<!-- ── MEMO SYSTEM ── -->
+<h2 id="memo">Memo 通信系统</h2>
+<p>ACP 在标准 ERC-8183 的 Job 状态之上，叠加了一套 <strong>Memo（备忘录）通信层</strong>。所有 Agent 间的协商、确认、支付、交付都通过 Memo 完成，每条 Memo 都永久记录在链上。</p>
+
+<h4>Memo 类型</h4>
+<table>
+  <tr><th>类型值</th><th>名称</th><th>用途</th></tr>
+  <tr><td><code>0</code></td><td>MESSAGE</td><td>普通文本消息（协商、确认、支付通知）</td></tr>
+  <tr><td><code>1</code></td><td>CONTEXT_URL</td><td>交付物 URL（指向链下内容）</td></tr>
+  <tr><td><code>2+</code></td><td>其他扩展类型</td><td>结构化数据、加密内容等</td></tr>
+</table>
+
+<h4>Memo 核心字段</h4>
+<table>
+  <tr><th>字段</th><th>说明</th></tr>
+  <tr><td><code>memoId</code></td><td>全局唯一 Memo ID</td></tr>
+  <tr><td><code>jobId</code></td><td>关联的 Job</td></tr>
+  <tr><td><code>sender</code></td><td>发送方地址</td></tr>
+  <tr><td><code>memoType</code></td><td>消息类型（0=MESSAGE, 1=CONTEXT_URL）</td></tr>
+  <tr><td><code>nextPhase</code></td><td>提议的下一个阶段（需对方 signMemo 确认）</td></tr>
+  <tr><td><code>content</code></td><td>消息内容（JSON 或 URL）</td></tr>
+  <tr><td><code>requiresApproval</code></td><td>false = 自动审批，无需对方签名</td></tr>
+  <tr><td><code>isApproved</code></td><td>当前审批状态</td></tr>
+</table>
+
+<div class="box info">
+  <div class="box-title">💡 "两跳"安全模式</div>
+  每个 Memo 的 <code>nextPhase</code> 字段是<strong>提议</strong>而非立即执行。只有当对方调用 <code>signMemo(memoId, true)</code> 时，Job Manager 才真正更新状态。这确保了双方都有机会审查每个阶段转换——除非 <code>requiresApproval = false</code> 启用自动审批。
+</div>
+
+<!-- ── ACP STATES ── -->
+<h2 id="acp-states">ACP 状态机（7 阶段）</h2>
+
+<p>ACP 将 ERC-8183 的 4 个终态扩展为 7 个阶段，加入了显式的协商、交易和评估子阶段：</p>
+
+<div class="state-flow">
+  <div class="state-box s-open"><div>REQUEST</div><small>phase 0</small></div>
+  <div class="arrow-wrap"><div class="arrow">→</div><div class="arrow-label">createJob()</div></div>
+  <div class="state-box s-open"><div>NEGOTIATION</div><small>phase 1</small></div>
+  <div class="arrow-wrap"><div class="arrow">→</div><div class="arrow-label">signMemo()</div></div>
+  <div class="state-box s-funded"><div>TRANSACTION</div><small>phase 2</small></div>
+  <div class="arrow-wrap"><div class="arrow">→</div><div class="arrow-label">deliver()</div></div>
+  <div class="state-box s-submitted"><div>EVALUATION</div><small>phase 3</small></div>
+  <div class="arrow-wrap"><div class="arrow">→</div><div class="arrow-label">autoApprove</div></div>
+  <div class="state-box s-done"><div>COMPLETED</div><small>phase 4</small></div>
+</div>
+
+<table>
+  <tr><th>阶段</th><th>值</th><th>对应 ERC-8183 状态</th><th>说明</th></tr>
+  <tr><td>REQUEST</td><td>0</td><td>—</td><td>Job 刚创建，初始状态</td></tr>
+  <tr><td>NEGOTIATION</td><td>1</td><td>OPEN</td><td>Client 提议，等待 Provider 接受</td></tr>
+  <tr><td>TRANSACTION</td><td>2</td><td>FUNDED</td><td>双方达成协议，资金已托管</td></tr>
+  <tr><td>EVALUATION</td><td>3</td><td>SUBMITTED</td><td>Provider 已交付，等待评估</td></tr>
+  <tr><td>COMPLETED</td><td>4</td><td>COMPLETED</td><td>Job 完成，Provider 获得报酬</td></tr>
+  <tr><td>DISPUTED</td><td>5</td><td>REJECTED</td><td>有争议，进入仲裁流程</td></tr>
+  <tr><td>EXPIRED</td><td>6</td><td>EXPIRED</td><td>超时，Client 自动退款</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- REAL TX TRACE -->
+<!-- ══════════════════════════════════════════════════════ -->
+
+<h2 id="tx-trace">真实交易追踪 — Job #1003169918</h2>
+<p class="section-intro">以下是 Base 主网上一个真实 Job 的完整链上记录（2026 年 3 月 21 日）。4 笔交易、4 个 Memo，完成了从请求到结算的全生命周期。</p>
+
+<h4>参与方</h4>
+<table>
+  <tr><th>角色</th><th>Agent 名称</th><th>地址</th></tr>
+  <tr><td>Client</td><td>Other's Butler</td><td><code>0x853569d6e01842de08Ae120Ad12A6406D08b1Cd0</code></td></tr>
+  <tr><td>Provider</td><td>Gvgv Li</td><td><code>0x12C13b0967455c1fdb478daBF2D98db1B27c8a69</code></td></tr>
+  <tr><td>Evaluator</td><td>（已分配，未使用）</td><td><code>0x3675E1AB3c4E0B32A950BD55a989B97F5dEf6199</code></td></tr>
+</table>
+
+<!-- TX1 -->
+<div class="tx-block">
+  <div class="tx-header">
+    <span class="tx-num">TX 1</span>
+    <strong style="color:#fff">Client 创建 Job</strong>
+    <span class="tx-role">SDK: initiateJob()</span>
+    <span class="tx-hash">0xba1b94...9a0a</span>
+  </div>
+  <div class="tx-event">
+    <div class="ev-name">📤 NewMemo — Memo Manager</div>
+    <div class="ev-field"><span class="ev-key">memoId</span><span class="ev-val num">1010750897</span></div>
+    <div class="ev-field"><span class="ev-key">jobId</span><span class="ev-val num">1003169918</span></div>
+    <div class="ev-field"><span class="ev-key">sender</span><span class="ev-val addr">Client (0x8535...)</span></div>
+    <div class="ev-field"><span class="ev-key">memoType</span><span class="ev-val">0 (MESSAGE)</span></div>
+    <div class="ev-field"><span class="ev-key">nextPhase</span><span class="ev-val phase">1 (NEGOTIATION)</span></div>
+    <div class="ev-field"><span class="ev-key">content</span><span class="ev-val">{"name":"writeCountDownFn","requirement":{"initNum":20},"priceValue":0.01,"priceType":"fixed"}</span></div>
+  </div>
+  <div class="tx-transition"><span class="from">REQUEST (0)</span> <span>→</span> <span class="to">NEGOTIATION (1)</span></div>
+  <p style="color:#888;font-size:.88rem;margin-top:8px">初始请求无需对方签名，Job 自动进入 NEGOTIATION 阶段。</p>
+</div>
+
+<!-- TX2 -->
+<div class="tx-block">
+  <div class="tx-header">
+    <span class="tx-num">TX 2</span>
+    <strong style="color:#fff">Provider 接受 Job</strong>
+    <span class="tx-role">SDK: respond() → accept()</span>
+    <span class="tx-hash">0x9f8455...6e5cb</span>
+  </div>
+  <div class="tx-event">
+    <div class="ev-name">📤 NewMemo — Memo Manager</div>
+    <div class="ev-field"><span class="ev-key">memoId</span><span class="ev-val num">1010750904</span></div>
+    <div class="ev-field"><span class="ev-key">sender</span><span class="ev-val addr">Provider (0x12C1...)</span></div>
+    <div class="ev-field"><span class="ev-key">nextPhase</span><span class="ev-val phase">2 (TRANSACTION)</span></div>
+    <div class="ev-field"><span class="ev-key">content</span><span class="ev-val">"Job #1003169918 accepted. Countdown from 20 — please make payment to receive the code."</span></div>
+  </div>
+  <div style="color:#888;font-size:.85rem;margin-top:8px;padding:8px;background:#111;border-radius:4px">
+    ⚠️ <strong style="color:#f0a500">Memo 处于 PENDING 状态</strong> — nextPhase=2 是提议，Job 仍在 NEGOTIATION。Client 必须 signMemo() 才会触发阶段转换。
+  </div>
+</div>
+
+<!-- TX3 -->
+<div class="tx-block">
+  <div class="tx-header">
+    <span class="tx-num">TX 3</span>
+    <strong style="color:#fff">Client 付款（原子捆绑）</strong>
+    <span class="tx-role">SDK: payAndAcceptRequirement()</span>
+    <span class="tx-hash">0x1dfc3e...7452</span>
+  </div>
+  <p style="color:#aaa;font-size:.85rem;margin-bottom:10px">单个 UserOperation 内原子执行 3 个合约调用，产生 4 个事件日志：</p>
+  <div class="tx-event">
+    <div class="ev-name">✅ Approval — USDC 合约</div>
+    <div class="ev-field"><span class="ev-key">owner</span><span class="ev-val addr">Client AA 钱包</span></div>
+    <div class="ev-field"><span class="ev-key">spender</span><span class="ev-val addr">ACP Router</span></div>
+    <div class="ev-field"><span class="ev-key">value</span><span class="ev-val num">10000 (= 0.01 USDC，6位小数)</span></div>
+  </div>
+  <div class="tx-event">
+    <div class="ev-name">✍️ MemoSigned — Memo Manager</div>
+    <div class="ev-field"><span class="ev-key">memoId</span><span class="ev-val num">1010750904</span></div>
+    <div class="ev-field"><span class="ev-key">approver</span><span class="ev-val addr">Client</span></div>
+    <div class="ev-field"><span class="ev-key">approved</span><span class="ev-val bool-t">true</span></div>
+  </div>
+  <div class="tx-event">
+    <div class="ev-name">🔄 JobPhaseUpdated — Job Manager</div>
+    <div class="ev-field"><span class="ev-key">jobId</span><span class="ev-val num">1003169918</span></div>
+    <div class="ev-field"><span class="ev-key">oldPhase</span><span class="ev-val">1 (NEGOTIATION)</span></div>
+    <div class="ev-field"><span class="ev-key">newPhase</span><span class="ev-val phase">2 (TRANSACTION)</span></div>
+  </div>
+  <div class="tx-event">
+    <div class="ev-name">📤 NewMemo — Memo Manager（付款通知）</div>
+    <div class="ev-field"><span class="ev-key">memoId</span><span class="ev-val num">1010750919</span></div>
+    <div class="ev-field"><span class="ev-key">nextPhase</span><span class="ev-val phase">3 (EVALUATION)</span></div>
+    <div class="ev-field"><span class="ev-key">content</span><span class="ev-val">"Payment made."</span></div>
+  </div>
+  <div class="tx-transition"><span class="from">NEGOTIATION (1)</span> <span>→</span> <span class="to">TRANSACTION (2)</span></div>
+</div>
+
+<!-- TX4 -->
+<div class="tx-block">
+  <div class="tx-header">
+    <span class="tx-num">TX 4</span>
+    <strong style="color:#fff">Provider 交付结果（自动审批）</strong>
+    <span class="tx-role">SDK: deliver()</span>
+    <span class="tx-hash">0x281003...8150</span>
+  </div>
+  <div class="tx-event">
+    <div class="ev-name">📦 NewMemo — Memo Manager（交付物）</div>
+    <div class="ev-field"><span class="ev-key">memoId</span><span class="ev-val num">1010750923</span></div>
+    <div class="ev-field"><span class="ev-key">memoType</span><span class="ev-val">1 (CONTEXT_URL)</span></div>
+    <div class="ev-field"><span class="ev-key">nextPhase</span><span class="ev-val phase">4 (COMPLETED)</span></div>
+    <div class="ev-field"><span class="ev-key">content</span><span class="ev-val">https://acpx.virtuals.io/api/memo-contents/428073</span></div>
+    <div class="ev-field"><span class="ev-key">requiresApproval</span><span class="ev-val bool-t">false ← 关键</span></div>
+  </div>
+  <div class="tx-event">
+    <div class="ev-name">🔄 JobPhaseUpdated: TRANSACTION → EVALUATION</div>
+  </div>
+  <div class="tx-event">
+    <div class="ev-name">✅ 自动审批：MemoSigned（approvedBy = Provider 本人）</div>
+    <div class="ev-field"><span class="ev-key">requiresApproval</span><span class="ev-val bool-t">false — 无需外部方签名</span></div>
+  </div>
+  <div class="tx-event">
+    <div class="ev-name">🔄 JobPhaseUpdated: EVALUATION → COMPLETED（原子完成）</div>
+  </div>
+  <div class="tx-transition"><span class="from">TRANSACTION (2)</span> <span>→</span> <span>EVALUATION (3)</span> <span>→</span> <span class="to">COMPLETED (4)</span> <span style="color:#888;font-size:.8rem">（同一 TX 内完成）</span></div>
+</div>
+
+<div class="box good">
+  <div class="box-title">✅ 链上验证结果</div>
+  <code>getJob(1003169918)</code> 返回：<br>
+  <code>phase: 4 (COMPLETED)</code> &nbsp;|&nbsp; <code>amountClaimed: 10000 (0.01 USDC)</code> &nbsp;|&nbsp; <code>memoCount: 4</code><br><br>
+  <code>getMemo(1010750923)</code> 返回：<br>
+  <code>requiresApproval: false</code> &nbsp;|&nbsp; <code>isApproved: true</code> &nbsp;|&nbsp; <code>approvedBy: Provider</code>
+</div>
+
+<!-- ── SDK METHOD MAP ── -->
+<h2 id="sdk-map">SDK 方法映射（TypeScript ACP）</h2>
+
+<div class="sdk-call">
+  <div class="sdk-call-header">
+    <span class="sdk-call-method">initiateJob()</span>
+    <span class="sdk-call-lang">TS</span>
+    <span class="sdk-call-ops">acpClient.ts L545–678 | TX1</span>
+  </div>
+  <div class="sdk-call-body">
+    <ul class="op-list">
+      <li><span class="op-num">1</span><span class="op-contract">ACP Router</span><span><span class="op-fn">createJob(provider, evaluator, token, budget, expiredAt, hook)</span><div class="op-result">→ 创建 Job，发出 JobCreated，phase: REQUEST→NEGOTIATION</div></span></li>
+      <li><span class="op-num">2</span><span class="op-contract">Memo Manager</span><span><span class="op-fn">createMemo(jobId, 0, nextPhase=1, content=JSON)</span><div class="op-result">→ 发出 NewMemo，触发 REQUEST→NEGOTIATION</div></span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="sdk-call">
+  <div class="sdk-call-header">
+    <span class="sdk-call-method">respond() → accept()</span>
+    <span class="sdk-call-lang">TS</span>
+    <span class="sdk-call-ops">acpJob.ts L484–503 | TX2</span>
+  </div>
+  <div class="sdk-call-body">
+    <ul class="op-list">
+      <li><span class="op-num">1</span><span class="op-contract">Memo Manager</span><span><span class="op-fn">createMemo(jobId, 0, nextPhase=2, content="accepted...")</span><div class="op-result">→ 发出 NewMemo。Memo 进入 PENDING，等待 Client signMemo</div></span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="sdk-call">
+  <div class="sdk-call-header">
+    <span class="sdk-call-method">payAndAcceptRequirement()</span>
+    <span class="sdk-call-lang">TS</span>
+    <span class="sdk-call-ops">acpJob.ts L335–482 | TX3 — 原子批处理</span>
+  </div>
+  <div class="sdk-call-body">
+    <ul class="op-list">
+      <li><span class="op-num">1</span><span class="op-contract">USDC 合约</span><span><span class="op-fn">approve(acpRouter, 0.01 USDC)</span><div class="op-result">→ Approval 事件</div></span></li>
+      <li><span class="op-num">2</span><span class="op-contract">Memo Manager</span><span><span class="op-fn">signMemo(memoId=1010750904, approved=true)</span><div class="op-result">→ MemoSigned → JobPhaseUpdated(1→2)</div></span></li>
+      <li><span class="op-num">3</span><span class="op-contract">Memo Manager</span><span><span class="op-fn">createMemo(jobId, 0, nextPhase=3, "Payment made.")</span><div class="op-result">→ NewMemo</div></span></li>
+    </ul>
+    <div style="margin-top:10px;padding:8px;background:#0f1117;border-radius:4px;font-size:.83rem;color:#aaa">
+      通过 ERC-4337 <strong style="color:#f0a500">UserOperation 批处理</strong>打包为单个原子交易。全部成功或全部回滚。
+    </div>
+  </div>
+</div>
+
+<div class="sdk-call">
+  <div class="sdk-call-header">
+    <span class="sdk-call-method">deliver()</span>
+    <span class="sdk-call-lang">TS</span>
+    <span class="sdk-call-ops">acpJob.ts L584–607 | TX4</span>
+  </div>
+  <div class="sdk-call-body">
+    <ul class="op-list">
+      <li><span class="op-num">1</span><span class="op-contract">Virtuals API</span><span><span class="op-fn">POST /api/memo-contents (上传交付物)</span><div class="op-result">→ 返回 URL (链下存储)</div></span></li>
+      <li><span class="op-num">2</span><span class="op-contract">Memo Manager</span><span><span class="op-fn">signMemo(memoId=1010750919, approved=true)</span><div class="op-result">→ MemoSigned → TRANSACTION→EVALUATION</div></span></li>
+      <li><span class="op-num">3</span><span class="op-contract">Memo Manager</span><span><span class="op-fn">createMemo(jobId, 1, nextPhase=4, url, requiresApproval=false)</span><div class="op-result">→ 自动审批 → EVALUATION→COMPLETED → Provider 收款</div></span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- APEX IMPLEMENTATION -->
+<!-- ══════════════════════════════════════════════════════ -->
+
+<h2 id="apex-arch">APEX (BNB) — 架构概览</h2>
+<p class="section-intro">BNB Chain 的 APEX（Agent Payment Exchange Protocol）是首个严格遵循 ERC-8183 标准的 SDK 实现（Python，v0.1.0），部署于 BSC 链，引入 UMA 乐观预言机作为评估机制。</p>
+
+<table>
+  <tr><th>模块</th><th>说明</th></tr>
+  <tr><td><code>apex/client.py</code></td><td>APEXClient：核心 Job 操作（createJobAndLock, fund, submit, settle）</td></tr>
+  <tr><td><code>erc8004/agent.py</code></td><td>Agent 注册（register_agent, get_agent_info）</td></tr>
+  <tr><td><code>apex/evaluator_client.py</code></td><td>UMA OOv3 乐观验证，deposit_bond, settle</td></tr>
+  <tr><td><code>apex/negotiation.py</code></td><td>NegotiationHandler：点对点 HTTP 协商 + 链上哈希锚定</td></tr>
+  <tr><td><code>apex/server/job_ops.py</code></td><td>JobOps：Multicall3 批量查询 + 链上事件轮询</td></tr>
+  <tr><td><code>storage/ipfs_provider.py</code></td><td>IPFS 存储提供者（Pinata/Infura/Web3.Storage）</td></tr>
+</table>
+
+<h2 id="apex-sdk">APEX Python SDK 调用流程</h2>
+
+<div class="sdk-call">
+  <div class="sdk-call-header">
+    <span class="sdk-call-method">register_agent()</span>
+    <span class="sdk-call-lang">Python</span>
+    <span class="sdk-call-ops">erc8004/agent.py L394–463</span>
+  </div>
+  <div class="sdk-call-body">
+<pre style="background:transparent;padding:0;font-size:.85rem;color:#d4d4d4">
+<span class="kw">from</span> <span class="ty">bnbagent</span> <span class="kw">import</span> <span class="ty">BNBAgent</span>
+
+agent = <span class="fn">BNBAgent</span>(config)
+
+<span class="cm"># 1. 向 ERC-8004 合约写入 Agent URI（完全链上）</span>
+agent_id = <span class="kw">await</span> agent.erc8004.<span class="fn">register_agent</span>(
+    uri=<span class="st">"ipfs://Qm..."</span>,          <span class="cm"># 包含能力描述、端点、定价</span>
+    name=<span class="st">"MyAgent"</span>,
+    description=<span class="st">"..."</span>
+)
+<span class="cm"># → 链上 tx: ERC-8004.mint(uri) → agentId</span>
+<span class="cm"># → 全链同地址（CREATE2 部署）</span>
+</pre>
+  </div>
+</div>
+
+<div class="sdk-call">
+  <div class="sdk-call-header">
+    <span class="sdk-call-method">createJobAndLock() + fund_job()</span>
+    <span class="sdk-call-lang">Python</span>
+    <span class="sdk-call-ops">apex/client.py</span>
+  </div>
+  <div class="sdk-call-body">
+<pre style="background:transparent;padding:0;font-size:.85rem;color:#d4d4d4">
+<span class="cm"># 2. Client 创建 Job，锁定协商哈希</span>
+job_id = <span class="kw">await</span> client.<span class="fn">createJobAndLock</span>(
+    provider=<span class="st">"0x..."</span>,
+    evaluator=<span class="st">"0x..."</span>,          <span class="cm"># UMA OOv3 Hook</span>
+    token=USDC_ADDRESS,
+    budget=<span class="nu">100_000</span>,               <span class="cm"># 6位小数 = 0.1 USDC</span>
+    expired_at=<span class="fn">int</span>(time.time()) + <span class="nu">86400</span>,
+    hook=UMA_HOOK_ADDRESS,
+    request_hash=negotiation.request_hash,   <span class="cm"># keccak256 协商内容</span>
+    response_hash=negotiation.response_hash  <span class="cm"># 锚定链上，防篡改</span>
+)
+
+<span class="cm"># 3. 注资（approve + transferFrom → Escrow）</span>
+<span class="kw">await</span> client.<span class="fn">approve_token</span>(erc8183_address, budget)
+<span class="kw">await</span> client.<span class="fn">fund_job</span>(job_id)
+<span class="cm"># → state: OPEN → FUNDED</span>
+</pre>
+  </div>
+</div>
+
+<div class="sdk-call">
+  <div class="sdk-call-header">
+    <span class="sdk-call-method">submit() + settle()</span>
+    <span class="sdk-call-lang">Python</span>
+    <span class="sdk-call-ops">apex/client.py</span>
+  </div>
+  <div class="sdk-call-body">
+<pre style="background:transparent;padding:0;font-size:.85rem;color:#d4d4d4">
+<span class="cm"># 4. Provider 提交结果（先上传 IPFS，链上存哈希）</span>
+ipfs_cid = <span class="kw">await</span> storage.<span class="fn">upload</span>(deliverable_bytes)
+deliverable_hash = <span class="fn">keccak256</span>(deliverable_bytes)
+
+<span class="cm"># 5. 验证 Job 状态（5项检查）</span>
+<span class="kw">await</span> client.<span class="fn">verify_job</span>(job_id)
+<span class="cm"># 检查: 存在性 / FUNDED / provider匹配 / 未过期 / evaluator≠client</span>
+
+<span class="kw">await</span> client.<span class="fn">submit</span>(job_id, deliverable_hash)
+<span class="cm"># → state: FUNDED → SUBMITTED</span>
+<span class="cm"># → UMA Hook: 自动发起 assertion，进入 liveness 期</span>
+
+<span class="cm"># 6. liveness 期结束无争议 → 任何人可调用 settle</span>
+<span class="kw">await</span> evaluator_client.<span class="fn">settleJob</span>(job_id)
+<span class="cm"># → state: SUBMITTED → COMPLETED</span>
+<span class="cm"># → Escrow 自动释放给 Provider</span>
+</pre>
+  </div>
+</div>
+
+<!-- ── UMA ── -->
+<h2 id="uma">UMA 乐观预言机争议机制</h2>
+
+<p>APEX 通过 Hook 接口挂接 UMA OOv3（Optimistic Oracle v3）实现去中心化争议解决：</p>
+
+<div class="flow-wrap">
+<svg width="740" height="200" viewBox="0 0 740 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Step boxes -->
+  <rect x="10" y="70" width="120" height="60" rx="6" fill="#1a3a6e"/>
+  <text x="70" y="96" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Provider</text>
+  <text x="70" y="114" text-anchor="middle" fill="#aac4ff" font-size="11">submit()</text>
+
+  <line x1="130" y1="100" x2="178" y2="100" stroke="#f0a500" stroke-width="2" marker-end="url(#arr3)"/>
+  <text x="154" y="92" text-anchor="middle" fill="#f0a500" font-size="9">自动 assertion</text>
+
+  <rect x="180" y="60" width="130" height="80" rx="6" fill="#2b4a00"/>
+  <text x="245" y="88" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">UMA Assertion</text>
+  <text x="245" y="106" text-anchor="middle" fill="#8aff8a" font-size="11">Liveness 期</text>
+  <text x="245" y="122" text-anchor="middle" fill="#888" font-size="10">30min - 72h</text>
+
+  <!-- no dispute path -->
+  <line x1="310" y1="85" x2="380" y2="60" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arr3)"/>
+  <text x="348" y="58" text-anchor="middle" fill="#27ae60" font-size="9">无争议</text>
+  <rect x="382" y="40" width="120" height="50" rx="6" fill="#1e5c3d"/>
+  <text x="442" y="62" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">自动结算</text>
+  <text x="442" y="80" text-anchor="middle" fill="#8affc0" font-size="10">COMPLETED</text>
+
+  <!-- dispute path -->
+  <line x1="310" y1="115" x2="380" y2="140" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arr3)"/>
+  <text x="348" y="155" text-anchor="middle" fill="#c0392b" font-size="9">有人 dispute()</text>
+  <rect x="382" y="120" width="120" height="50" rx="6" fill="#5c1e00"/>
+  <text x="442" y="142" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">DVM 投票</text>
+  <text x="442" y="160" text-anchor="middle" fill="#ffa0a0" font-size="10">48-96h</text>
+
+  <!-- DVM result -->
+  <line x1="502" y1="145" x2="570" y2="100" stroke="#888" stroke-width="1.5" marker-end="url(#arr3)"/>
+  <rect x="572" y="70" width="130" height="60" rx="6" fill="#2b2b2b"/>
+  <text x="637" y="96" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">裁判执行</text>
+  <text x="637" y="114" text-anchor="middle" fill="#ccc" font-size="10">全额付款 / 退款 / 按比例</text>
+
+  <defs>
+    <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
+    </marker>
+  </defs>
+</svg>
+</div>
+
+<table>
+  <tr><th>阶段</th><th>时长</th><th>说明</th></tr>
+  <tr><td>submit() → Assertion</td><td>即时</td><td>Provider 提交结果，UMA Hook 自动发起 assertion，质押保证金</td></tr>
+  <tr><td>Liveness 期</td><td>默认 30min</td><td>任何人可调用 dispute() 质疑，需缴纳挑战保证金</td></tr>
+  <tr><td>无争议 → Settle</td><td>Liveness 结束</td><td>任何人可调用 settleJob()，合约自动完成，Provider 收款</td></tr>
+  <tr><td>有争议 → DVM</td><td>48–96h</td><td>UMA DVM 社区投票裁决，败诉方损失保证金</td></tr>
+</table>
+
+<div class="box warn">
+  <div class="box-title">⚠️ 竞争条件风险</div>
+  Job 超时（expiredAt）与 DVM 争议解决存在时间窗口冲突：Job 默认超时 72.5 小时，但 DVM 解决可能需要 48–96 小时。若争议在超时前未解决，可能导致 Job 过期。实际部署时需将 expiredAt 设置为充分大于争议解决时间。
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- COMPARE -->
+<!-- ══════════════════════════════════════════════════════ -->
+
+<h2 id="compare">ACP vs APEX 全维度对比</h2>
+
+<table class="cmp-table">
+  <tr><th>维度</th><th>ACP (Virtuals) Base</th><th>APEX (BNB) BSC</th></tr>
+  <tr>
+    <td><strong>去中心化综合评分</strong></td>
+    <td><span class="cmp-score lo">~3.5 / 10</span></td>
+    <td><span class="cmp-score hi">~8.0 / 10</span></td>
+  </tr>
+  <tr>
+    <td>Agent 发现</td>
+    <td>❌ 私有 API（acpx.virtuals.io）<br><span class="tag red">2/10</span></td>
+    <td>✅ ERC-8004 链上注册<br><span class="tag green">7/10</span></td>
+  </tr>
+  <tr>
+    <td>事件通知</td>
+    <td>❌ Virtuals WebSocket<br><span class="tag red">1/10</span></td>
+    <td>✅ 链上事件轮询 + Multicall3<br><span class="tag green">8/10</span></td>
+  </tr>
+  <tr>
+    <td>内容存储</td>
+    <td>❌ Virtuals API 存 URL<br><span class="tag orange">3/10</span></td>
+    <td>✅ IPFS + 链上 keccak256 哈希<br><span class="tag green">8/10</span></td>
+  </tr>
+  <tr>
+    <td>RPC 节点</td>
+    <td>❌ Alchemy 代理（alchemy-proxy.virtuals.io）<br><span class="tag orange">3/10</span></td>
+    <td>✅ 公共 BSC RPC（可环境变量覆盖）<br><span class="tag green">9/10</span></td>
+  </tr>
+  <tr>
+    <td>支付托管</td>
+    <td>✅ 链上 Escrow<br><span class="tag green">8/10</span></td>
+    <td>✅ 链上 Escrow<br><span class="tag green">8/10</span></td>
+  </tr>
+  <tr>
+    <td>评估与争议</td>
+    <td>❌ 默认自动通过 / 买方自评估<br><span class="tag orange">4/10</span></td>
+    <td>✅ UMA OOv3 乐观验证 + DVM 投票<br><span class="tag green">9/10</span></td>
+  </tr>
+  <tr>
+    <td>协商机制</td>
+    <td>链上 Memo（内容经 Virtuals 后端）<br><span class="tag orange">5/10</span></td>
+    <td>点对点 HTTP + 链上哈希锚定<br><span class="tag blue">6/10</span></td>
+  </tr>
+  <tr>
+    <td>ERC-8183 合规性</td>
+    <td>私有扩展（7阶段 vs 标准6状态）<br><span class="tag orange">5/10</span></td>
+    <td>严格遵循标准 APEXStatus = ERC-8183<br><span class="tag green">9/10</span></td>
+  </tr>
+  <tr>
+    <td>账户模型</td>
+    <td>Alchemy AA（强绑定 ERC-4337）</td>
+    <td>可插拔 WalletProvider（EOA 或 MPC）</td>
+  </tr>
+  <tr>
+    <td>跨链支持</td>
+    <td>✅ LayerZero（已实现）</td>
+    <td>❌ 仅 BSC（规划中）</td>
+  </tr>
+  <tr>
+    <td>成熟度</td>
+    <td>v1+v2 已上线主网，产品更完善</td>
+    <td>v0.1.0 早期，SDK 架构更清晰</td>
+  </tr>
+  <tr>
+    <td>合约治理</td>
+    <td>不透明</td>
+    <td>⚠️ UUPS Proxy，owner 单方面可升级（无多签）</td>
+  </tr>
+</table>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- ERC-8004 -->
+<!-- ══════════════════════════════════════════════════════ -->
+
+<h2 id="erc8004">ERC-8004 集成：链上 Agent 身份</h2>
+
+<p>ERC-8004 是 ERC-8183 的配套标准，提供三个专职注册表，让 Agent 具备可验证的链上身份和声誉：</p>
+
+<table>
+  <tr><th>注册表</th><th>存储内容</th><th>核心特性</th></tr>
+  <tr>
+    <td><strong>Identity Registry</strong></td>
+    <td>Agent ID、运营者地址、支持任务类型、端点 URI</td>
+    <td>CREATE2 部署：40+ EVM 链合约地址为 <code>0x8004...</code>，全链一致</td>
+  </tr>
+  <tr>
+    <td><strong>Reputation Registry</strong></td>
+    <td>任务完成数、平均评分、争议率</td>
+    <td>仅可上加（append-only），防篡改，不可删除历史记录</td>
+  </tr>
+  <tr>
+    <td><strong>Validation Registry</strong></td>
+    <td>第三方 Evaluator 发出的验证证明</td>
+    <td>高价值任务的权重信号，可作为 Job 匹配优先级依据</td>
+  </tr>
+</table>
+
+<div class="box info">
+  <div class="box-title">📡 两条 Agent 查询路径</div>
+  <strong>路径 A（完全链上）：</strong> 已知 agentId 时，直接向合约发 3 次 eth_call：<code>getAgentWallet(id)</code>、<code>ownerOf(id)</code>、<code>tokenURI(id)</code>。零中心化依赖。<br><br>
+  <strong>路径 B（索引器辅助）：</strong> 批量浏览时调用 <code>https://www.8004scan.io/api/v1/agents</code>。索引器无法伪造数据（可对照链上验证），但可能遗漏数据或下线。<code>SCAN_API_URL</code> 目前硬编码，无环境变量覆盖。
+</div>
+
+<!-- ── SECURITY ── -->
+<h2 id="security">安全模式与风险</h2>
+
+<h3>APEX 五项 Job 提交前验证</h3>
+<table>
+  <tr><th>#</th><th>检查项</th><th>目的</th></tr>
+  <tr><td>1</td><td>Job 存在性</td><td>防止操作无效 Job</td></tr>
+  <tr><td>2</td><td>状态为 FUNDED</td><td>防止重复提交或在错误状态操作</td></tr>
+  <tr><td>3</td><td>当前 Agent 是 Provider</td><td>防止非 Provider 提交结果</td></tr>
+  <tr><td>4</td><td>Job 未过期</td><td>防止在超时后提交（资金已可退款）</td></tr>
+  <tr><td>5</td><td>evaluator ≠ client</td><td>⚠️ 警告：自评估风险（买方既是裁判）</td></tr>
+</table>
+
+<h3>APEX SSRF 防护</h3>
+<p>解析 Agent URI 时实施 5 层防御（<code>erc8004/agent.py L596–672</code>）：</p>
+<ul>
+  <li>阻断云元数据域名（如 169.254.169.254）</li>
+  <li>DNS 超时限制</li>
+  <li>IP 地址验证（私有 / 回环 / 链路本地 / 保留地址全部拦截）</li>
+  <li>DNS rebinding 防护</li>
+  <li>禁止重定向跟随</li>
+</ul>
+
+<h3>ACP 主要安全风险</h3>
+<table>
+  <tr><th>风险</th><th>说明</th><th>APEX 中存在？</th></tr>
+  <tr><td>默认自动通过</td><td><code>defaultOnEvaluate</code> 自动 <code>evaluate(true)</code>，无质量保证</td><td>❌ 不存在</td></tr>
+  <tr><td>中心化后端依赖</td><td>Virtuals 后端宕机 = 平台失效</td><td>❌ 不存在</td></tr>
+  <tr><td>内容死链</td><td>交付物 URL 指向 Virtuals 服务器，后端下线则永久丢失</td><td>❌ IPFS+哈希解决</td></tr>
+  <tr><td>X402 nonce 中心化</td><td>nonce 状态由 Virtuals 后端维护，可拒绝或重放</td><td>❌ 不存在</td></tr>
+  <tr><td>合约升级风险（APEX）</td><td>UUPS Proxy，owner 单方面可升级，无 DAO 无多签</td><td>⚠️ 存在</td></tr>
+</table>
+
+<div class="box note">
+  <div class="box-title">🏁 结语</div>
+  ERC-8183 定义了 AI Agent 商业交易的<strong>最小可信基础层</strong>：一个 Job 原语、六个状态、一个 Evaluator 裁决机制。两个主要实现走向了不同方向——ACP 优先开发者体验和产品完善度，APEX 优先标准合规和去中心化架构。理解两者的架构权衡，是构建下一代 Agent 经济基础设施的起点。
+</div>
+
+</main>
+
+<script>
+// Progress bar
+window.addEventListener('scroll', function() {
+  var h = document.documentElement;
+  var pct = (h.scrollTop || document.body.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  document.getElementById('progressbar').style.width = pct + '%';
+});
+
+// Active sidebar link
+var links = document.querySelectorAll('#sidebar a[href^="#"]');
+var sections = [];
+links.forEach(function(l) {
+  var id = l.getAttribute('href').slice(1);
+  var el = document.getElementById(id);
+  if (el) sections.push({ link: l, el: el });
+});
+
+window.addEventListener('scroll', function() {
+  var scrollY = window.pageYOffset + 80;
+  var cur = null;
+  sections.forEach(function(s) {
+    if (s.el.offsetTop <= scrollY) cur = s;
+  });
+  links.forEach(function(l) { l.classList.remove('active'); });
+  if (cur) cur.link.classList.add('active');
+});
+</script>
+</body>
+</html>

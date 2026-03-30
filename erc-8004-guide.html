@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERC-8004 | 去中心化 AI Agent 身份与信任协议</title>
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px;
+  line-height: 1.85;
+  color: #222;
+  background: #fff;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+#sidebar {
+  width: 256px;
+  min-width: 256px;
+  background: #2b2b2b;
+  color: #ccc;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+#sidebar-logo {
+  background: #1a1a1a;
+  padding: 18px 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  color: #f0a500;
+  letter-spacing: .03em;
+  border-bottom: 1px solid #444;
+}
+#sidebar-logo span { color: #aaa; font-size: 13px; display: block; margin-top: 4px; }
+.sidebar-section { padding: 10px 0 4px; }
+.sidebar-section-label {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #888;
+  padding: 8px 20px 4px;
+}
+.sidebar-section a {
+  display: block;
+  padding: 6px 20px 6px 28px;
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  color: #bbb;
+  text-decoration: none;
+  transition: color .15s, background .15s;
+}
+.sidebar-section a:hover { color: #f0a500; background: rgba(240,165,0,.07); }
+.sidebar-section a.active { color: #f0a500; }
+.sidebar-section a.indent1 { padding-left: 36px; font-size: 14px; color: #aaa; }
+.sidebar-section a.indent1:hover { color: #f0a500; }
+.sidebar-section a.indent2 { padding-left: 46px; font-size: 13px; color: #999; }
+hr.sidebar-hr { border: none; border-top: 1px solid #3a3a3a; margin: 6px 0; }
+
+/* ── Main Content ── */
+#main {
+  flex: 1;
+  max-width: 900px;
+  padding: 0 64px 80px 64px;
+  min-width: 0;
+  background: #fff;
+}
+
+/* ── Breadcrumb ── */
+#breadcrumb {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #64748b;
+  padding: 18px 0 0;
+  margin-bottom: 24px;
+}
+#breadcrumb a { color: #2a6db5; text-decoration: none; }
+#breadcrumb a:hover { text-decoration: underline; }
+
+/* ── Page Title ── */
+h1.page-title {
+  font-family: Georgia, serif;
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #111;
+  margin-bottom: 8px;
+  line-height: 1.15;
+}
+.page-subtitle { font-size: 1.25rem; color: #555; margin-bottom: 12px; font-style: italic; }
+.page-meta { font-family: 'Courier New', monospace; font-size: 14px; color: #888; margin-bottom: 32px; }
+.page-meta a { color: #2a6db5; text-decoration: none; }
+
+/* ── Headings ── */
+h2 {
+  font-family: Georgia, serif;
+  font-size: 2.1rem;
+  color: #111;
+  margin: 3rem 0 .5rem;
+  border-bottom: 2px solid #111;
+  padding-bottom: 8px;
+}
+h3 {
+  font-family: 'Courier New', monospace;
+  font-size: 1.25rem;
+  color: #2a6db5;
+  margin: 2.2rem 0 .6rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+h3 .anchor { color: #aaa; font-size: .85rem; margin-left: 6px; text-decoration: none; }
+h4 { font-family: Georgia, serif; font-size: 1.15rem; color: #333; font-weight: bold; margin: 1.6rem 0 .4rem; }
+.back-top { font-family: 'Courier New', monospace; font-size: .82rem; color: #aaa; float: right; text-decoration: none; margin-top: .7rem; }
+.back-top:hover { color: #2a6db5; }
+.field-meta { font-family: 'Courier New', monospace; font-size: 15px; color: #666; line-height: 2; margin-bottom: .7rem; }
+
+/* ── Body Text ── */
+p { margin-bottom: 1.1rem; color: #333; }
+strong { color: #111; }
+a { color: #2a6db5; text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { padding-left: 1.8rem; margin-bottom: 1.1rem; color: #333; }
+li { margin-bottom: .35rem; }
+code {
+  font-family: 'Courier New', monospace;
+  font-size: .88em;
+  background: #1a1a1a;
+  color: #e8e8e8;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+/* ── Diagrams ── */
+.diagram {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin: 2rem 0;
+  background: #f8faff;
+  text-align: center;
+}
+.diagram svg { max-width: 100%; display: block; margin: 0 auto; }
+.diagram figcaption { font-family: 'Courier New', monospace; font-size: 14px; color: #999; margin-top: 12px; }
+
+/* ── Callout Boxes ── */
+.box { border-left: 4px solid #ccc; padding: 14px 18px; margin: 1.4rem 0; font-size: 1rem; border-radius: 0 6px 6px 0; }
+.box-label { font-weight: bold; font-family: 'Courier New', monospace; font-size: .88rem; margin-bottom: 5px; display: block; }
+.box.note    { border-color: #f0a500; background: #fffbea; }
+.box.note    .box-label { color: #c47f00; }
+.box.tip     { border-color: #3aaa5c; background: #f0fff4; }
+.box.tip     .box-label { color: #2d8049; }
+.box.caution { border-color: #d9534f; background: #fff5f5; }
+.box.caution .box-label { color: #b52b27; }
+.box.quote   { border-color: #2a6db5; background: #f0f6ff; }
+.box.quote   .box-label { color: #1a4e8f; }
+.box p { margin: 0; color: inherit; }
+
+/* ── Tables ── */
+.ref-table-wrap { overflow-x: auto; margin: 1.6rem 0 2rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+.ref-table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+.ref-table th {
+  background: #2b2b2b;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-family: 'Courier New', monospace;
+  font-size: .9rem;
+  font-weight: normal;
+}
+.ref-table td { padding: 11px 16px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-table tr:hover td { background: #fafafa; }
+.ref-table td.fn a { font-family: 'Courier New', monospace; font-size: .95rem; color: #2a6db5; white-space: nowrap; }
+.ref-table td.fn { font-family: 'Courier New', monospace; font-size: .95rem; white-space: nowrap; }
+.ref-table td.ex code { font-size: .88rem; }
+.ref-table td.sz { font-family: 'Courier New', monospace; font-size: .9rem; color: #555; white-space: nowrap; }
+.ref-table td.fmt a { font-family: 'Courier New', monospace; font-size: .9rem; color: #2a6db5; }
+.ref-table td.desc { color: #444; line-height: 1.7; }
+.ref-table tr.seg td { background: #f0f6ff; }
+
+/* ── TOC ── */
+.toc { border: 1px solid #ddd; background: #fafafa; padding: 18px 24px; margin: 1.8rem 0; display: inline-block; min-width: 280px; max-width: 520px; border-radius: 4px; }
+.toc-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; color: #111; }
+.toc ul { margin: 0; padding-left: 1.4rem; font-size: 1rem; }
+.toc li { margin-bottom: 3px; }
+
+/* ── Interactive Tool ── */
+.tool-box { border: 1px solid #ccc; border-radius: 4px; margin: 2rem 0; overflow: hidden; }
+.tool-header { background: #2b2b2b; color: #fff; padding: 14px 20px; font-family: 'Courier New', monospace; font-size: 1rem; }
+.tool-sub { font-size: .88rem; color: #aaa; display: block; margin-top: 4px; font-family: Georgia, serif; }
+.tool-body { padding: 20px; background: #f9f9f9; }
+.tool-body label { font-family: 'Courier New', monospace; font-size: .9rem; color: #555; display: block; margin-bottom: 6px; }
+.tool-input {
+  width: 100%; font-family: 'Courier New', monospace; font-size: .95rem;
+  padding: 10px 14px; border: 1px solid #ccc; border-radius: 3px;
+  background: #fff; color: #111; margin-bottom: 14px;
+}
+.tool-input:focus { outline: none; border-color: #2a6db5; }
+.tool-btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.tool-btn { font-family: 'Courier New', monospace; font-size: .9rem; padding: 8px 18px; background: #2b2b2b; color: #fff; border: none; border-radius: 3px; cursor: pointer; transition: background .15s; }
+.tool-btn:hover { background: #f0a500; color: #111; }
+.tool-btn.sec { background: #e8e8e8; color: #333; }
+.tool-btn.sec:hover { background: #d0d0d0; }
+.tool-output {
+  font-family: 'Courier New', monospace; font-size: .9rem;
+  background: #1a1a1a; color: #e8e8e8;
+  padding: 16px; border-radius: 3px; min-height: 56px;
+  white-space: pre-wrap; display: none; line-height: 1.85;
+}
+.tool-output.show { display: block; }
+.o-f { color: #f0a500; }
+.o-v { color: #a8d8a8; }
+.o-d { color: #7eb8d4; }
+.o-e { color: #ff6b6b; }
+
+/* ── Code blocks ── */
+.code-block {
+  background: #1a1a1a; color: #e8e8e8;
+  padding: 20px; border-radius: 4px;
+  font-family: 'Courier New', monospace; font-size: .92rem;
+  overflow-x: auto; line-height: 1.85; margin: 1.4rem 0;
+}
+.c-cm { color: #7ec8e3; }
+.c-kw { color: #cce5ff; }
+.c-st { color: #a8d8a8; }
+.c-nu { color: #f0a500; }
+.c-tp { color: #ffd700; }
+
+/* ── Quiz ── */
+.quiz-q { margin-bottom: 1.8rem; padding-bottom: 1.8rem; border-bottom: 1px solid #eee; }
+.quiz-q:last-of-type { border-bottom: none; }
+.quiz-q p { font-weight: bold; margin-bottom: .8rem; color: #111; }
+.quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt { font-family: Georgia, serif; font-size: 1rem; padding: 10px 16px; border: 1px solid #ccc; background: #fff; border-radius: 3px; cursor: pointer; text-align: left; transition: background .12s, border-color .12s; color: #333; }
+.quiz-opt:hover { border-color: #2a6db5; background: #f0f6ff; }
+.quiz-opt.correct { border-color: #3aaa5c; background: #f0fff4; color: #1a5e30; }
+.quiz-opt.wrong   { border-color: #d9534f; background: #fff5f5; color: #8b1e1e; }
+.quiz-fb { font-size: .95rem; margin-top: 8px; padding: 8px 14px; border-radius: 3px; display: none; }
+.quiz-fb.show { display: block; }
+.quiz-fb.ok  { background: #f0fff4; color: #1a5e30; border: 1px solid #3aaa5c; }
+.quiz-fb.bad { background: #fff5f5; color: #8b1e1e; border: 1px solid #d9534f; }
+#quiz-result { text-align: center; padding: 28px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; margin-top: 1.4rem; display: none; }
+#quiz-result .score { font-size: 2.8rem; font-weight: bold; color: #2b2b2b; font-family: 'Courier New', monospace; }
+
+/* ── Summary table ── */
+.sum-table { width: 100%; border-collapse: collapse; font-size: 1rem; margin: 1.4rem 0; }
+.sum-table th { background: #f0a500; color: #111; padding: 12px 16px; text-align: left; font-family: 'Courier New', monospace; font-size: .9rem; }
+.sum-table td { padding: 11px 16px; border-bottom: 1px solid #e8e8e8; color: #333; }
+.sum-table tr:last-child td { border-bottom: none; }
+.sum-table tr:hover td { background: #fffbea; }
+
+/* ── Misc ── */
+hr { border: none; border-top: 1px solid #e0e0e0; margin: 3rem 0; }
+footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid #ddd; font-family: 'Courier New', monospace; font-size: .88rem; color: #999; }
+#progressbar { position: fixed; top: 0; left: 0; height: 3px; background: #f0a500; width: 0; z-index: 999; transition: width .1s; }
+
+@media (max-width: 768px) {
+  #sidebar { display: none; }
+  #main { padding: 0 20px 60px; }
+}
+</style>
+</head>
+<body>
+<div id="progressbar"></div>
+
+<!-- ── SIDEBAR ── -->
+<nav id="sidebar">
+  <div id="sidebar-logo">ERC-8004 <span>Trustless Agents · Draft 2025</span></div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Overview</div>
+    <a href="#intro">Introduction</a>
+    <a href="#structure">Structure</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Identity Registry</div>
+    <a href="#identity">Identity Registry</a>
+    <a href="#agent-id" class="indent1">Agent ID</a>
+    <a href="#agent-uri" class="indent1">AgentURI</a>
+    <a href="#reg-file" class="indent1">Registration File</a>
+    <a href="#identity-fns" class="indent1">Functions</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Reputation Registry</div>
+    <a href="#reputation">Reputation Registry</a>
+    <a href="#feedback-struct" class="indent1">Feedback</a>
+    <a href="#give-feedback" class="indent1">giveFeedback()</a>
+    <a href="#get-summary" class="indent1">getSummary()</a>
+    <a href="#revoke" class="indent1">revokeFeedback()</a>
+    <a href="#response" class="indent1">appendResponse()</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Validation Registry</div>
+    <a href="#validation">Validation Registry</a>
+    <a href="#validator-types" class="indent1">Validator Types</a>
+    <a href="#validation-fns" class="indent1">Functions</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Concepts</div>
+    <a href="#trust-models">Trust Models</a>
+    <a href="#multichain">Multi-Chain</a>
+    <a href="#uups">UUPS Upgrades</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Reference</div>
+    <a href="#examples">Examples</a>
+    <a href="#security">Security</a>
+    <a href="#quiz">Quiz</a>
+    <a href="#summary-ref">Summary</a>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main id="main">
+
+<div id="breadcrumb">
+  <a href="#">Technical</a> › <strong>ERC-8004</strong>
+</div>
+
+<h1 class="page-title" id="top">ERC-8004</h1>
+<div class="page-subtitle">Trustless AI Agent 的身份、声誉与验证协议</div>
+<div class="page-meta">
+  整理自官方规范 · 更新于 2025 ·
+  <a href="https://eips.ethereum.org/EIPS/eip-8004">原始 EIP ↗</a> ·
+  <a href="https://github.com/erc-8004/erc-8004-contracts">GitHub ↗</a>
+</div>
+
+<!-- Opening diagram -->
+<div class="diagram">
+<svg viewBox="0 0 560 155" xmlns="http://www.w3.org/2000/svg" style="max-height:155px">
+  <defs><marker id="a" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#555"/></marker></defs>
+  <!-- Agent A -->
+  <rect x="10" y="48" width="88" height="58" rx="3" fill="none" stroke="#333" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="54" y="72" text-anchor="middle" font-family="Georgia" font-size="12" fill="#333">Agent A</text>
+  <text x="54" y="88" text-anchor="middle" font-family="Courier New" font-size="9" fill="#888">org-x.com · ID:42</text>
+  <!-- Arrow discover -->
+  <line x1="100" y1="77" x2="156" y2="77" stroke="#555" stroke-width="1" marker-end="url(#a)"/>
+  <text x="128" y="70" text-anchor="middle" font-family="Courier New" font-size="8" fill="#f0a500">discover</text>
+  <!-- Registries box -->
+  <rect x="158" y="18" width="244" height="118" rx="3" fill="#fafafa" stroke="#333" stroke-width="1.5"/>
+  <text x="280" y="38" text-anchor="middle" font-family="Courier New" font-size="11" fill="#222" font-weight="bold">ERC-8004 Registries</text>
+  <rect x="170" y="46" width="64" height="32" rx="2" fill="#f0a500"/>
+  <text x="202" y="61" text-anchor="middle" font-family="Courier New" font-size="9" fill="#fff">Identity</text>
+  <text x="202" y="72" text-anchor="middle" font-family="Courier New" font-size="8" fill="#333">ERC-721</text>
+  <rect x="248" y="46" width="64" height="32" rx="2" fill="#f0a500"/>
+  <text x="280" y="61" text-anchor="middle" font-family="Courier New" font-size="9" fill="#fff">Reputation</text>
+  <text x="280" y="72" text-anchor="middle" font-family="Courier New" font-size="8" fill="#333">Feedback</text>
+  <rect x="326" y="46" width="64" height="32" rx="2" fill="#f0a500"/>
+  <text x="358" y="61" text-anchor="middle" font-family="Courier New" font-size="9" fill="#fff">Validation</text>
+  <text x="358" y="72" text-anchor="middle" font-family="Courier New" font-size="8" fill="#333">ZK / TEE</text>
+  <text x="280" y="116" text-anchor="middle" font-family="Courier New" font-size="9" fill="#888">40+ chains · deterministic 0x8004... address</text>
+  <!-- Arrow trust -->
+  <line x1="404" y1="77" x2="458" y2="77" stroke="#555" stroke-width="1" marker-end="url(#a)"/>
+  <text x="431" y="70" text-anchor="middle" font-family="Courier New" font-size="8" fill="#f0a500">trust</text>
+  <!-- Agent B -->
+  <rect x="460" y="48" width="88" height="58" rx="3" fill="none" stroke="#333" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="504" y="72" text-anchor="middle" font-family="Georgia" font-size="12" fill="#333">Agent B</text>
+  <text x="504" y="88" text-anchor="middle" font-family="Courier New" font-size="9" fill="#888">org-y.com · ID:87</text>
+</svg>
+<figcaption>图1 — ERC-8004 让不同组织的 Agent 无需预先关系，通过链上信号建立信任</figcaption>
+</div>
+
+<p id="intro">ERC-8004 是一套轻量级链上注册表，让 AI Agent 可以在<em>无需预先信任关系</em>的情况下，跨越组织边界互相发现、互相评价、互相验证。</p>
+
+<p>更准确地说，一个 Agent 通过 ERC-8004 可以：</p>
+<ol>
+  <li>向全网声明身份和服务端点（<a href="#identity">Identity Registry</a>）</li>
+  <li>积累其他人对它的评价，形成可被合约直接消费的声誉分（<a href="#reputation">Reputation Registry</a>）</li>
+  <li>提供可被独立核查的行为证明（<a href="#validation">Validation Registry</a>）</li>
+</ol>
+
+<div class="box quote">
+  <div class="box-label">— EIP-8004 摘要</div>
+  <p>"A lightweight set of on-chain registries that make agents discoverable and enable trust signals across organizational boundaries."</p>
+</div>
+
+<div class="box note">
+  <div class="box-label">Note:</div>
+  <p>ERC-8004 本身不规定"什么程度的信任才够用"——它只提供标准化的信号基础设施。调用方自己决定需要哪些信号组合。</p>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <ul>
+    <li><a href="#structure">结构总览</a></li>
+    <li><a href="#identity">Identity Registry</a>
+      <ul>
+        <li><a href="#agent-id">Agent ID</a></li>
+        <li><a href="#agent-uri">AgentURI</a></li>
+        <li><a href="#reg-file">Registration File</a></li>
+        <li><a href="#identity-fns">Functions</a></li>
+      </ul>
+    </li>
+    <li><a href="#reputation">Reputation Registry</a>
+      <ul>
+        <li><a href="#feedback-struct">Feedback 结构</a></li>
+        <li><a href="#give-feedback">giveFeedback()</a></li>
+        <li><a href="#get-summary">getSummary()</a></li>
+        <li><a href="#revoke">revokeFeedback()</a></li>
+      </ul>
+    </li>
+    <li><a href="#validation">Validation Registry</a></li>
+    <li><a href="#trust-models">Trust Models</a></li>
+    <li><a href="#multichain">Multi-Chain 部署</a></li>
+    <li><a href="#examples">示例代码</a></li>
+    <li><a href="#security">安全考量</a></li>
+    <li><a href="#quiz">测验</a></li>
+  </ul>
+</div>
+
+<!-- ══════════════════ STRUCTURE ══════════════════ -->
+<h2 id="structure">Structure <a href="#top" class="back-top">↑ top</a></h2>
+<p>ERC-8004 由三个相互独立但协同工作的智能合约注册表组成。每个 Agent 只需注册一次，即可在所有兼容应用中被发现。</p>
+
+<div class="box note">
+  <div class="box-label">Note:</div>
+  <p>所有注册表通过 CREATE2 + 盐值挖矿在 40+ 条 EVM 链上部署，地址前缀固定为 <code>0x8004...</code>，跨链地址保持一致。</p>
+</div>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="4" style="background:#0f172a">ERC-8004 三大注册表</th></tr>
+  <tr><th>注册表</th><th>主网地址（前缀）</th><th>基础标准</th><th>核心作用</th></tr>
+  <tr>
+    <td class="fn"><a href="#identity">IdentityRegistry ↓</a></td>
+    <td class="ex"><code>0x8004A169...9432</code></td>
+    <td class="sz">ERC-721</td>
+    <td class="desc">为 Agent 颁发 NFT 身份凭证，存储 AgentURI 和元数据</td>
+  </tr>
+  <tr>
+    <td class="fn"><a href="#reputation">ReputationRegistry ↓</a></td>
+    <td class="ex"><code>0x8004BAa1...B63</code></td>
+    <td class="sz">—</td>
+    <td class="desc">接收、聚合、撤销链上反馈，提供可被合约消费的声誉摘要</td>
+  </tr>
+  <tr>
+    <td class="fn"><a href="#validation">ValidationRegistry ↓</a></td>
+    <td class="ex">可插拔接口</td>
+    <td class="sz">—</td>
+    <td class="desc">通用验证钩子，支持质押重执行、ZK 证明、TEE 证明、裁判系统</td>
+  </tr>
+</table>
+</div>
+
+<!-- ══════════════════ IDENTITY ══════════════════ -->
+<h2 id="identity">Identity Registry <a href="#top" class="back-top">↑ top</a></h2>
+<p>Identity Registry 基于 ERC-721 构建。每个 Agent 注册后获得一个 NFT（<em>tokenId</em>），这个 NFT 就是它在全网的唯一身份凭证——可转让、可查询、可验证。</p>
+
+<div class="diagram">
+<svg viewBox="0 0 500 118" xmlns="http://www.w3.org/2000/svg" style="max-height:118px">
+  <defs><marker id="b" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#333"/></marker></defs>
+  <rect x="10" y="29" width="80" height="58" rx="3" fill="none" stroke="#333" stroke-width="1.5"/>
+  <text x="50" y="54" text-anchor="middle" font-family="Georgia" font-size="11" fill="#333">Agent</text>
+  <text x="50" y="69" text-anchor="middle" font-family="Courier New" font-size="9" fill="#888">register()</text>
+  <line x1="92" y1="58" x2="146" y2="58" stroke="#333" stroke-width="1" marker-end="url(#b)"/>
+  <rect x="148" y="14" width="140" height="88" rx="3" fill="#f0a500"/>
+  <text x="218" y="38" text-anchor="middle" font-family="Courier New" font-size="10" fill="#fff" font-weight="bold">IdentityRegistry</text>
+  <text x="218" y="56" text-anchor="middle" font-family="Courier New" font-size="9" fill="#333">tokenId → AgentURI</text>
+  <text x="218" y="70" text-anchor="middle" font-family="Courier New" font-size="9" fill="#333">tokenId → wallet</text>
+  <text x="218" y="84" text-anchor="middle" font-family="Courier New" font-size="9" fill="#333">tokenId → metadata</text>
+  <line x1="290" y1="58" x2="344" y2="58" stroke="#333" stroke-width="1" marker-end="url(#b)"/>
+  <text x="317" y="52" text-anchor="middle" font-family="Courier New" font-size="9" fill="#888">NFT</text>
+  <rect x="346" y="29" width="140" height="58" rx="3" fill="none" stroke="#f0a500" stroke-width="2"/>
+  <text x="416" y="50" text-anchor="middle" font-family="Courier New" font-size="10" fill="#333">tokenId: 42</text>
+  <text x="416" y="64" text-anchor="middle" font-family="Courier New" font-size="9" fill="#888">owner: 0x742...</text>
+  <text x="416" y="78" text-anchor="middle" font-family="Courier New" font-size="9" fill="#888">uri: ipfs://Qm...</text>
+</svg>
+<figcaption>图2 — register() 铸造 ERC-721 NFT，tokenId 即为 Agent 的链上身份</figcaption>
+</div>
+
+<!-- Agent ID -->
+<h3 id="agent-id">Agent ID <a href="#identity" class="anchor">[↑]</a></h3>
+<div class="field-meta">
+  Format: &nbsp;<code>namespace:chainId:registryAddress:tokenId</code><br>
+  Example: <code>eip155:1:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432:42</code>
+</div>
+<p>Agent 的全球唯一标识符由四部分拼合而成：</p>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>部分</th><th>示例值</th><th>说明</th></tr>
+  <tr><td class="fn">namespace</td><td class="ex"><code>eip155</code></td><td class="desc">链标准命名空间，遵循 ERC-155 规范</td></tr>
+  <tr><td class="fn">chainId</td><td class="ex"><code>1</code></td><td class="desc">部署链的 Chain ID（Ethereum=1，Base=8453，Arbitrum=42161…）</td></tr>
+  <tr><td class="fn">registryAddress</td><td class="ex"><code>0x8004A1...9432</code></td><td class="desc">IdentityRegistry 合约地址，所有链上以 <code>0x8004...</code> 开头</td></tr>
+  <tr><td class="fn">tokenId</td><td class="ex"><code>42</code></td><td class="desc">注册时自动分配的自增 NFT ID，在单个 Registry 内唯一</td></tr>
+</table>
+</div>
+<div class="box tip">
+  <div class="box-label">Tip:</div>
+  <p>Agent 在不同链上注册会得到不同 tokenId，但 registryAddress 相同。跨链发现时只需指定目标链的 chainId 即可。</p>
+</div>
+
+<!-- Interactive: Agent ID Parser -->
+<div class="tool-box">
+  <div class="tool-header">🔧 Agent ID 解析工具 <span class="tool-sub">输入全局 ID，解析各组成部分</span></div>
+  <div class="tool-body">
+    <div class="tool-btn-row">
+      <button class="tool-btn sec" onclick="document.getElementById('aid').value='eip155:1:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432:42'">加载示例</button>
+    </div>
+    <label>Agent ID</label>
+    <input class="tool-input" id="aid" placeholder="eip155:1:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432:42">
+    <div class="tool-btn-row">
+      <button class="tool-btn" onclick="parseId()">解析 →</button>
+      <button class="tool-btn sec" onclick="document.getElementById('aid').value='';document.getElementById('aout').classList.remove('show')">清除</button>
+    </div>
+    <div class="tool-output" id="aout"></div>
+  </div>
+</div>
+
+<!-- AgentURI -->
+<h3 id="agent-uri">AgentURI <a href="#identity" class="anchor">[↑]</a></h3>
+<div class="field-meta">
+  Type: &nbsp;&nbsp;string<br>
+  Format: IPFS URI / HTTPS URL / base64 data URI
+</div>
+<p>AgentURI 是指向 Agent 注册文件的链接，支持三种格式：</p>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>格式</th><th>示例</th><th>特性</th></tr>
+  <tr><td class="fn">IPFS</td><td class="ex"><code>ipfs://QmXoy...</code></td><td class="desc">内容寻址，内容变化则 URI 变化，最强防篡改保证</td></tr>
+  <tr><td class="fn">HTTPS</td><td class="ex"><code>https://agent.example.com/reg.json</code></td><td class="desc">灵活可更新，需配合 endpointHash 做完整性校验</td></tr>
+  <tr><td class="fn">base64</td><td class="ex"><code>data:application/json;base64,...</code></td><td class="desc">数据直接内嵌，无需外部存储，适合小型注册文件</td></tr>
+</table>
+</div>
+
+<!-- Registration File -->
+<h3 id="reg-file">Registration File <a href="#identity" class="anchor">[↑]</a></h3>
+<div class="field-meta">
+  Type: &nbsp;&nbsp;JSON<br>
+  Location: IPFS / HTTPS / base64
+</div>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>字段</th><th>示例</th><th>必填</th><th>说明</th></tr>
+  <tr><td class="fn">name</td><td class="ex"><code>"DataAnalysisAgent"</code></td><td class="sz">是</td><td class="desc">Agent 的人类可读名称</td></tr>
+  <tr><td class="fn">description</td><td class="ex"><code>"财务数据分析专家"</code></td><td class="sz">是</td><td class="desc">功能描述，供发现方快速判断适用性</td></tr>
+  <tr><td class="fn">services.web</td><td class="ex"><code>"https://agent.com/api"</code></td><td class="sz">否</td><td class="desc">HTTP REST API 端点</td></tr>
+  <tr><td class="fn">services.a2a</td><td class="ex"><code>"https://agent.com/a2a"</code></td><td class="sz">否</td><td class="desc">Agent-to-Agent 协议端点（Google A2A 标准）</td></tr>
+  <tr><td class="fn">services.mcp</td><td class="ex"><code>"https://agent.com/mcp"</code></td><td class="sz">否</td><td class="desc">Model Context Protocol 端点（Anthropic MCP）</td></tr>
+  <tr><td class="fn">services.ens</td><td class="ex"><code>"dataagent.eth"</code></td><td class="sz">否</td><td class="desc">ENS 域名，可选身份锚点</td></tr>
+  <tr><td class="fn">services.did</td><td class="ex"><code>"did:ethr:0x742..."</code></td><td class="sz">否</td><td class="desc">W3C DID，可与 DID 生态互操作</td></tr>
+  <tr><td class="fn">trustModels</td><td class="ex"><code>["reputation","tee"]</code></td><td class="sz">否</td><td class="desc">Agent 支持的信任模型列表</td></tr>
+</table>
+</div>
+<div class="box tip">
+  <div class="box-label">Tip — 域名所有权验证:</div>
+  <p>Agent 可选择在 <code>https://yourdomain.com/.well-known/agent-registration.json</code> 放置相同注册文件，以证明对该域名的控制权。调用方可交叉比对来确认身份真实性。</p>
+</div>
+
+<!-- Identity Functions -->
+<h3 id="identity-fns">Functions <a href="#identity" class="anchor">[↑]</a></h3>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>函数</th><th>参数</th><th>权限</th><th>说明</th></tr>
+  <tr><td class="fn">register()</td><td class="ex"><code>agentURI, metadata[]</code></td><td class="sz">任何人</td><td class="desc">注册新 Agent，铸造 NFT，返回 tokenId</td></tr>
+  <tr><td class="fn">setAgentURI()</td><td class="ex"><code>agentId, newURI</code></td><td class="sz">Owner</td><td class="desc">更新 Agent 的注册文件 URI</td></tr>
+  <tr><td class="fn">setAgentWallet()</td><td class="ex"><code>agentId, wallet, sig</code></td><td class="sz">Owner</td><td class="desc">设置运营钱包地址，需 EIP-712 或 ERC-1271 签名</td></tr>
+  <tr><td class="fn">getMetadata()</td><td class="ex"><code>agentId, key</code></td><td class="sz">任何人</td><td class="desc">读取附加元数据键值对</td></tr>
+  <tr><td class="fn">tokenURI()</td><td class="ex"><code>tokenId</code></td><td class="sz">任何人</td><td class="desc">ERC-721 标准接口，返回 AgentURI</td></tr>
+</table>
+</div>
+<div class="box caution">
+  <div class="box-label">Caution:</div>
+  <p>NFT 转让时，<code>agentWallet</code> 会被<strong>自动清除</strong>。新 owner 需重新调用 <code>setAgentWallet()</code> 并提供有效签名。这防止旧 owner 继续冒用 Agent 的运营钱包。</p>
+</div>
+
+<hr>
+
+<!-- ══════════════════ REPUTATION ══════════════════ -->
+<h2 id="reputation">Reputation Registry <a href="#top" class="back-top">↑ top</a></h2>
+<p>Reputation Registry 是链上标准化的反馈系统。任何地址（客户端）都可以为 Agent 提交数值评分，评分数据聚合后可被智能合约直接消费，形成可组合的信任信号。</p>
+
+<div class="diagram">
+<svg viewBox="0 0 560 138" xmlns="http://www.w3.org/2000/svg" style="max-height:138px">
+  <defs><marker id="c" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#333"/></marker></defs>
+  <rect x="10" y="38" width="82" height="58" rx="3" fill="none" stroke="#333" stroke-width="1.5"/>
+  <text x="51" y="63" text-anchor="middle" font-family="Georgia" font-size="11" fill="#333">Client</text>
+  <text x="51" y="78" text-anchor="middle" font-family="Courier New" font-size="9" fill="#888">0xABC...</text>
+  <line x1="94" y1="57" x2="146" y2="57" stroke="#333" stroke-width="1" marker-end="url(#c)"/>
+  <text x="120" y="50" text-anchor="middle" font-family="Courier New" font-size="8" fill="#f0a500">giveFeedback()</text>
+  <rect x="148" y="12" width="164" height="112" rx="3" fill="#f0a500"/>
+  <text x="230" y="34" text-anchor="middle" font-family="Courier New" font-size="10" fill="#fff" font-weight="bold">ReputationRegistry</text>
+  <text x="230" y="52" text-anchor="middle" font-family="Courier New" font-size="9" fill="#fff">agentId</text>
+  <text x="230" y="66" text-anchor="middle" font-family="Courier New" font-size="8" fill="#333">└ clientAddr → Feedback[]</text>
+  <text x="230" y="80" text-anchor="middle" font-family="Courier New" font-size="8" fill="#333">   ├ value / decimals</text>
+  <text x="230" y="93" text-anchor="middle" font-family="Courier New" font-size="8" fill="#333">   ├ tags / uri / hash</text>
+  <text x="230" y="106" text-anchor="middle" font-family="Courier New" font-size="8" fill="#333">   └ revoked / response</text>
+  <line x1="314" y1="67" x2="366" y2="67" stroke="#333" stroke-width="1" marker-end="url(#c)"/>
+  <text x="340" y="60" text-anchor="middle" font-family="Courier New" font-size="8" fill="#f0a500">getSummary()</text>
+  <rect x="368" y="38" width="94" height="58" rx="3" fill="none" stroke="#333" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="415" y="62" text-anchor="middle" font-family="Georgia" font-size="10" fill="#333">Smart Contract</text>
+  <text x="415" y="78" text-anchor="middle" font-family="Courier New" font-size="8" fill="#888">score ≥ 7.0 ?</text>
+  <text x="230" y="136" text-anchor="middle" font-family="Courier New" font-size="8" fill="#888">← appendResponse() 允许 Agent 针对评价添加回应</text>
+</svg>
+<figcaption>图3 — 反馈从客户端流入 Registry，聚合后被智能合约消费用于门控决策</figcaption>
+</div>
+
+<!-- Feedback Struct -->
+<h3 id="feedback-struct">Feedback 数据结构 <a href="#reputation" class="anchor">[↑]</a></h3>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>字段</th><th>类型</th><th>示例</th><th>说明</th></tr>
+  <tr><td class="fn">value</td><td class="sz">int128</td><td class="ex"><code>95</code></td><td class="desc">原始评分值，支持负数（差评）</td></tr>
+  <tr><td class="fn">valueDecimals</td><td class="sz">uint8 (0-18)</td><td class="ex"><code>1</code></td><td class="desc">精度位数。value=95, decimals=1 → 实际分数 9.5</td></tr>
+  <tr><td class="fn">tag1</td><td class="sz">string</td><td class="ex"><code>"accuracy"</code></td><td class="desc">主分类标签，按维度细分声誉</td></tr>
+  <tr><td class="fn">tag2</td><td class="sz">string</td><td class="ex"><code>"code-review"</code></td><td class="desc">子分类标签（可选）</td></tr>
+  <tr><td class="fn">endpointURI</td><td class="sz">string</td><td class="ex"><code>"ipfs://Qm..."</code></td><td class="desc">指向详细评价文件的 URI（可选）</td></tr>
+  <tr><td class="fn">endpointHash</td><td class="sz">bytes32</td><td class="ex"><code>0x3f4a...</code></td><td class="desc">URI 内容的 KECCAK-256 哈希，防止链下内容被篡改</td></tr>
+  <tr><td class="fn">revoked</td><td class="sz">bool</td><td class="ex"><code>false</code></td><td class="desc">是否已被提交者撤销。撤销后保留记录但不计入聚合</td></tr>
+</table>
+</div>
+<div class="box note">
+  <div class="box-label">Note:</div>
+  <p><strong>固定精度数值</strong>设计避免了浮点数在 EVM 中的计算风险。评分"9.5分（满分10）"存储为 <code>value=95, decimals=1</code>。</p>
+</div>
+
+<!-- giveFeedback -->
+<h3 id="give-feedback">giveFeedback() <a href="#reputation" class="anchor">[↑]</a></h3>
+<div class="field-meta">
+  Signature: <code>giveFeedback(uint256 agentId, int128 value, uint8 valueDecimals, string tag1, string tag2, string endpointURI, bytes32 endpointHash)</code><br>
+  Emits: &nbsp;&nbsp;&nbsp;<code>NewFeedback(agentId, clientAddress, feedbackIndex)</code>
+</div>
+<p>提交一条对 Agent 的评价。<code>clientAddress</code> 由合约自动记录为 <code>msg.sender</code>。</p>
+
+<!-- getSummary -->
+<h3 id="get-summary">getSummary() <a href="#reputation" class="anchor">[↑]</a></h3>
+<div class="field-meta">
+  Signature: <code>getSummary(uint256 agentId, address[] clientAddresses, string tag) returns (int128 totalScore, uint64 feedbackCount)</code>
+</div>
+<p>聚合指定 clientAddresses 列表中各地址对该 Agent 的有效评价，返回总分和有效反馈数量。</p>
+<div class="box caution">
+  <div class="box-label">Caution — 女巫攻击防护:</div>
+  <p><code>clientAddresses</code> 参数是强制的，意味着<strong>你只统计你信任的地址的评价</strong>。攻击者无法用新地址刷分，因为新地址不在任何人的信任列表中。</p>
+</div>
+
+<!-- revokeFeedback -->
+<h3 id="revoke">revokeFeedback() <a href="#reputation" class="anchor">[↑]</a></h3>
+<div class="field-meta">
+  Signature: <code>revokeFeedback(uint256 agentId, uint64 feedbackIndex)</code><br>
+  Emits: &nbsp;&nbsp;&nbsp;<code>FeedbackRevoked(agentId, clientAddress, feedbackIndex)</code>
+</div>
+<p>撤销自己之前提交的某条反馈。撤销后 <code>revoked=true</code>，不再计入 getSummary() 聚合结果，但历史记录本身不可删除。</p>
+<div class="box tip">
+  <div class="box-label">Tip:</div>
+  <p>即使 Agent NFT 被转让，声誉记录<strong>不会随之清除</strong>——声誉属于 tokenId，而非 NFT 持有者地址。</p>
+</div>
+
+<!-- appendResponse -->
+<h3 id="response">appendResponse() <a href="#reputation" class="anchor">[↑]</a></h3>
+<div class="field-meta">
+  Signature: <code>appendResponse(uint256 agentId, address clientAddress, uint64 feedbackIndex, string responseURI, bytes32 responseHash)</code><br>
+  Emits: &nbsp;&nbsp;&nbsp;<code>ResponseAppended(agentId, clientAddress, feedbackIndex)</code>
+</div>
+<p>Agent 或第三方可针对某条具体评价添加回应，形成链上可查的对话记录，让 Agent 有机会公开申诉。</p>
+
+<!-- Interactive: Reputation Calculator -->
+<div class="tool-box">
+  <div class="tool-header">🔧 声誉评分计算器 <span class="tool-sub">模拟 getSummary() 的聚合逻辑</span></div>
+  <div class="tool-body">
+    <div id="fb-rows">
+      <div class="fb-row" style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
+        <span style="font-family:Courier New;font-size:.8rem;color:#888;width:48px">反馈 1</span>
+        <input class="tool-input" placeholder="value" style="width:70px;margin:0" value="95">
+        <span style="font-family:Courier New;font-size:.8rem;color:#888">dec:</span>
+        <input class="tool-input" style="width:44px;margin:0" value="1">
+        <input class="tool-input" placeholder="tag" style="flex:1;margin:0" value="accuracy">
+      </div>
+      <div class="fb-row" style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
+        <span style="font-family:Courier New;font-size:.8rem;color:#888;width:48px">反馈 2</span>
+        <input class="tool-input" placeholder="value" style="width:70px;margin:0" value="82">
+        <span style="font-family:Courier New;font-size:.8rem;color:#888">dec:</span>
+        <input class="tool-input" style="width:44px;margin:0" value="1">
+        <input class="tool-input" placeholder="tag" style="flex:1;margin:0" value="speed">
+      </div>
+      <div class="fb-row" style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
+        <span style="font-family:Courier New;font-size:.8rem;color:#888;width:48px">反馈 3</span>
+        <input class="tool-input" placeholder="value" style="width:70px;margin:0" value="-20">
+        <span style="font-family:Courier New;font-size:.8rem;color:#888">dec:</span>
+        <input class="tool-input" style="width:44px;margin:0" value="1">
+        <input class="tool-input" placeholder="tag" style="flex:1;margin:0" value="accuracy">
+      </div>
+    </div>
+    <div class="tool-btn-row">
+      <button class="tool-btn" onclick="calcRep()">getSummary() →</button>
+      <button class="tool-btn sec" onclick="addRow()">+ 添加反馈</button>
+    </div>
+    <div class="tool-output" id="rout"></div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════ VALIDATION ══════════════════ -->
+<h2 id="validation">Validation Registry <a href="#top" class="back-top">↑ top</a></h2>
+<p>Validation Registry 是一套通用的验证器接口。与声誉（主观评价）不同，验证提供的是对 Agent 行为的<em>客观证明</em>，可达到密码学级别的可信度。</p>
+<div class="box quote">
+  <div class="box-label">设计理念:</div>
+  <p>验证器完全可插拔——ERC-8004 只定义接口，不规定验证逻辑。任何人都可以部署自己的验证器合约，只要实现标准接口即可。</p>
+</div>
+
+<h3 id="validator-types">四种验证器类型 <a href="#validation" class="anchor">[↑]</a></h3>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>类型</th><th>type值</th><th>验证机制</th><th>适用场景</th></tr>
+  <tr><td class="fn">质押重执行</td><td class="sz"><code>0</code></td><td class="desc">验证者质押代币并独立重跑任务，结果不符则没收质押</td><td class="desc">确定性计算：代码执行、数学运算、数据处理</td></tr>
+  <tr><td class="fn">ZK-ML 证明</td><td class="sz"><code>1</code></td><td class="desc">将 ML 推理过程编译为零知识电路，链上验证器核验证明</td><td class="desc">需证明"用特定模型处理了特定输入"但不想暴露模型</td></tr>
+  <tr><td class="fn">TEE 预言机</td><td class="sz"><code>2</code></td><td class="desc">Agent 在 Intel SGX / AMD SEV 内运行，预言机提交硬件远程证明</td><td class="desc">高安全性隔离：金融交易、敏感数据处理</td></tr>
+  <tr><td class="fn">可信裁判系统</td><td class="sz"><code>3</code></td><td class="desc">指定一组裁判多签或 DAO 投票，对 Agent 输出质量进行评定</td><td class="desc">主观任务：创意写作、战略建议、开放性问题</td></tr>
+</table>
+</div>
+
+<h3 id="validation-fns">Functions <a href="#validation" class="anchor">[↑]</a></h3>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>函数</th><th>参数</th><th>说明</th></tr>
+  <tr><td class="fn">publishValidation()</td><td class="ex"><code>agentId, taskHash, passed, type, proof</code></td><td class="desc">验证器发布对某任务的验证结果，附带类型相关证明数据</td></tr>
+  <tr><td class="fn">getValidationRecord()</td><td class="ex"><code>agentId, taskHash</code></td><td class="desc">查询某个任务的验证历史记录</td></tr>
+  <tr><td class="fn">getPassRate()</td><td class="ex"><code>agentId, validatorType</code></td><td class="desc">获取 Agent 在指定验证器类型下的历史通过率</td></tr>
+</table>
+</div>
+
+<hr>
+
+<!-- ══════════════════ TRUST MODELS ══════════════════ -->
+<h2 id="trust-models">Trust Models <a href="#top" class="back-top">↑ top</a></h2>
+<p>三大注册表可单独使用，也可按需组合。调用方根据业务风险等级选择组合方式。</p>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>场景</th><th>推荐组合</th><th>理由</th></tr>
+  <tr><td class="desc">低风险 — 信息查询、文本摘要</td><td class="sz">声誉</td><td class="desc">快速低成本，参考他人使用经验即可</td></tr>
+  <tr><td class="desc">中等风险 — 财务分析、代码生成</td><td class="sz">声誉 + 质押验证</td><td class="desc">声誉提供历史信任，质押验证提供当次任务经济担保</td></tr>
+  <tr><td class="desc">高风险 — 智能合约操作、资金转移</td><td class="sz">声誉 + 质押 + TEE</td><td class="desc">需要硬件级执行隔离，防止 Agent 被恶意篡改</td></tr>
+  <tr><td class="desc">主观任务 — 创意、战略建议</td><td class="sz">声誉 + 裁判</td><td class="desc">客观验证无法评估主观质量，需引入人工或 DAO 裁决</td></tr>
+</table>
+</div>
+<div class="box tip">
+  <div class="box-label">Tip:</div>
+  <p>Agent 在注册文件的 <code>trustModels</code> 字段声明它<em>支持</em>哪些信任模型。调用方可据此过滤——如需 TEE 证明，只查找 <code>trustModels</code> 包含 <code>"tee"</code> 的 Agent。</p>
+</div>
+
+<hr>
+
+<!-- ══════════════════ MULTICHAIN ══════════════════ -->
+<h2 id="multichain">Multi-Chain 部署 <a href="#top" class="back-top">↑ top</a></h2>
+<p>ERC-8004 使用 CREATE2 + 盐值挖矿，在所有支持的 EVM 链上以相同地址部署合约。地址前缀固定为 <code>0x8004...</code>。</p>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>链</th><th>Chain ID</th><th>Identity Registry</th><th>Reputation Registry</th></tr>
+  <tr><td class="desc">Ethereum Mainnet</td><td class="sz">1</td><td class="ex"><code>0x8004A169...9432</code></td><td class="ex"><code>0x8004BAa1...B63</code></td></tr>
+  <tr><td class="desc">Base</td><td class="sz">8453</td><td class="ex"><code>0x8004A169...9432</code></td><td class="ex"><code>0x8004BAa1...B63</code></td></tr>
+  <tr><td class="desc">Arbitrum One</td><td class="sz">42161</td><td class="ex"><code>0x8004A169...9432</code></td><td class="ex"><code>0x8004BAa1...B63</code></td></tr>
+  <tr><td class="desc">Optimism</td><td class="sz">10</td><td class="ex"><code>0x8004A169...9432</code></td><td class="ex"><code>0x8004BAa1...B63</code></td></tr>
+  <tr><td class="desc">Polygon</td><td class="sz">137</td><td class="ex"><code>0x8004A169...9432</code></td><td class="ex"><code>0x8004BAa1...B63</code></td></tr>
+  <tr class="seg"><td class="desc">Ethereum Sepolia（Testnet）</td><td class="sz">11155111</td><td class="ex"><code>0x8004A818...D9e</code></td><td class="ex"><code>0x8004B663...713</code></td></tr>
+  <tr><td class="desc">Avalanche, BSC, Gnosis 等 35+ 链</td><td class="sz">各异</td><td colspan="2" class="desc">主网地址相同，共 40+ 条 EVM 链</td></tr>
+</table>
+</div>
+
+<h3 id="uups">UUPS 可升级模式 <a href="#multichain" class="anchor">[↑]</a></h3>
+<div class="field-meta">标准: EIP-1822（UUPS — Universal Upgradeable Proxy Standard）</div>
+<p>合约通过代理模式部署，逻辑合约可以升级，代理地址永久不变。升级分两阶段：</p>
+<ol>
+  <li>通过 CREATE2 将 MinimalUUPS 占位合约部署到确定性地址（挖矿出 <code>0x8004...</code> 前缀）</li>
+  <li>通过预签名交易，将代理升级为真实实现合约</li>
+</ol>
+<div class="box note">
+  <div class="box-label">Note:</div>
+  <p>实现合约构造函数调用 <code>_disableInitializers()</code>，防止攻击者直接初始化逻辑合约并绕过代理。</p>
+</div>
+
+<hr>
+
+<!-- ══════════════════ EXAMPLES ══════════════════ -->
+<h2 id="examples">Examples <a href="#top" class="back-top">↑ top</a></h2>
+
+<h3>1. 注册 Agent（JavaScript）</h3>
+<div class="code-block"><span class="c-cm">// 1. 上传注册文件到 IPFS</span>
+<span class="c-kw">const</span> reg = { name: <span class="c-st">"MyAgent"</span>, services: { a2a: <span class="c-st">"https://agent.com/a2a"</span> } };
+<span class="c-kw">const</span> uri = <span class="c-kw">await</span> uploadToIPFS(reg);  <span class="c-cm">// → "ipfs://QmXoy..."</span>
+
+<span class="c-cm">// 2. 调用合约注册</span>
+<span class="c-kw">const</span> registry = <span class="c-kw">new</span> ethers.Contract(
+  <span class="c-st">"0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"</span>,
+  IDENTITY_ABI, signer
+);
+<span class="c-kw">const</span> tx  = <span class="c-kw">await</span> registry.register(uri, []);
+<span class="c-kw">const</span> rec = <span class="c-kw">await</span> tx.wait();
+<span class="c-kw">const</span> agentId = rec.logs[<span class="c-nu">0</span>].args.agentId;
+<span class="c-cm">// 全球 ID: eip155:1:0x8004A1...9432:{agentId}</span></div>
+
+<h3>2. 合约中用声誉做门控（Solidity）</h3>
+<div class="code-block"><span class="c-kw">interface</span> <span class="c-tp">IReputationRegistry</span> {
+    <span class="c-kw">function</span> getSummary(
+        <span class="c-tp">uint256</span> agentId,
+        <span class="c-tp">address</span>[] calldata clientAddresses,
+        <span class="c-tp">string</span>  calldata tag
+    ) <span class="c-kw">external view returns</span> (<span class="c-tp">int128</span> totalScore, <span class="c-tp">uint64</span> count);
+}
+
+<span class="c-kw">contract</span> <span class="c-tp">AgentMarketplace</span> {
+    <span class="c-tp">IReputationRegistry</span> <span class="c-kw">constant</span> REP =
+        <span class="c-tp">IReputationRegistry</span>(<span class="c-nu">0x8004BAa17C55a88189AE136b182e5fdA19dE9b63</span>);
+
+    <span class="c-cm">// 只允许声誉 ≥ 7.0 分的 Agent 参与</span>
+    <span class="c-kw">modifier</span> onlyTrustedAgent(<span class="c-tp">uint256</span> agentId) {
+        <span class="c-tp">address</span>[] memory trusted = <span class="c-kw">new address</span>[](<span class="c-nu">1</span>);
+        trusted[<span class="c-nu">0</span>] = msg.sender;
+        (<span class="c-tp">int128</span> score,) = REP.getSummary(agentId, trusted, <span class="c-st">""</span>);
+        require(score >= <span class="c-nu">70</span>, <span class="c-st">"Agent reputation too low"</span>);
+        _;
+    }
+}</div>
+
+<hr>
+
+<!-- ══════════════════ SECURITY ══════════════════ -->
+<h2 id="security">Security <a href="#top" class="back-top">↑ top</a></h2>
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>威胁</th><th>防护机制</th><th>相关接口</th></tr>
+  <tr><td class="desc">女巫攻击（刷评价）</td><td class="desc">getSummary() 强制过滤 clientAddresses，只统计信任地址的评价</td><td class="ex"><code>getSummary()</code></td></tr>
+  <tr><td class="desc">旧 owner 冒用 AgentWallet</td><td class="desc">NFT 转让时自动清除 agentWallet，需重新签名设置</td><td class="ex"><code>setAgentWallet()</code></td></tr>
+  <tr><td class="desc">抹除差评</td><td class="desc">撤销仅标记 revoked=true，记录永久保留链上</td><td class="ex"><code>revokeFeedback()</code></td></tr>
+  <tr><td class="desc">链下内容篡改</td><td class="desc">endpointHash 存储 KECCAK-256，调用方可验证链下文件完整性</td><td class="ex"><code>endpointHash</code></td></tr>
+  <tr><td class="desc">域名冒充</td><td class="desc">对比 /.well-known/agent-registration.json 与链上数据</td><td class="ex">域名验证（可选）</td></tr>
+  <tr><td class="desc">代理合约直接初始化</td><td class="desc">实现合约构造函数调用 _disableInitializers()</td><td class="ex">UUPS</td></tr>
+</table>
+</div>
+
+<hr>
+
+<!-- ══════════════════ QUIZ ══════════════════ -->
+<h2 id="quiz">Quiz <a href="#top" class="back-top">↑ top</a></h2>
+<p>5 道题检验你对 ERC-8004 的理解。</p>
+
+<div class="quiz-q" id="qq1">
+  <p>1. Identity Registry 基于哪个 ERC 标准，Agent 身份因此具有什么特性？</p>
+  <div class="quiz-opts">
+    <button class="quiz-opt" onclick="ans(1,this,false)">A. ERC-20，身份是同质化可分割的</button>
+    <button class="quiz-opt" onclick="ans(1,this,true)">B. ERC-721（NFT），身份是唯一的、可转让的</button>
+    <button class="quiz-opt" onclick="ans(1,this,false)">C. ERC-1155，可以批量铸造多个 Agent</button>
+    <button class="quiz-opt" onclick="ans(1,this,false)">D. ERC-4337，支持账户抽象</button>
+  </div>
+  <div class="quiz-fb" id="qfb1"></div>
+</div>
+
+<div class="quiz-q" id="qq2">
+  <p>2. getSummary() 为什么强制要求传入 clientAddresses 参数？</p>
+  <div class="quiz-opts">
+    <button class="quiz-opt" onclick="ans(2,this,false)">A. 节省 gas，限制读取数据量</button>
+    <button class="quiz-opt" onclick="ans(2,this,true)">B. 防止女巫攻击——只统计调用方信任的地址的评价</button>
+    <button class="quiz-opt" onclick="ans(2,this,false)">C. 满足 GDPR 数据主权要求</button>
+    <button class="quiz-opt" onclick="ans(2,this,false)">D. 限制只有付费用户才能查询</button>
+  </div>
+  <div class="quiz-fb" id="qfb2"></div>
+</div>
+
+<div class="quiz-q" id="qq3">
+  <p>3. 一条反馈被 revokeFeedback() 撤销后，链上会发生什么？</p>
+  <div class="quiz-opts">
+    <button class="quiz-opt" onclick="ans(3,this,false)">A. 该记录被完全删除，无法再查询</button>
+    <button class="quiz-opt" onclick="ans(3,this,true)">B. 记录保留，revoked 标记为 true，不再计入 getSummary() 聚合</button>
+    <button class="quiz-opt" onclick="ans(3,this,false)">C. 记录被隐藏，只有 Agent owner 可查看</button>
+    <button class="quiz-opt" onclick="ans(3,this,false)">D. 声誉总分自动减去该评价但记录消失</button>
+  </div>
+  <div class="quiz-fb" id="qfb3"></div>
+</div>
+
+<div class="quiz-q" id="qq4">
+  <p>4. 哪种验证器最适合"证明 AI 使用了特定模型处理了特定输入，但不想暴露模型权重"？</p>
+  <div class="quiz-opts">
+    <button class="quiz-opt" onclick="ans(4,this,false)">A. 质押重执行验证器</button>
+    <button class="quiz-opt" onclick="ans(4,this,true)">B. ZK-ML 证明验证器</button>
+    <button class="quiz-opt" onclick="ans(4,this,false)">C. 可信裁判系统</button>
+    <button class="quiz-opt" onclick="ans(4,this,false)">D. 声誉聚合</button>
+  </div>
+  <div class="quiz-fb" id="qfb4"></div>
+</div>
+
+<div class="quiz-q" id="qq5">
+  <p>5. ERC-8004 在 40+ 条链上实现相同地址（0x8004...）依赖的是什么技术？</p>
+  <div class="quiz-opts">
+    <button class="quiz-opt" onclick="ans(5,this,false)">A. 跨链桥（Cross-chain Bridge）</button>
+    <button class="quiz-opt" onclick="ans(5,this,false)">B. 创世区块预部署（Genesis Allocation）</button>
+    <button class="quiz-opt" onclick="ans(5,this,true)">C. CREATE2 + 盐值挖矿（Salt Mining）</button>
+    <button class="quiz-opt" onclick="ans(5,this,false)">D. EIP-4337 账户抽象</button>
+  </div>
+  <div class="quiz-fb" id="qfb5"></div>
+</div>
+
+<div id="quiz-result">
+  <div class="score" id="sc"></div>
+  <p id="sm" style="color:#555;margin-top:6px"></p>
+  <button class="tool-btn" onclick="resetQ()" style="margin-top:14px">重新测验</button>
+</div>
+
+<hr>
+
+<!-- ══════════════════ SUMMARY ══════════════════ -->
+<h2 id="summary-ref">Summary <a href="#top" class="back-top">↑ top</a></h2>
+<table class="sum-table">
+  <tr><th>注册表</th><th>核心函数</th><th>关键设计</th></tr>
+  <tr><td><strong>Identity Registry</strong></td><td><code>register()</code> · <code>setAgentURI()</code> · <code>setAgentWallet()</code></td><td>ERC-721 NFT 身份；转让自动清除 wallet；域名验证可选</td></tr>
+  <tr><td><strong>Reputation Registry</strong></td><td><code>giveFeedback()</code> · <code>getSummary()</code> · <code>revokeFeedback()</code></td><td>固定精度评分；clientAddresses 防女巫；撤销保留记录</td></tr>
+  <tr><td><strong>Validation Registry</strong></td><td><code>publishValidation()</code> · <code>getPassRate()</code></td><td>可插拔验证器；ZK / TEE / 质押 / 裁判四种类型</td></tr>
+</table>
+
+<div class="box note">
+  <div class="box-label">Note:</div>
+  <p>ERC-8004 当前为 <strong>Draft</strong> 状态（创建于 2025-08-13）。依赖标准：ERC-155 · ERC-712 · ERC-721 · ERC-1271 · EIP-1822(UUPS)。规范以官方 <a href="https://eips.ethereum.org/EIPS/eip-8004">EIP-8004</a> 为准。</p>
+</div>
+
+<footer>
+  <p>learnmeabitcoin.com 风格整理 · ERC-8004 教学文档 · 2025</p>
+  <p style="margin-top:4px">原始资料：<a href="https://eips.ethereum.org/EIPS/eip-8004">EIP-8004</a> · <a href="https://github.com/erc-8004/erc-8004-contracts">GitHub erc-8004-contracts</a></p>
+</footer>
+
+</main>
+
+<script>
+// Progress bar
+window.addEventListener('scroll', () => {
+  document.getElementById('progressbar').style.width =
+    (window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100) + '%';
+});
+
+// Sidebar active
+const secs = document.querySelectorAll('h2[id],h3[id]');
+const navLinks = document.querySelectorAll('#sidebar a');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  secs.forEach(s => { if (window.scrollY >= s.offsetTop - 80) cur = s.id; });
+  navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + cur));
+});
+
+// Agent ID parser
+function parseId() {
+  const raw = document.getElementById('aid').value.trim();
+  const out = document.getElementById('aout');
+  if (!raw) { out.classList.remove('show'); return; }
+  const p = raw.split(':');
+  out.classList.add('show');
+  if (p.length < 4) {
+    out.innerHTML = '<span class="o-e">格式错误：期望 namespace:chainId:registryAddress:tokenId</span>';
+    return;
+  }
+  const chains = {'1':'Ethereum Mainnet','8453':'Base','42161':'Arbitrum One','10':'Optimism','137':'Polygon','11155111':'Ethereum Sepolia','56':'BSC','43114':'Avalanche'};
+  const cn = chains[p[1]] || '未知链';
+  const tid = p.slice(3).join(':');
+  out.innerHTML = [
+    '<span class="o-f">Namespace      </span><span class="o-v">' + p[0] + '</span>',
+    '<span class="o-f">Chain ID       </span><span class="o-v">' + p[1] + '</span>  <span class="o-d">← ' + cn + '</span>',
+    '<span class="o-f">Registry Addr  </span><span class="o-v">' + p[2] + '</span>',
+    '<span class="o-f">Token ID       </span><span class="o-v">' + tid + '</span>',
+    '',
+    '<span class="o-d">✓ 格式有效</span>'
+  ].join('\n');
+}
+
+// Reputation calculator
+function addRow() {
+  const rows = document.getElementById('fb-rows');
+  const n = rows.querySelectorAll('.fb-row').length + 1;
+  const d = document.createElement('div');
+  d.className = 'fb-row';
+  d.style.cssText = 'display:flex;gap:8px;margin-bottom:6px;align-items:center';
+  d.innerHTML = '<span style="font-family:Courier New;font-size:.8rem;color:#888;width:48px">反馈 ' + n + '</span>'
+    + '<input class="tool-input" style="width:70px;margin:0" value="50">'
+    + '<span style="font-family:Courier New;font-size:.8rem;color:#888">dec:</span>'
+    + '<input class="tool-input" style="width:44px;margin:0" value="1">'
+    + '<input class="tool-input" style="flex:1;margin:0" value="general">';
+  rows.appendChild(d);
+}
+function calcRep() {
+  const rows = document.querySelectorAll('.fb-row');
+  const out = document.getElementById('rout');
+  let totalRaw = 0; let lines = ['<span class="o-d">── getSummary() 模拟结果 ──</span>', ''];
+  let maxDec = 0;
+  rows.forEach((row, i) => {
+    const ins = row.querySelectorAll('input');
+    const v = parseFloat(ins[0].value) || 0;
+    const d = parseInt(ins[1].value) || 0;
+    const tag = ins[2] ? ins[2].value : '-';
+    const actual = v / Math.pow(10, d);
+    if (d > maxDec) maxDec = d;
+    totalRaw += v;
+    lines.push('<span class="o-f">反馈 ' + (i+1) + '  </span><span class="o-v">value=' + v + ' dec=' + d + '</span>  <span class="o-d">→ ' + actual.toFixed(d) + ' [' + tag + ']</span>');
+  });
+  const n = rows.length || 1;
+  const avg = (totalRaw / Math.pow(10, maxDec)) / n;
+  lines.push('');
+  lines.push('<span class="o-f">totalScore     </span><span class="o-v">' + totalRaw + '</span>  <span class="o-d">(原始整数)</span>');
+  lines.push('<span class="o-f">feedbackCount  </span><span class="o-v">' + n + '</span>');
+  lines.push('<span class="o-f">平均分         </span><span class="o-v">' + avg.toFixed(2) + '</span>');
+  lines.push('');
+  const lbl = avg >= 7 ? '✓ TRUSTED' : avg >= 4 ? '⚠ MODERATE' : '✗ LOW';
+  const cls = avg >= 7 ? 'o-v' : avg >= 4 ? 'o-f' : 'o-e';
+  lines.push('<span class="' + cls + '">声誉评级: ' + lbl + '</span>');
+  out.innerHTML = lines.join('\n');
+  out.classList.add('show');
+}
+
+// Quiz
+const QA = {
+  1: {ok:'✓ 正确。ERC-721 NFT 赋予每个 Agent 唯一 tokenId，身份可转让，同一时刻只有一个 owner。', bad:'✗ 错误。Identity Registry 基于 ERC-721（NFT），每个 Agent 有唯一不可复制的身份凭证。'},
+  2: {ok:'✓ 正确。这是防女巫攻击的核心：信任是主观的，只有你指定的地址的评价才被统计，大量新地址刷分无效。', bad:'✗ 错误。clientAddresses 的目的是防女巫攻击，而非节省 gas 或限制付费。'},
+  3: {ok:'✓ 正确。链上数据不可删除，撤销只是标记 revoked=true，历史记录完整保留，但 getSummary() 不再纳入计算。', bad:'✗ 错误。撤销不删除记录，只是将 revoked 标记为 true，防止事后抹除负面评价。'},
+  4: {ok:'✓ 正确。ZK-ML 证明可在不暴露模型权重的情况下，密码学地证明"用这个模型处理了这个输入，得到了这个输出"。', bad:'✗ 错误。ZK-ML 证明正是为"证明而不泄露"设计的，是最适合的选择。'},
+  5: {ok:'✓ 正确。CREATE2 允许预先计算地址，通过穷举盐值找到使地址以 0x8004... 开头的部署参数，然后在所有链上复用。', bad:'✗ 错误。ERC-8004 使用 CREATE2 + 盐值挖矿实现跨链确定性地址，不需要跨链桥。'}
+};
+let answered = 0, correct = 0;
+function ans(n, btn, ok) {
+  const q = document.getElementById('qq' + n);
+  if (q.dataset.done) return;
+  q.dataset.done = '1'; answered++;
+  q.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = true; if (b !== btn) b.style.opacity = '.45'; });
+  btn.classList.add(ok ? 'correct' : 'wrong');
+  const fb = document.getElementById('qfb' + n);
+  fb.className = 'quiz-fb show ' + (ok ? 'ok' : 'bad');
+  fb.textContent = ok ? QA[n].ok : QA[n].bad;
+  if (ok) correct++;
+  if (answered === 5) {
+    document.getElementById('quiz-result').style.display = 'block';
+    document.getElementById('sc').textContent = correct + ' / 5';
+    document.getElementById('sm').textContent = ['继续加油，再读一遍吧','不错，还有提升空间','良好，掌握了大部分','很好，理解相当扎实','优秀！','满分！ERC-8004 专家'][correct];
+  }
+}
+function resetQ() {
+  answered = 0; correct = 0;
+  document.getElementById('quiz-result').style.display = 'none';
+  for (let i = 1; i <= 5; i++) {
+    const q = document.getElementById('qq' + i);
+    delete q.dataset.done;
+    q.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = false; b.className = 'quiz-opt'; b.style.opacity = ''; });
+    const fb = document.getElementById('qfb' + i);
+    fb.className = 'quiz-fb'; fb.textContent = '';
+  }
+}
+</script>
+</body>
+</html>
