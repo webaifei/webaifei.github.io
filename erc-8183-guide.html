@@ -293,58 +293,58 @@ svg text{font-family:"Segoe UI",Arial,sans-serif}
 
 <!-- State flow diagram -->
 <div class="flow-wrap">
-<svg width="780" height="260" viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg">
-  <!-- OPEN -->
-  <rect x="10" y="100" width="110" height="60" rx="8" fill="#27ae60"/>
-  <text x="65" y="125" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">OPEN</text>
-  <text x="65" y="143" text-anchor="middle" fill="#cfffdf" font-size="11">state = 1</text>
-  <!-- arrow to FUNDED -->
-  <line x1="120" y1="130" x2="168" y2="130" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
-  <text x="144" y="122" text-anchor="middle" fill="#666" font-size="10">fundJob()</text>
-  <!-- FUNDED -->
-  <rect x="170" y="100" width="110" height="60" rx="8" fill="#2a6db5"/>
-  <text x="225" y="125" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">FUNDED</text>
-  <text x="225" y="143" text-anchor="middle" fill="#c8e0ff" font-size="11">state = 2</text>
-  <!-- arrow to SUBMITTED -->
-  <line x1="280" y1="130" x2="328" y2="130" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
-  <text x="304" y="122" text-anchor="middle" fill="#666" font-size="10">submit()</text>
-  <!-- SUBMITTED -->
-  <rect x="330" y="100" width="110" height="60" rx="8" fill="#e67e22"/>
-  <text x="385" y="125" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">SUBMITTED</text>
-  <text x="385" y="143" text-anchor="middle" fill="#ffddc8" font-size="11">state = 3</text>
-
-  <!-- SUBMITTED → COMPLETED -->
-  <line x1="440" y1="115" x2="533" y2="75" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
-  <text x="500" y="80" text-anchor="middle" fill="#666" font-size="10">complete()</text>
-  <!-- COMPLETED -->
-  <rect x="535" y="40" width="120" height="60" rx="8" fill="#16a085"/>
-  <text x="595" y="65" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">COMPLETED</text>
-  <text x="595" y="83" text-anchor="middle" fill="#c0fff0" font-size="11">state = 4</text>
-
-  <!-- SUBMITTED → REJECTED -->
-  <line x1="440" y1="145" x2="533" y2="165" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
-  <text x="500" y="168" text-anchor="middle" fill="#666" font-size="10">reject()</text>
-  <!-- REJECTED -->
-  <rect x="535" y="140" width="120" height="60" rx="8" fill="#c0392b"/>
-  <text x="595" y="165" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">REJECTED</text>
-  <text x="595" y="183" text-anchor="middle" fill="#ffd0d0" font-size="11">state = 5</text>
-
-  <!-- FUNDED → EXPIRED (timeout arc) -->
-  <path d="M 225 160 Q 225 220 385 220 Q 540 220 595 200" stroke="#888" stroke-width="1.5" stroke-dasharray="5,4" fill="none" marker-end="url(#arr)"/>
-  <text x="385" y="240" text-anchor="middle" fill="#888" font-size="10">expiredAt 到期 → 自动退款</text>
-  <!-- EXPIRED -->
-  <rect x="660" y="100" width="110" height="60" rx="8" fill="#7f8c8d"/>
-  <text x="715" y="125" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">EXPIRED</text>
-  <text x="715" y="143" text-anchor="middle" fill="#ddd" font-size="11">state = 6</text>
-  <!-- FUNDED → EXPIRED -->
-  <path d="M 225 100 Q 225 50 715 50 L 715 100" stroke="#aaa" stroke-width="1.5" stroke-dasharray="5,4" fill="none" marker-end="url(#arr)"/>
-  <text x="470" y="42" text-anchor="middle" fill="#888" font-size="10">expire() / 到期</text>
-
+<svg width="100%" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" style="max-height:340px">
   <defs>
     <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
       <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
     </marker>
   </defs>
+  <!-- OPEN -->
+  <rect x="10" y="110" width="130" height="70" rx="8" fill="#27ae60"/>
+  <text x="75" y="141" text-anchor="middle" fill="#fff" font-weight="700" font-size="17">OPEN</text>
+  <text x="75" y="163" text-anchor="middle" fill="#cfffdf" font-size="14">state = 1</text>
+  <!-- arrow to FUNDED -->
+  <line x1="140" y1="145" x2="192" y2="145" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="166" y="136" text-anchor="middle" fill="#666" font-size="13">fundJob()</text>
+  <!-- FUNDED -->
+  <rect x="194" y="110" width="130" height="70" rx="8" fill="#2a6db5"/>
+  <text x="259" y="141" text-anchor="middle" fill="#fff" font-weight="700" font-size="17">FUNDED</text>
+  <text x="259" y="163" text-anchor="middle" fill="#c8e0ff" font-size="14">state = 2</text>
+  <!-- arrow to SUBMITTED -->
+  <line x1="324" y1="145" x2="376" y2="145" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="350" y="136" text-anchor="middle" fill="#666" font-size="13">submit()</text>
+  <!-- SUBMITTED -->
+  <rect x="378" y="110" width="130" height="70" rx="8" fill="#e67e22"/>
+  <text x="443" y="141" text-anchor="middle" fill="#fff" font-weight="700" font-size="17">SUBMITTED</text>
+  <text x="443" y="163" text-anchor="middle" fill="#ffddc8" font-size="14">state = 3</text>
+
+  <!-- SUBMITTED → COMPLETED -->
+  <line x1="508" y1="125" x2="598" y2="85" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="570" y="88" text-anchor="middle" fill="#666" font-size="13">complete()</text>
+  <!-- COMPLETED -->
+  <rect x="600" y="42" width="144" height="70" rx="8" fill="#16a085"/>
+  <text x="672" y="73" text-anchor="middle" fill="#fff" font-weight="700" font-size="17">COMPLETED</text>
+  <text x="672" y="95" text-anchor="middle" fill="#c0fff0" font-size="14">state = 4</text>
+
+  <!-- SUBMITTED → REJECTED -->
+  <line x1="508" y1="165" x2="598" y2="195" stroke="#999" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="570" y="202" text-anchor="middle" fill="#666" font-size="13">reject()</text>
+  <!-- REJECTED -->
+  <rect x="600" y="178" width="144" height="70" rx="8" fill="#c0392b"/>
+  <text x="672" y="209" text-anchor="middle" fill="#fff" font-weight="700" font-size="17">REJECTED</text>
+  <text x="672" y="231" text-anchor="middle" fill="#ffd0d0" font-size="14">state = 5</text>
+
+  <!-- FUNDED → EXPIRED (timeout arc) -->
+  <path d="M 259 180 Q 259 258 443 258 Q 620 258 672 248" stroke="#888" stroke-width="1.5" stroke-dasharray="6,4" fill="none" marker-end="url(#arr)"/>
+  <text x="443" y="278" text-anchor="middle" fill="#888" font-size="13">expiredAt 到期 → 自动退款</text>
+
+  <!-- EXPIRED -->
+  <rect x="752" y="110" width="100" height="70" rx="8" fill="#7f8c8d"/>
+  <text x="802" y="141" text-anchor="middle" fill="#fff" font-weight="700" font-size="17">EXPIRED</text>
+  <text x="802" y="163" text-anchor="middle" fill="#ddd" font-size="14">state = 6</text>
+  <!-- FUNDED → EXPIRED (top arc) -->
+  <path d="M 259 110 Q 259 52 802 52 L 802 110" stroke="#aaa" stroke-width="1.5" stroke-dasharray="6,4" fill="none" marker-end="url(#arr)"/>
+  <text x="530" y="44" text-anchor="middle" fill="#888" font-size="13">expire() / 到期</text>
 </svg>
 </div>
 
@@ -364,37 +364,37 @@ svg text{font-family:"Segoe UI",Arial,sans-serif}
 <p>资金流转是 ERC-8183 的信任核心。Client 在 <code>fundJob()</code> 时通过 <code>ERC-20 approve + transferFrom</code> 将资金锁入合约，此后资金只能通过以下三条路径释放：</p>
 
 <div class="flow-wrap">
-<svg width="680" height="180" viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
-  <!-- Client wallet -->
-  <rect x="10" y="60" width="120" height="60" rx="8" fill="#2b2b2b"/>
-  <text x="70" y="85" text-anchor="middle" fill="#f0a500" font-weight="700" font-size="13">Client 钱包</text>
-  <text x="70" y="103" text-anchor="middle" fill="#ccc" font-size="11">approve() →</text>
-  <!-- Escrow -->
-  <rect x="240" y="40" width="180" height="100" rx="8" fill="#1a3a6e"/>
-  <text x="330" y="68" text-anchor="middle" fill="#fff" font-weight="700" font-size="14">Escrow 合约</text>
-  <text x="330" y="88" text-anchor="middle" fill="#aac4ff" font-size="11">资金锁定</text>
-  <text x="330" y="108" text-anchor="middle" fill="#888" font-size="10">state ≥ FUNDED</text>
-  <text x="330" y="124" text-anchor="middle" fill="#888" font-size="10">只有 Evaluator 可释放</text>
-  <!-- arrows from client to escrow -->
-  <line x1="130" y1="90" x2="238" y2="90" stroke="#f0a500" stroke-width="2" marker-end="url(#arr2)"/>
-  <text x="184" y="82" text-anchor="middle" fill="#f0a500" font-size="10" font-weight="700">fundJob()</text>
-  <!-- Escrow → Provider (complete) -->
-  <line x1="420" y1="72" x2="540" y2="55" stroke="#27ae60" stroke-width="2" marker-end="url(#arr2)"/>
-  <text x="492" y="53" text-anchor="middle" fill="#27ae60" font-size="10" font-weight="700">complete()</text>
-  <rect x="542" y="32" width="120" height="50" rx="6" fill="#1e5c3d"/>
-  <text x="602" y="54" text-anchor="middle" fill="#fff" font-weight="700" font-size="12">Provider</text>
-  <text x="602" y="72" text-anchor="middle" fill="#8affc0" font-size="10">获得报酬</text>
-  <!-- Escrow → Client (reject/expire) -->
-  <line x1="420" y1="108" x2="540" y2="125" stroke="#c0392b" stroke-width="2" marker-end="url(#arr2)"/>
-  <text x="492" y="140" text-anchor="middle" fill="#c0392b" font-size="10" font-weight="700">reject() / expire()</text>
-  <rect x="542" y="110" width="120" height="50" rx="6" fill="#5c1e1e"/>
-  <text x="602" y="132" text-anchor="middle" fill="#fff" font-weight="700" font-size="12">Client</text>
-  <text x="602" y="150" text-anchor="middle" fill="#ffa0a0" font-size="10">退款</text>
+<svg width="100%" viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg" style="max-height:260px">
   <defs>
     <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
       <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
     </marker>
   </defs>
+  <!-- Client wallet -->
+  <rect x="10" y="72" width="160" height="76" rx="8" fill="#2b2b2b"/>
+  <text x="90" y="104" text-anchor="middle" fill="#f0a500" font-weight="700" font-size="16">Client 钱包</text>
+  <text x="90" y="128" text-anchor="middle" fill="#ccc" font-size="14">approve() →</text>
+  <!-- Arrow client → escrow -->
+  <line x1="170" y1="110" x2="258" y2="110" stroke="#f0a500" stroke-width="2.5" marker-end="url(#arr2)"/>
+  <text x="214" y="100" text-anchor="middle" fill="#f0a500" font-size="14" font-weight="700">fundJob()</text>
+  <!-- Escrow -->
+  <rect x="260" y="44" width="220" height="132" rx="8" fill="#1a3a6e"/>
+  <text x="370" y="80" text-anchor="middle" fill="#fff" font-weight="700" font-size="17">Escrow 合约</text>
+  <text x="370" y="106" text-anchor="middle" fill="#aac4ff" font-size="14">资金锁定</text>
+  <text x="370" y="128" text-anchor="middle" fill="#888" font-size="13">state ≥ FUNDED</text>
+  <text x="370" y="150" text-anchor="middle" fill="#888" font-size="13">只有 Evaluator 可释放</text>
+  <!-- Escrow → Provider (complete) -->
+  <line x1="480" y1="88" x2="576" y2="66" stroke="#27ae60" stroke-width="2.5" marker-end="url(#arr2)"/>
+  <text x="536" y="62" text-anchor="middle" fill="#27ae60" font-size="14" font-weight="700">complete()</text>
+  <rect x="578" y="32" width="190" height="68" rx="6" fill="#1e5c3d"/>
+  <text x="673" y="62" text-anchor="middle" fill="#fff" font-weight="700" font-size="16">Provider</text>
+  <text x="673" y="84" text-anchor="middle" fill="#8affc0" font-size="14">获得报酬</text>
+  <!-- Escrow → Client (reject/expire) -->
+  <line x1="480" y1="134" x2="576" y2="156" stroke="#c0392b" stroke-width="2.5" marker-end="url(#arr2)"/>
+  <text x="536" y="178" text-anchor="middle" fill="#c0392b" font-size="14" font-weight="700">reject() / expire()</text>
+  <rect x="578" y="120" width="190" height="68" rx="6" fill="#5c1e1e"/>
+  <text x="673" y="150" text-anchor="middle" fill="#fff" font-weight="700" font-size="16">Client</text>
+  <text x="673" y="172" text-anchor="middle" fill="#ffa0a0" font-size="14">退款</text>
 </svg>
 </div>
 
@@ -939,45 +939,46 @@ deliverable_hash = <span class="fn">keccak256</span>(deliverable_bytes)
 <p>APEX 通过 Hook 接口挂接 UMA OOv3（Optimistic Oracle v3）实现去中心化争议解决：</p>
 
 <div class="flow-wrap">
-<svg width="740" height="200" viewBox="0 0 740 200" xmlns="http://www.w3.org/2000/svg">
-  <!-- Step boxes -->
-  <rect x="10" y="70" width="120" height="60" rx="6" fill="#1a3a6e"/>
-  <text x="70" y="96" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Provider</text>
-  <text x="70" y="114" text-anchor="middle" fill="#aac4ff" font-size="11">submit()</text>
-
-  <line x1="130" y1="100" x2="178" y2="100" stroke="#f0a500" stroke-width="2" marker-end="url(#arr3)"/>
-  <text x="154" y="92" text-anchor="middle" fill="#f0a500" font-size="9">自动 assertion</text>
-
-  <rect x="180" y="60" width="130" height="80" rx="6" fill="#2b4a00"/>
-  <text x="245" y="88" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">UMA Assertion</text>
-  <text x="245" y="106" text-anchor="middle" fill="#8aff8a" font-size="11">Liveness 期</text>
-  <text x="245" y="122" text-anchor="middle" fill="#888" font-size="10">30min - 72h</text>
-
-  <!-- no dispute path -->
-  <line x1="310" y1="85" x2="380" y2="60" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arr3)"/>
-  <text x="348" y="58" text-anchor="middle" fill="#27ae60" font-size="9">无争议</text>
-  <rect x="382" y="40" width="120" height="50" rx="6" fill="#1e5c3d"/>
-  <text x="442" y="62" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">自动结算</text>
-  <text x="442" y="80" text-anchor="middle" fill="#8affc0" font-size="10">COMPLETED</text>
-
-  <!-- dispute path -->
-  <line x1="310" y1="115" x2="380" y2="140" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arr3)"/>
-  <text x="348" y="155" text-anchor="middle" fill="#c0392b" font-size="9">有人 dispute()</text>
-  <rect x="382" y="120" width="120" height="50" rx="6" fill="#5c1e00"/>
-  <text x="442" y="142" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">DVM 投票</text>
-  <text x="442" y="160" text-anchor="middle" fill="#ffa0a0" font-size="10">48-96h</text>
-
-  <!-- DVM result -->
-  <line x1="502" y1="145" x2="570" y2="100" stroke="#888" stroke-width="1.5" marker-end="url(#arr3)"/>
-  <rect x="572" y="70" width="130" height="60" rx="6" fill="#2b2b2b"/>
-  <text x="637" y="96" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">裁判执行</text>
-  <text x="637" y="114" text-anchor="middle" fill="#ccc" font-size="10">全额付款 / 退款 / 按比例</text>
-
+<svg width="100%" viewBox="0 0 860 240" xmlns="http://www.w3.org/2000/svg" style="max-height:280px">
   <defs>
     <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
       <path d="M0,0 L0,6 L8,3 z" fill="#999"/>
     </marker>
   </defs>
+  <!-- Provider -->
+  <rect x="10" y="82" width="150" height="76" rx="6" fill="#1a3a6e"/>
+  <text x="85" y="114" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">Provider</text>
+  <text x="85" y="138" text-anchor="middle" fill="#aac4ff" font-size="14">submit()</text>
+
+  <line x1="160" y1="120" x2="214" y2="120" stroke="#f0a500" stroke-width="2.5" marker-end="url(#arr3)"/>
+  <text x="187" y="110" text-anchor="middle" fill="#f0a500" font-size="13" font-weight="700">自动 assertion</text>
+
+  <!-- UMA Assertion -->
+  <rect x="216" y="66" width="164" height="108" rx="6" fill="#2b4a00"/>
+  <text x="298" y="100" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">UMA Assertion</text>
+  <text x="298" y="124" text-anchor="middle" fill="#8aff8a" font-size="14">Liveness 期</text>
+  <text x="298" y="146" text-anchor="middle" fill="#888" font-size="13">30min – 72h</text>
+
+  <!-- no dispute path -->
+  <line x1="380" y1="100" x2="460" y2="72" stroke="#27ae60" stroke-width="2" marker-end="url(#arr3)"/>
+  <text x="428" y="68" text-anchor="middle" fill="#27ae60" font-size="13" font-weight="700">无争议</text>
+  <rect x="462" y="44" width="158" height="68" rx="6" fill="#1e5c3d"/>
+  <text x="541" y="74" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">自动结算</text>
+  <text x="541" y="98" text-anchor="middle" fill="#8affc0" font-size="14">COMPLETED</text>
+
+  <!-- dispute path -->
+  <line x1="380" y1="148" x2="460" y2="170" stroke="#c0392b" stroke-width="2" marker-end="url(#arr3)"/>
+  <text x="428" y="192" text-anchor="middle" fill="#c0392b" font-size="13" font-weight="700">有人 dispute()</text>
+  <rect x="462" y="148" width="158" height="68" rx="6" fill="#5c1e00"/>
+  <text x="541" y="178" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">DVM 投票</text>
+  <text x="541" y="200" text-anchor="middle" fill="#ffa0a0" font-size="14">48–96h</text>
+
+  <!-- DVM result -->
+  <line x1="620" y1="178" x2="700" y2="130" stroke="#888" stroke-width="2" marker-end="url(#arr3)"/>
+  <rect x="702" y="86" width="150" height="88" rx="6" fill="#2b2b2b"/>
+  <text x="777" y="122" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">裁判执行</text>
+  <text x="777" y="148" text-anchor="middle" fill="#ccc" font-size="13">全额付款 / 退款</text>
+  <text x="777" y="166" text-anchor="middle" fill="#ccc" font-size="13">/ 按比例</text>
 </svg>
 </div>
 
