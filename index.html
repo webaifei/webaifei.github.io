@@ -286,6 +286,21 @@ hr.sidebar-hr { border: none; border-top: 1px solid #3a3a3a; margin: 6px 0; }
     <a class="sub" href="eip-7702-guide.html#tx-type">— Type 4 Tx</a>
     <a class="sub" href="eip-7702-guide.html#auth-tuple">— Auth Tuple</a>
     <a class="sub" href="eip-7702-guide.html#usecases">— Use Cases</a>
+    <a href="eip-1193-6963-guide.html">EIP-1193 · 6963 Provider</a>
+    <a class="sub" href="eip-1193-6963-guide.html#eip1193">— Provider API</a>
+    <a class="sub" href="eip-1193-6963-guide.html#eip6963">— 多钱包发现</a>
+    <a href="erc-8211-guide.html">ERC-8211 Smart Batching</a>
+    <a class="sub" href="erc-8211-guide.html#composable">— ComposableExecution</a>
+    <a class="sub" href="erc-8211-guide.html#fetchers">— Fetchers / Constraints</a>
+    <a class="sub" href="erc-8211-guide.html#example-defi">— DeFi 示例</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Payments</div>
+    <a href="tempo-wallet-guide.html">Tempo Wallet</a>
+    <a class="sub" href="tempo-wallet-guide.html#mpp">— Machine Payments</a>
+    <a class="sub" href="tempo-wallet-guide.html#wallet">— CLI Wallet</a>
+    <a class="sub" href="tempo-wallet-guide.html#vs-x402">— vs x402</a>
   </div>
 
   <div class="sidebar-footer">
@@ -335,6 +350,36 @@ hr.sidebar-hr { border: none; border-top: 1px solid #3a3a3a; margin: 6px 0; }
       </div>
     </a>
 
+    <a class="card" href="tempo-wallet-guide.html">
+      <span class="card-tag">Tempo Wallet</span>
+      <h2>AI Agent<br>机器支付协议</h2>
+      <p>HTTP 402 原生支付、MPP 协议、无 Gas Token 设计。让 Agent 像调 HTTP 接口一样完成链上结算。</p>
+      <div class="card-meta">
+        <span>MPP · Stablecoin · Machine Payments</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card" href="erc-8211-guide.html">
+      <span class="card-tag">ERC-8211</span>
+      <h2>Smart Batching<br>AI Agent DeFi 执行标准</h2>
+      <p>参数延迟到执行时解析——Fetchers 实时取值、Constraints 校验、Predicates 门控，让 AI Agent 以单笔原子交易完成多步 DeFi 策略。</p>
+      <div class="card-meta">
+        <span>Smart Batching · Atomic · DeFi</span>
+        <span class="card-arrow">&rarr;</span>
+      </div>
+    </a>
+
+    <a class="card" href="eip-1193-6963-guide.html">
+      <span class="card-tag">EIP-1193 · EIP-6963</span>
+      <h2>以太坊 Provider API<br>与多钱包发现协议</h2>
+      <p>EIP-1193 定义 dApp 与钱包通信的标准接口；EIP-6963 解决多钱包冲突，让用户自由选择注入钱包。</p>
+      <div class="card-meta">
+        <span>Provider · Wallet · dApp Integration</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
   </div>
 
   <div class="section-heading">Key Concepts</div>
@@ -359,6 +404,14 @@ hr.sidebar-hr { border: none; border-top: 1px solid #3a3a3a; margin: 6px 0; }
     <div class="concept-item">
       <div class="term">Dual Matching</div>
       <div class="def">客户发任务 ↔ 服务商挂牌，双向撮合的链上市场机制</div>
+    </div>
+    <div class="concept-item">
+      <div class="term">Smart Batching</div>
+      <div class="def">ERC-8211 核心机制，参数在执行时动态解析，而非签名时固定</div>
+    </div>
+    <div class="concept-item">
+      <div class="term">ComposableExecution</div>
+      <div class="def">ERC-8211 基本单元，包含 Fetcher + Constraint + 目标调用的完整描述</div>
     </div>
     <div class="concept-item">
       <div class="term">X Layer</div>

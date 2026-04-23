@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EIP-1193 & EIP-6963 | Provider 接口与多钱包发现</title>
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px;
+  line-height: 1.85;
+  color: #222;
+  background: #fff;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+#sidebar {
+  width: 256px;
+  min-width: 256px;
+  background: #2b2b2b;
+  color: #ccc;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+#sidebar-logo {
+  background: #1a1a1a;
+  padding: 18px 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  color: #f0a500;
+  letter-spacing: .03em;
+  border-bottom: 1px solid #444;
+}
+#sidebar-logo span { color: #aaa; font-size: 13px; display: block; margin-top: 4px; }
+.sidebar-section { padding: 10px 0 4px; }
+.sidebar-section-label {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #888;
+  padding: 8px 20px 4px;
+}
+.sidebar-section a {
+  display: block;
+  padding: 6px 20px 6px 28px;
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  color: #bbb;
+  text-decoration: none;
+  transition: color .15s, background .15s;
+}
+.sidebar-section a:hover { color: #f0a500; background: rgba(240,165,0,.07); }
+.sidebar-section a.active { color: #f0a500; }
+.sidebar-section a.indent1 { padding-left: 36px; font-size: 14px; color: #aaa; }
+.sidebar-section a.indent1:hover { color: #f0a500; }
+.sidebar-section a.indent2 { padding-left: 46px; font-size: 13px; color: #999; }
+hr.sidebar-hr { border: none; border-top: 1px solid #3a3a3a; margin: 6px 0; }
+
+/* ── Main Content ── */
+#main {
+  flex: 1;
+  max-width: 900px;
+  padding: 0 64px 80px 64px;
+  min-width: 0;
+  background: #fff;
+}
+
+/* ── Breadcrumb ── */
+#breadcrumb {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #64748b;
+  padding: 18px 0 0;
+  margin-bottom: 24px;
+}
+#breadcrumb a { color: #2a6db5; text-decoration: none; }
+#breadcrumb a:hover { text-decoration: underline; }
+
+/* ── Page Title ── */
+h1.page-title {
+  font-family: Georgia, serif;
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #111;
+  margin-bottom: 8px;
+  line-height: 1.15;
+}
+.page-subtitle { font-size: 1.25rem; color: #555; margin-bottom: 12px; font-style: italic; }
+.page-meta { font-family: 'Courier New', monospace; font-size: 14px; color: #888; margin-bottom: 32px; }
+.page-meta a { color: #2a6db5; text-decoration: none; }
+
+/* ── Headings ── */
+h2 {
+  font-family: Georgia, serif;
+  font-size: 2.1rem;
+  color: #111;
+  margin: 3rem 0 .5rem;
+  border-bottom: 2px solid #111;
+  padding-bottom: 8px;
+}
+h3 {
+  font-family: 'Courier New', monospace;
+  font-size: 1.25rem;
+  color: #2a6db5;
+  margin: 2.2rem 0 .6rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+h3 .anchor { color: #aaa; font-size: .85rem; margin-left: 6px; text-decoration: none; }
+h4 { font-family: Georgia, serif; font-size: 1.15rem; color: #333; font-weight: bold; margin: 1.6rem 0 .4rem; }
+.back-top { font-family: 'Courier New', monospace; font-size: .82rem; color: #aaa; float: right; text-decoration: none; margin-top: .7rem; }
+.back-top:hover { color: #2a6db5; }
+.field-meta { font-family: 'Courier New', monospace; font-size: 15px; color: #666; line-height: 2; margin-bottom: .7rem; }
+
+/* ── Body Text ── */
+p { margin-bottom: 1.1rem; color: #333; }
+strong { color: #111; }
+a { color: #2a6db5; text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { padding-left: 1.8rem; margin-bottom: 1.1rem; color: #333; }
+li { margin-bottom: .35rem; }
+code {
+  font-family: 'Courier New', monospace;
+  font-size: .88em;
+  background: #1a1a1a;
+  color: #e8e8e8;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+/* ── Diagrams ── */
+.diagram {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin: 2rem 0;
+  background: #f8faff;
+  text-align: center;
+}
+.diagram svg { max-width: 100%; display: block; margin: 0 auto; }
+.diagram figcaption { font-family: 'Courier New', monospace; font-size: 14px; color: #999; margin-top: 12px; }
+
+/* ── Callout Boxes ── */
+.box { border-left: 4px solid #ccc; padding: 14px 18px; margin: 1.4rem 0; font-size: 1rem; border-radius: 0 6px 6px 0; }
+.box-label { font-weight: bold; font-family: 'Courier New', monospace; font-size: .88rem; margin-bottom: 5px; display: block; }
+.box.note    { border-color: #f0a500; background: #fffbea; }
+.box.note    .box-label { color: #c47f00; }
+.box.tip     { border-color: #3aaa5c; background: #f0fff4; }
+.box.tip     .box-label { color: #2d8049; }
+.box.caution { border-color: #d9534f; background: #fff5f5; }
+.box.caution .box-label { color: #b52b27; }
+.box.quote   { border-color: #2a6db5; background: #f0f6ff; }
+.box.quote   .box-label { color: #1a4e8f; }
+.box p { margin: 0; color: inherit; }
+
+/* ── Tables ── */
+.ref-table-wrap { overflow-x: auto; margin: 1.6rem 0 2rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+.ref-table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+.ref-table th {
+  background: #2b2b2b;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-family: 'Courier New', monospace;
+  font-size: .9rem;
+  font-weight: normal;
+}
+.ref-table td { padding: 11px 16px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-table tr:hover td { background: #fafafa; }
+.ref-table td.fn { font-family: 'Courier New', monospace; font-size: .95rem; white-space: nowrap; }
+.ref-table td.fn a { color: #2a6db5; }
+.ref-table td.sz { font-family: 'Courier New', monospace; font-size: .9rem; color: #555; white-space: nowrap; }
+.ref-table td.desc { color: #444; line-height: 1.7; }
+.ref-table tr.seg td { background: #f0f6ff; }
+
+/* ── TOC ── */
+.toc { border: 1px solid #ddd; background: #fafafa; padding: 18px 24px; margin: 1.8rem 0; display: inline-block; min-width: 280px; max-width: 520px; border-radius: 4px; }
+.toc-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; color: #111; }
+.toc ul { margin: 0; padding-left: 1.4rem; font-size: 1rem; }
+.toc li { margin-bottom: 3px; }
+
+/* ── Code blocks ── */
+.code-block {
+  background: #1a1a1a; color: #e8e8e8;
+  padding: 20px; border-radius: 4px;
+  font-family: 'Courier New', monospace; font-size: .92rem;
+  overflow-x: auto; line-height: 1.85; margin: 1.4rem 0;
+  white-space: pre;
+}
+.c-cm { color: #6a9955; }
+.c-kw { color: #569cd6; }
+.c-st { color: #ce9178; }
+.c-nu { color: #f0a500; }
+.c-tp { color: #4ec9b0; }
+.c-fn { color: #dcdcaa; }
+.c-ev { color: #c586c0; }
+
+/* ── Tool Box (Interactive Demo) ── */
+.tool-box { border: 1px solid #2a6db5; border-radius: 6px; overflow: hidden; margin: 1.4rem 0; }
+.tool-header { background: #1a2a3a; color: #f0a500; font-family: 'Courier New', monospace; font-size: 1rem; font-weight: bold; padding: 12px 18px; display: flex; align-items: baseline; gap: 12px; }
+.tool-sub { color: #7eb4e0; font-size: .82rem; font-weight: normal; }
+.tool-body { background: #0d1117; padding: 18px; }
+.tool-body label { display: block; font-family: 'Courier New', monospace; font-size: .78rem; color: #888; margin-bottom: 4px; }
+.tool-input { width: 100%; background: #1c2128; border: 1px solid #30363d; border-radius: 4px; color: #c9d1d9; font-family: 'Courier New', monospace; font-size: .82rem; padding: 7px 10px; outline: none; }
+.tool-input:focus { border-color: #2a6db5; box-shadow: 0 0 0 2px rgba(42,109,181,.25); }
+.tool-btn-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.tool-btn { background: #f0a500; color: #1a1a1a; border: none; border-radius: 4px; padding: 9px 20px; font-family: 'Courier New', monospace; font-size: .88rem; font-weight: bold; cursor: pointer; transition: background .15s; }
+.tool-btn:hover { background: #d4920a; }
+.tool-btn.sec { background: #2b2b2b; color: #aaa; border: 1px solid #444; }
+.tool-btn.sec:hover { background: #3a3a3a; color: #ccc; }
+.tool-output { background: transparent; color: #ccc; font-family: 'Courier New', monospace; white-space: normal; }
+
+/* ── Quiz ── */
+.quiz-q { margin-bottom: 1.8rem; padding-bottom: 1.8rem; border-bottom: 1px solid #eee; }
+.quiz-q:last-of-type { border-bottom: none; }
+.quiz-q p { font-weight: bold; margin-bottom: .8rem; color: #111; }
+.quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt { font-family: Georgia, serif; font-size: 1rem; padding: 10px 16px; border: 1px solid #ccc; background: #fff; border-radius: 3px; cursor: pointer; text-align: left; transition: background .12s, border-color .12s; color: #333; }
+.quiz-opt:hover { border-color: #2a6db5; background: #f0f6ff; }
+.quiz-opt.correct { border-color: #3aaa5c; background: #f0fff4; color: #1a5e30; }
+.quiz-opt.wrong   { border-color: #d9534f; background: #fff5f5; color: #8b1e1e; }
+.quiz-fb { font-size: .95rem; margin-top: 8px; padding: 8px 14px; border-radius: 3px; display: none; }
+.quiz-fb.show { display: block; }
+.quiz-fb.ok  { background: #f0fff4; color: #1a5e30; border: 1px solid #3aaa5c; }
+.quiz-fb.bad { background: #fff5f5; color: #8b1e1e; border: 1px solid #d9534f; }
+#quiz-result { text-align: center; padding: 28px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; margin-top: 1.4rem; display: none; }
+#quiz-result .score { font-size: 2.8rem; font-weight: bold; color: #2b2b2b; font-family: 'Courier New', monospace; }
+
+/* ── Summary table ── */
+.sum-table { width: 100%; border-collapse: collapse; font-size: 1rem; margin: 1.4rem 0; }
+.sum-table th { background: #f0a500; color: #111; padding: 12px 16px; text-align: left; font-family: 'Courier New', monospace; font-size: .9rem; }
+.sum-table td { padding: 11px 16px; border-bottom: 1px solid #e8e8e8; color: #333; }
+.sum-table tr:last-child td { border-bottom: none; }
+.sum-table tr:hover td { background: #fffbea; }
+
+/* ── Misc ── */
+hr { border: none; border-top: 1px solid #e0e0e0; margin: 3rem 0; }
+footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid #ddd; font-family: 'Courier New', monospace; font-size: .88rem; color: #999; }
+#progressbar { position: fixed; top: 0; left: 0; height: 3px; background: #f0a500; width: 0; z-index: 999; transition: width .1s; }
+
+@media (max-width: 768px) {
+  #sidebar { display: none; }
+  #main { padding: 0 20px 60px; }
+}
+</style>
+</head>
+<body>
+<div id="progressbar"></div>
+
+<!-- ── SIDEBAR ── -->
+<nav id="sidebar">
+  <div id="sidebar-logo">EIP-1193 &amp; 6963 <span>Provider 接口 · 多钱包发现</span></div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Overview</div>
+    <a href="#intro">Introduction</a>
+    <a href="#motivation" class="indent1">背景：混乱的 window.ethereum</a>
+    <a href="#toc-section" class="indent1">目录</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">EIP-1193</div>
+    <a href="#eip1193-overview">Provider 接口标准</a>
+    <a href="#request-method" class="indent1">request() 方法</a>
+    <a href="#events" class="indent1">Provider 事件</a>
+    <a href="#error-codes" class="indent1">错误码</a>
+    <a href="#eip1193-demo" class="indent1">交互演示</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">EIP-6963</div>
+    <a href="#eip6963-overview">多钱包发现机制</a>
+    <a href="#the-problem" class="indent1">问题：最后写入者胜出</a>
+    <a href="#announce-event" class="indent1">announceProvider 事件</a>
+    <a href="#provider-info" class="indent1">ProviderInfo 结构</a>
+    <a href="#discovery-flow" class="indent1">发现流程</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Integration</div>
+    <a href="#together">协议如何配合</a>
+    <a href="#wallet-impl" class="indent1">钱包侧实现</a>
+    <a href="#dapp-impl" class="indent1">dApp 侧实现</a>
+    <a href="#migration" class="indent1">迁移建议</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Reference</div>
+    <a href="#security">安全考量</a>
+    <a href="#quick-ref">Quick Reference</a>
+    <a href="#quiz">理解测验</a>
+    <a href="#summary-ref">Summary</a>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<div id="main" id="top">
+
+<div id="breadcrumb">
+  <a href="index.html">webaifei.github.io</a> / EIP-1193 &amp; EIP-6963
+</div>
+
+<h1 class="page-title" id="intro">EIP-1193 &amp; EIP-6963</h1>
+<div class="page-subtitle">Provider 接口标准与多钱包发现机制</div>
+<div class="page-meta">
+  EIP-1193 · EIP-6963 · Ethereum Provider · Wallet Discovery
+</div>
+
+<!-- Hero Diagram -->
+<div class="diagram">
+<svg viewBox="0 0 780 160" xmlns="http://www.w3.org/2000/svg" width="780" height="160">
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f0a500"/>
+    </marker>
+  </defs>
+
+  <!-- dApp box -->
+  <rect x="20" y="44" width="140" height="72" rx="6" fill="#f0f6ff" stroke="#2a6db5" stroke-width="2"/>
+  <text x="90" y="80" text-anchor="middle" font-family="Georgia,serif" font-size="16" font-weight="bold" fill="#111">dApp</text>
+  <text x="90" y="100" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#555">browser context</text>
+
+  <!-- EIP-1193 label -->
+  <rect x="192" y="58" width="130" height="44" rx="4" fill="#fffbea" stroke="#f0a500" stroke-width="1.5"/>
+  <text x="257" y="78" text-anchor="middle" font-family="Courier New,monospace" font-size="12" font-weight="bold" fill="#c47f00">EIP-1193</text>
+  <text x="257" y="95" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">provider.request()</text>
+
+  <!-- Arrow: dApp → Provider -->
+  <line x1="162" y1="80" x2="190" y2="80" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="324" y1="80" x2="352" y2="80" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- Wallet 1 box -->
+  <rect x="354" y="20" width="130" height="52" rx="6" fill="#f0fff4" stroke="#3aaa5c" stroke-width="2"/>
+  <text x="419" y="44" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="bold" fill="#1a5e30">MetaMask</text>
+  <text x="419" y="62" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">io.metamask</text>
+
+  <!-- Wallet 2 box -->
+  <rect x="354" y="88" width="130" height="52" rx="6" fill="#f0f6ff" stroke="#2a6db5" stroke-width="2"/>
+  <text x="419" y="112" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="bold" fill="#111">Phantom</text>
+  <text x="419" y="130" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">app.phantom.app</text>
+
+  <!-- EIP-6963 discovery -->
+  <rect x="510" y="44" width="240" height="72" rx="6" fill="#fff5f5" stroke="#d9534f" stroke-width="1.5"/>
+  <text x="630" y="70" text-anchor="middle" font-family="Courier New,monospace" font-size="12" font-weight="bold" fill="#b52b27">EIP-6963</text>
+  <text x="630" y="88" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">eip6963:announceProvider</text>
+  <text x="630" y="105" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">eip6963:requestProvider</text>
+
+  <!-- Arrows wallet → EIP-6963 -->
+  <line x1="486" y1="46" x2="508" y2="62" stroke="#f0a500" stroke-width="1.5" marker-end="url(#b)"/>
+  <line x1="486" y1="114" x2="508" y2="100" stroke="#f0a500" stroke-width="1.5" marker-end="url(#b)"/>
+</svg>
+<figcaption>EIP-1193 定义 dApp 与钱包的通信协议；EIP-6963 解决多钱包同时存在时的发现问题</figcaption>
+</div>
+
+<p>
+  USB 标准化之前，每台设备都有自己的接口：打印机有打印机口，鼠标有 PS/2 口，调制解调器有串口。
+  USB 做的事很简单：<strong>定义一个通用语言，让所有外设能和主机说同一种话。</strong>
+  但 USB 只解决了"怎么说话"，没解决"怎么找到设备"——那是 USB 设备枚举协议做的事。
+</p>
+
+<p>
+  Web3 浏览器钱包面临的，是同一个两阶段问题：
+  先要有人定义 dApp 和钱包"说同一种语言"的规范（EIP-1193），
+  再要有人定义多个钱包同时存在时 dApp "如何找到并选择它们"（EIP-6963）。
+  这两个 EIP 不是竞争关系，是同一个问题的两个层次。
+</p>
+
+<div class="box note">
+  <span class="box-label">核心洞察</span>
+  <p>EIP-1193 是"通信协议"，EIP-6963 是"发现协议"。标准化让它们能交流；发现机制让它们知道对方的存在。</p>
+</div>
+
+<!-- TOC -->
+<div class="toc" id="toc-section">
+  <div class="toc-title">目录</div>
+  <ul>
+    <li><a href="#motivation">背景：混乱的 window.ethereum 时代</a></li>
+    <li><a href="#eip1193-overview">EIP-1193：Provider 接口标准</a>
+      <ul>
+        <li><a href="#request-method">request() 方法</a></li>
+        <li><a href="#events">Provider 事件</a></li>
+        <li><a href="#error-codes">错误码</a></li>
+        <li><a href="#eip1193-demo">交互演示</a></li>
+      </ul>
+    </li>
+    <li><a href="#eip6963-overview">EIP-6963：多钱包发现机制</a>
+      <ul>
+        <li><a href="#the-problem">问题：最后写入者胜出</a></li>
+        <li><a href="#announce-event">announceProvider 事件</a></li>
+        <li><a href="#provider-info">ProviderInfo 结构</a></li>
+        <li><a href="#discovery-flow">完整发现流程</a></li>
+      </ul>
+    </li>
+    <li><a href="#together">协议如何配合</a>
+      <ul>
+        <li><a href="#wallet-impl">钱包侧实现</a></li>
+        <li><a href="#dapp-impl">dApp 侧实现</a></li>
+        <li><a href="#migration">从旧模式迁移</a></li>
+      </ul>
+    </li>
+    <li><a href="#security">安全考量</a></li>
+    <li><a href="#quick-ref">Quick Reference</a></li>
+    <li><a href="#quiz">理解测验</a></li>
+    <li><a href="#summary-ref">Summary</a></li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ════════════════════════════════════════════ -->
+<h2 id="motivation">背景：混乱的 window.ethereum 时代</h2>
+<a href="#top" class="back-top">↑ top</a>
+
+<p>
+  Web3 的浏览器插件钱包最早没有任何标准。MetaMask 在 2016 年率先将一个名为 <code>web3</code> 的对象注入到页面的全局作用域，
+  dApp 通过 <code>window.web3.eth.sendTransaction()</code> 发送交易。其他钱包——Brave Wallet、Coinbase Wallet、imToken——
+  纷纷效仿，但每家的 API 形状都略有不同。
+</p>
+
+<p>
+  很多开发者以为这个问题后来被统一了。其实只是暂时被压制了。
+  EIP-1193 在 2019 年标准化了 <code>window.ethereum</code> 这个 Provider 接口，但它没有规定"谁有权利把自己放进 <code>window.ethereum</code>"。
+  结果是：当用户同时安装了 MetaMask 和 Phantom，最后加载的那个插件会悄悄覆盖前一个写入的值。
+  dApp 读到的是哪个钱包，取决于插件的加载顺序——这是一个竞争条件，不是设计。
+</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>时代</th><th>方式</th><th>问题</th></tr>
+  <tr>
+    <td class="fn">2016–2018</td>
+    <td class="desc"><code>window.web3</code>，各家自定义 API</td>
+    <td class="desc">没有标准，dApp 要对每个钱包单独适配</td>
+  </tr>
+  <tr>
+    <td class="fn">2019–2022</td>
+    <td class="desc">EIP-1193 标准化 <code>window.ethereum</code></td>
+    <td class="desc">接口统一了，但多钱包冲突未解决：最后注入者覆盖前者</td>
+  </tr>
+  <tr>
+    <td class="fn">2023–今</td>
+    <td class="desc">EIP-6963 引入事件式多钱包发现</td>
+    <td class="desc">多钱包共存，dApp 主动枚举，用户自由选择</td>
+  </tr>
+</table>
+</div>
+
+<div class="box quote">
+  <span class="box-label">DESIGN PRINCIPLE</span>
+  <p><code>window.ethereum</code> 是单例变量，天然不支持多值。EIP-6963 的核心思路是：<strong>放弃争夺同一个变量，改用事件总线让所有钱包各自报到。</strong></p>
+</div>
+
+<hr>
+
+<!-- ════════════════════════════════════════════ -->
+<h2 id="eip1193-overview">EIP-1193：Provider 接口标准</h2>
+<a href="#top" class="back-top">↑ top</a>
+
+<p>
+  EIP-1193（由 Ryan Ghods 等人提出，2019 年 Final）定义了一个最小化的 JavaScript 接口，
+  让任何符合标准的钱包都能被任何符合标准的 dApp 使用，无需了解彼此的内部实现。
+</p>
+
+<p>
+  接口极简：一个方法（<code>request</code>）+ 三个事件监听方法（<code>on</code> / <code>removeListener</code> / <code>once</code>）。
+  这不是偶然的——越小的接口越难被打破，越容易被正确实现。
+</p>
+
+<h3 id="request-method">request() 方法 — 唯一的入口</h3>
+
+<p>
+  整个 EIP-1193 最核心的约定只有一个方法签名：
+</p>
+
+<div class="code-block"><span class="c-kw">interface</span> <span class="c-tp">RequestArguments</span> {
+  <span class="c-kw">readonly</span> method: <span class="c-tp">string</span>;
+  <span class="c-kw">readonly</span> params?: <span class="c-tp">readonly unknown[]</span> | <span class="c-tp">object</span>;
+}
+
+<span class="c-kw">interface</span> <span class="c-tp">EIP1193Provider</span> {
+  <span class="c-fn">request</span>(args: <span class="c-tp">RequestArguments</span>): <span class="c-tp">Promise</span>&lt;<span class="c-tp">unknown</span>&gt;;
+  <span class="c-fn">on</span>(eventName: <span class="c-tp">string</span>, listener: <span class="c-tp">Function</span>): <span class="c-tp">this</span>;
+  <span class="c-fn">removeListener</span>(eventName: <span class="c-tp">string</span>, listener: <span class="c-tp">Function</span>): <span class="c-tp">this</span>;
+}</div>
+
+<p>
+  <code>request()</code> 是一个 Promise 化的 JSON-RPC 调用。<code>method</code> 是任何合法的 JSON-RPC 方法名，
+  <code>params</code> 是对应的参数。如果请求成功，Promise resolve 为结果；如果失败，reject 为一个 <code>ProviderRpcError</code>。
+</p>
+
+<p>常用的 JSON-RPC 方法：</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>方法</th><th>说明</th><th>典型返回值</th></tr>
+  <tr>
+    <td class="fn">eth_requestAccounts</td>
+    <td class="desc">请求连接钱包，弹出授权弹窗</td>
+    <td class="fn"><code>string[]</code> — 账户地址数组</td>
+  </tr>
+  <tr>
+    <td class="fn">eth_accounts</td>
+    <td class="desc">获取当前已授权账户（不弹窗）</td>
+    <td class="fn"><code>string[]</code></td>
+  </tr>
+  <tr>
+    <td class="fn">eth_chainId</td>
+    <td class="desc">获取当前链 ID</td>
+    <td class="fn"><code>"0xc4"</code> — 十六进制字符串</td>
+  </tr>
+  <tr>
+    <td class="fn">eth_sendTransaction</td>
+    <td class="desc">发送交易（需用户确认）</td>
+    <td class="fn"><code>string</code> — 交易哈希</td>
+  </tr>
+  <tr>
+    <td class="fn">eth_sign / personal_sign</td>
+    <td class="desc">签名消息</td>
+    <td class="fn"><code>string</code> — 签名结果</td>
+  </tr>
+  <tr>
+    <td class="fn">wallet_switchEthereumChain</td>
+    <td class="desc">请求切换到指定链</td>
+    <td class="fn"><code>null</code></td>
+  </tr>
+  <tr>
+    <td class="fn">wallet_addEthereumChain</td>
+    <td class="desc">请求添加自定义链</td>
+    <td class="fn"><code>null</code></td>
+  </tr>
+</table>
+</div>
+
+<h3 id="events">Provider 事件</h3>
+
+<p>
+  Provider 还需要支持标准事件，让 dApp 响应钱包状态变化，而不是主动轮询。
+</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>事件</th><th>触发时机</th><th>回调参数</th></tr>
+  <tr>
+    <td class="fn">connect</td>
+    <td class="desc">Provider 连接到链时（首次或重连）</td>
+    <td class="fn"><code>{ chainId: string }</code></td>
+  </tr>
+  <tr>
+    <td class="fn">disconnect</td>
+    <td class="desc">Provider 与链断开连接</td>
+    <td class="fn"><code>ProviderRpcError</code></td>
+  </tr>
+  <tr>
+    <td class="fn">chainChanged</td>
+    <td class="desc">用户在钱包中切换了网络</td>
+    <td class="fn"><code>string</code> — 新 chainId（十六进制）</td>
+  </tr>
+  <tr>
+    <td class="fn">accountsChanged</td>
+    <td class="desc">用户切换账户或撤销授权</td>
+    <td class="fn"><code>string[]</code> — 新账户列表</td>
+  </tr>
+  <tr>
+    <td class="fn">message</td>
+    <td class="desc">收到订阅推送（如 eth_subscribe）</td>
+    <td class="fn"><code>{ type: string, data: unknown }</code></td>
+  </tr>
+</table>
+</div>
+
+<div class="code-block"><span class="c-cm">// 监听链切换，自动刷新页面</span>
+window.ethereum.<span class="c-fn">on</span>(<span class="c-st">'chainChanged'</span>, (chainId) => {
+  window.<span class="c-fn">location.reload</span>();
+});
+
+<span class="c-cm">// 监听账户切换，更新 UI</span>
+window.ethereum.<span class="c-fn">on</span>(<span class="c-st">'accountsChanged'</span>, (accounts) => {
+  <span class="c-kw">if</span> (accounts.length === <span class="c-nu">0</span>) {
+    <span class="c-cm">// 用户断开连接或锁定钱包</span>
+    <span class="c-fn">handleDisconnect</span>();
+  } <span class="c-kw">else</span> {
+    <span class="c-fn">updateConnectedAccount</span>(accounts[<span class="c-nu">0</span>]);
+  }
+});</div>
+
+<div class="box caution">
+  <span class="box-label">注意</span>
+  <p>EIP-1193 规范建议在收到 <code>chainChanged</code> 事件后刷新页面，以避免因链切换导致的状态不一致。大多数生产级 dApp 都遵循这个建议。</p>
+</div>
+
+<h3 id="error-codes">错误码</h3>
+
+<p>
+  当 <code>request()</code> 失败时，会抛出一个实现了以下接口的 <code>ProviderRpcError</code>：
+</p>
+
+<div class="code-block"><span class="c-kw">interface</span> <span class="c-tp">ProviderRpcError</span> <span class="c-kw">extends</span> <span class="c-tp">Error</span> {
+  code: <span class="c-tp">number</span>;
+  data?: <span class="c-tp">unknown</span>;
+}</div>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>Code</th><th>含义</th><th>常见触发场景</th></tr>
+  <tr>
+    <td class="fn">4001</td>
+    <td class="desc"><strong>User Rejected Request</strong> — 用户主动拒绝</td>
+    <td class="desc">用户点击取消连接弹窗、拒绝交易确认</td>
+  </tr>
+  <tr>
+    <td class="fn">4100</td>
+    <td class="desc"><strong>Unauthorized</strong> — 未获授权</td>
+    <td class="desc">dApp 未调用 <code>eth_requestAccounts</code> 就直接调用需要授权的方法</td>
+  </tr>
+  <tr>
+    <td class="fn">4200</td>
+    <td class="desc"><strong>Unsupported Method</strong> — 不支持该方法</td>
+    <td class="desc">钱包未实现该 JSON-RPC 方法</td>
+  </tr>
+  <tr>
+    <td class="fn">4900</td>
+    <td class="desc"><strong>Disconnected</strong> — Provider 未连接任何链</td>
+    <td class="desc">钱包离线、网络错误</td>
+  </tr>
+  <tr>
+    <td class="fn">4901</td>
+    <td class="desc"><strong>Chain Disconnected</strong> — 未连接到请求的链</td>
+    <td class="desc">当前连接链与请求操作的目标链不符</td>
+  </tr>
+</table>
+</div>
+
+<h3 id="eip1193-demo">交互演示：构造 EIP-1193 请求</h3>
+
+<div class="tool-box">
+  <div class="tool-header">
+    EIP-1193 Request Builder
+    <span class="tool-sub">生成标准 provider.request() 调用示例</span>
+  </div>
+  <div class="tool-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div>
+        <label>RPC Method</label>
+        <select id="rpc-method" class="tool-input" style="cursor:pointer">
+          <option value="eth_requestAccounts">eth_requestAccounts</option>
+          <option value="eth_accounts">eth_accounts</option>
+          <option value="eth_chainId">eth_chainId</option>
+          <option value="eth_sendTransaction">eth_sendTransaction</option>
+          <option value="wallet_switchEthereumChain">wallet_switchEthereumChain</option>
+          <option value="personal_sign">personal_sign</option>
+        </select>
+      </div>
+      <div>
+        <label>Target Address（用于 sendTransaction）</label>
+        <input type="text" id="rpc-to" class="tool-input" value="0xRecipient...abcd" placeholder="0x...">
+      </div>
+    </div>
+    <div class="tool-btn-row">
+      <button class="tool-btn" onclick="buildRequest()">生成请求代码</button>
+      <button class="tool-btn sec" onclick="document.getElementById('rpc-out').innerHTML=''">清除</button>
+    </div>
+    <div id="rpc-out" class="tool-output"></div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ════════════════════════════════════════════ -->
+<h2 id="eip6963-overview">EIP-6963：多钱包发现机制</h2>
+<a href="#top" class="back-top">↑ top</a>
+
+<p>
+  EIP-6963（由 Pedro Gomes 等人提出，2023 年 Final）解决了一个在 EIP-1193 标准化之后才变得更严重的问题：
+  当多个 EIP-1193 兼容钱包同时存在时，dApp 如何感知它们的存在，用户如何做出选择。
+</p>
+
+<h3 id="the-problem">问题：最后写入者胜出</h3>
+
+<p>
+  理解 EIP-6963 的前提，是理解它想解决的问题有多荒谬。
+</p>
+
+<p>
+  假设用户同时安装了 MetaMask 和 Phantom。两个插件都会在页面加载时执行
+  <code>window.ethereum = myProvider</code>。
+  执行顺序取决于浏览器插件的加载顺序——而这个顺序取决于用户的安装顺序、插件的启动速度，甚至当天浏览器的心情。
+  dApp 看到的 <code>window.ethereum</code> 永远只有一个，另一个钱包对它来说根本不存在。
+</p>
+
+<div class="diagram">
+<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" width="700" height="200">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#d9534f"/>
+    </marker>
+  </defs>
+
+  <!-- window.ethereum -->
+  <rect x="280" y="70" width="140" height="60" rx="6" fill="#fffbea" stroke="#f0a500" stroke-width="2"/>
+  <text x="350" y="97" text-anchor="middle" font-family="Courier New,monospace" font-size="13" font-weight="bold" fill="#c47f00">window.ethereum</text>
+  <text x="350" y="118" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">只有一个槽位</text>
+
+  <!-- MetaMask -->
+  <rect x="60" y="30" width="130" height="50" rx="6" fill="#f0fff4" stroke="#3aaa5c" stroke-width="2"/>
+  <text x="125" y="57" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="bold" fill="#1a5e30">MetaMask</text>
+  <text x="125" y="73" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">先加载</text>
+
+  <!-- Phantom -->
+  <rect x="60" y="120" width="130" height="50" rx="6" fill="#f0f6ff" stroke="#2a6db5" stroke-width="2"/>
+  <text x="125" y="147" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="bold" fill="#111">Phantom</text>
+  <text x="125" y="163" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">后加载，覆盖</text>
+
+  <!-- Arrows -->
+  <line x1="192" y1="55" x2="278" y2="90" stroke="#3aaa5c" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <line x1="192" y1="145" x2="278" y2="110" stroke="#2a6db5" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- dApp -->
+  <rect x="500" y="70" width="130" height="60" rx="6" fill="#fff5f5" stroke="#d9534f" stroke-width="2"/>
+  <text x="565" y="97" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="bold" fill="#b52b27">dApp</text>
+  <text x="565" y="116" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">只看到 Phantom</text>
+
+  <line x1="422" y1="100" x2="498" y2="100" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- MetaMask lost label -->
+  <text x="125" y="18" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#d9534f">被覆盖，dApp 无法发现</text>
+</svg>
+<figcaption>window.ethereum 只有一个槽位，后加载的钱包会覆盖先加载的</figcaption>
+</div>
+
+<div class="box caution">
+  <span class="box-label">根本矛盾</span>
+  <p>EIP-1193 假设"有且仅有一个 Provider"。但现实是用户可能同时安装多个钱包。<code>window.ethereum</code> 是单例，承载不了多值。</p>
+</div>
+
+<h3 id="announce-event">解决方案：事件总线式广播</h3>
+
+<p>
+  EIP-6963 的解决思路借鉴了广播协议（如 mDNS/Bonjour）：
+  <strong>不要争夺一个全局变量，改用事件系统让所有参与者主动声明自己的存在。</strong>
+</p>
+
+<p>
+  协议定义了两个自定义事件：
+</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>事件名</th><th>发出方</th><th>时机</th><th>作用</th></tr>
+  <tr>
+    <td class="fn">eip6963:announceProvider</td>
+    <td class="desc">钱包</td>
+    <td class="desc">页面加载时主动广播；收到 request 事件时重新广播</td>
+    <td class="desc">声明自己存在，携带 Provider 详情</td>
+  </tr>
+  <tr>
+    <td class="fn">eip6963:requestProvider</td>
+    <td class="desc">dApp</td>
+    <td class="desc">需要枚举可用钱包时</td>
+    <td class="desc">触发所有钱包重新广播（用于晚启动的 dApp）</td>
+  </tr>
+</table>
+</div>
+
+<h3 id="provider-info">EIP6963ProviderInfo 结构</h3>
+
+<p>每次 <code>announceProvider</code> 事件携带一个 <code>EIP6963ProviderDetail</code> 对象：</p>
+
+<div class="code-block"><span class="c-kw">interface</span> <span class="c-tp">EIP6963ProviderInfo</span> {
+  uuid:  <span class="c-tp">string</span>;  <span class="c-cm">// UUID v4，每个钱包实例唯一，去重用</span>
+  name:  <span class="c-tp">string</span>;  <span class="c-cm">// 人类可读名称，如 "MetaMask"</span>
+  icon:  <span class="c-tp">string</span>;  <span class="c-cm">// 钱包图标，data URI（推荐 96×96 PNG）</span>
+  rdns:  <span class="c-tp">string</span>;  <span class="c-cm">// 反向域名，如 "io.metamask"</span>
+}
+
+<span class="c-kw">interface</span> <span class="c-tp">EIP6963ProviderDetail</span> {
+  info:     <span class="c-tp">EIP6963ProviderInfo</span>;
+  provider: <span class="c-tp">EIP1193Provider</span>;  <span class="c-cm">// 实现了 EIP-1193 的 Provider 实例</span>
+}
+
+<span class="c-kw">interface</span> <span class="c-tp">EIP6963AnnounceProviderEvent</span> <span class="c-kw">extends</span> <span class="c-tp">CustomEvent</span> {
+  type:   <span class="c-st">'eip6963:announceProvider'</span>;
+  detail: <span class="c-tp">Readonly</span>&lt;<span class="c-tp">EIP6963ProviderDetail</span>&gt;;
+}</div>
+
+<p>
+  <code>rdns</code> 是关键字段：它使用反向域名格式（类似 Android App ID），在所有支持 EIP-6963 的钱包中全局唯一，
+  可用于精确标识某个特定钱包（例如，dApp 可以通过 <code>rdns === "io.metamask"</code> 筛选 MetaMask）。
+</p>
+
+<h3 id="discovery-flow">完整发现流程</h3>
+
+<div class="diagram">
+<svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" width="760" height="260">
+  <defs>
+    <marker id="fa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="fb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f0a500"/>
+    </marker>
+    <marker id="fc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3aaa5c"/>
+    </marker>
+  </defs>
+
+  <!-- Step labels -->
+  <text x="10" y="30" font-family="Courier New,monospace" font-size="11" fill="#888">① 页面加载</text>
+  <text x="10" y="100" font-family="Courier New,monospace" font-size="11" fill="#888">② 钱包广播</text>
+  <text x="10" y="170" font-family="Courier New,monospace" font-size="11" fill="#888">③ dApp 请求</text>
+  <text x="10" y="240" font-family="Courier New,monospace" font-size="11" fill="#888">④ 再次广播</text>
+
+  <!-- MetaMask column -->
+  <rect x="80" y="10" width="120" height="36" rx="4" fill="#f0fff4" stroke="#3aaa5c" stroke-width="1.5"/>
+  <text x="140" y="32" text-anchor="middle" font-family="Courier New,monospace" font-size="13" font-weight="bold" fill="#1a5e30">MetaMask</text>
+
+  <!-- Phantom column -->
+  <rect x="220" y="10" width="120" height="36" rx="4" fill="#f0f6ff" stroke="#2a6db5" stroke-width="1.5"/>
+  <text x="280" y="32" text-anchor="middle" font-family="Courier New,monospace" font-size="13" font-weight="bold" fill="#111">Phantom</text>
+
+  <!-- window (event bus) column -->
+  <rect x="380" y="10" width="160" height="36" rx="4" fill="#fffbea" stroke="#f0a500" stroke-width="1.5"/>
+  <text x="460" y="32" text-anchor="middle" font-family="Courier New,monospace" font-size="13" fill="#c47f00">window (事件总线)</text>
+
+  <!-- dApp column -->
+  <rect x="580" y="10" width="120" height="36" rx="4" fill="#fff5f5" stroke="#d9534f" stroke-width="1.5"/>
+  <text x="640" y="32" text-anchor="middle" font-family="Courier New,monospace" font-size="13" font-weight="bold" fill="#b52b27">dApp</text>
+
+  <!-- Step 2: MM announce -->
+  <line x1="140" y1="46" x2="140" y2="82" stroke="#3aaa5c" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="140" y1="84" x2="378" y2="84" stroke="#3aaa5c" stroke-width="1.5" marker-end="url(#fc)"/>
+  <text x="255" y="78" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#3aaa5c">announceProvider</text>
+
+  <!-- Step 2: Phantom announce -->
+  <line x1="280" y1="46" x2="280" y2="96" stroke="#2a6db5" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="280" y1="96" x2="378" y2="96" stroke="#2a6db5" stroke-width="1.5" marker-end="url(#fa)"/>
+
+  <!-- window → dApp (announce forwarded) -->
+  <line x1="542" y1="90" x2="578" y2="90" stroke="#f0a500" stroke-width="1.5" marker-end="url(#fb)"/>
+  <text x="560" y="82" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#f0a500">detail</text>
+
+  <!-- Step 3: dApp requestProvider -->
+  <line x1="640" y1="46" x2="640" y2="155" stroke="#d9534f" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="638" y1="155" x2="542" y2="155" stroke="#d9534f" stroke-width="1.5" marker-end="url(#fa)"/>
+  <text x="590" y="148" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#d9534f">requestProvider</text>
+
+  <!-- Step 4: re-announce -->
+  <line x1="380" y1="155" x2="282" y2="222" stroke="#f0a500" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#fb)"/>
+  <line x1="380" y1="155" x2="142" y2="222" stroke="#f0a500" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#fb)"/>
+  <text x="290" y="195" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#888">触发所有钱包重新广播</text>
+
+  <line x1="140" y1="224" x2="140" y2="238" stroke="#3aaa5c" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="140" y1="238" x2="578" y2="238" stroke="#3aaa5c" stroke-width="1.5" marker-end="url(#fc)"/>
+  <line x1="280" y1="224" x2="280" y2="250" stroke="#2a6db5" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="280" y1="250" x2="578" y2="250" stroke="#2a6db5" stroke-width="1.5" marker-end="url(#fa)"/>
+  <text x="380" y="233" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#888">dApp 收集所有 Provider，展示选择器</text>
+</svg>
+<figcaption>EIP-6963 双向握手：钱包主动广播 + dApp 主动请求，确保无论谁先启动都不会遗漏</figcaption>
+</div>
+
+<div class="box tip">
+  <span class="box-label">为什么需要 requestProvider？</span>
+  <p>如果 dApp 比钱包插件晚加载（例如懒加载场景），它可能错过初始的 <code>announceProvider</code> 广播。
+  发送 <code>requestProvider</code> 事件会触发所有钱包重新广播，确保 dApp 不会遗漏任何已安装的钱包。</p>
+</div>
+
+<hr>
+
+<!-- ════════════════════════════════════════════ -->
+<h2 id="together">协议如何配合</h2>
+<a href="#top" class="back-top">↑ top</a>
+
+<p>
+  EIP-1193 和 EIP-6963 分工明确，层次清晰：
+  EIP-6963 负责发现（"这里有哪些钱包"），EIP-1193 负责通信（"怎么和选中的钱包交互"）。
+  发现完成后，拿到的 <code>EIP6963ProviderDetail.provider</code> 就是一个标准的 EIP-1193 Provider，直接使用。
+</p>
+
+<h3 id="wallet-impl">钱包侧：如何正确实现 EIP-6963</h3>
+
+<div class="code-block"><span class="c-cm">// 钱包插件注入脚本（content script）</span>
+
+<span class="c-kw">const</span> provider = <span class="c-kw">new</span> <span class="c-fn">MyWalletProvider</span>(); <span class="c-cm">// 实现 EIP-1193</span>
+
+<span class="c-kw">const</span> info: <span class="c-tp">EIP6963ProviderInfo</span> = {
+  uuid:  <span class="c-st">'550e8400-e29b-41d4-a716-446655440000'</span>, <span class="c-cm">// UUID v4，固定值</span>
+  name:  <span class="c-st">'MyWallet'</span>,
+  icon:  <span class="c-st">'data:image/png;base64,iVBORw0KGgo...'</span>,
+  rdns:  <span class="c-st">'com.mywallet'</span>,
+};
+
+<span class="c-kw">function</span> <span class="c-fn">announce</span>() {
+  window.<span class="c-fn">dispatchEvent</span>(<span class="c-kw">new</span> <span class="c-fn">CustomEvent</span>(<span class="c-st">'eip6963:announceProvider'</span>, {
+    detail: <span class="c-tp">Object</span>.<span class="c-fn">freeze</span>({ info, provider }),
+  }));
+}
+
+<span class="c-cm">// 主动广播</span>
+<span class="c-fn">announce</span>();
+
+<span class="c-cm">// 响应 dApp 的 requestProvider 事件</span>
+window.<span class="c-fn">addEventListener</span>(<span class="c-st">'eip6963:requestProvider'</span>, <span class="c-fn">announce</span>);</div>
+
+<div class="box note">
+  <span class="box-label">Object.freeze 的必要性</span>
+  <p>EIP-6963 要求 <code>detail</code> 是 frozen 的 — 防止 dApp 或恶意脚本篡改 Provider 对象。这是协议安全模型的一部分。</p>
+</div>
+
+<h3 id="dapp-impl">dApp 侧：枚举并展示钱包选择器</h3>
+
+<div class="code-block"><span class="c-cm">// dApp 的钱包连接模块</span>
+
+<span class="c-kw">const</span> providers: <span class="c-tp">Map</span>&lt;<span class="c-tp">string</span>, <span class="c-tp">EIP6963ProviderDetail</span>&gt; = <span class="c-kw">new</span> <span class="c-fn">Map</span>();
+
+<span class="c-cm">// 监听钱包广播</span>
+window.<span class="c-fn">addEventListener</span>(<span class="c-st">'eip6963:announceProvider'</span>, (event: <span class="c-tp">EIP6963AnnounceProviderEvent</span>) => {
+  <span class="c-kw">const</span> { info, provider } = event.detail;
+  providers.<span class="c-fn">set</span>(info.uuid, event.detail); <span class="c-cm">// uuid 去重</span>
+  <span class="c-fn">renderWalletList</span>(providers);
+});
+
+<span class="c-cm">// 触发所有钱包广播（覆盖晚加载场景）</span>
+window.<span class="c-fn">dispatchEvent</span>(<span class="c-kw">new</span> <span class="c-fn">Event</span>(<span class="c-st">'eip6963:requestProvider'</span>));
+
+<span class="c-cm">// 用户选择钱包后，使用标准 EIP-1193 API 连接</span>
+<span class="c-kw">async function</span> <span class="c-fn">connectWallet</span>(detail: <span class="c-tp">EIP6963ProviderDetail</span>) {
+  <span class="c-kw">try</span> {
+    <span class="c-kw">const</span> accounts = <span class="c-kw">await</span> detail.provider.<span class="c-fn">request</span>({
+      method: <span class="c-st">'eth_requestAccounts'</span>,
+    });
+    console.<span class="c-fn">log</span>(<span class="c-st">`Connected to ${detail.info.name}: ${accounts[0]}`</span>);
+  } <span class="c-kw">catch</span> (err: <span class="c-kw">any</span>) {
+    <span class="c-kw">if</span> (err.code === <span class="c-nu">4001</span>) {
+      console.<span class="c-fn">log</span>(<span class="c-st">'User rejected connection'</span>);
+    }
+  }
+}</div>
+
+<h3 id="migration">从旧模式迁移：window.ethereum 还能用吗</h3>
+
+<p>
+  很多人问：实现了 EIP-6963 之后，是否还需要 <code>window.ethereum</code>？
+</p>
+
+<p>
+  答案是：暂时两者并行。<code>window.ethereum</code> 仍然是大量 dApp 和钱包的既有接口，短期内不会消失。
+  推荐做法是：<strong>优先使用 EIP-6963，回退到 <code>window.ethereum</code></strong>。
+</p>
+
+<div class="code-block"><span class="c-kw">async function</span> <span class="c-fn">getProvider</span>(): <span class="c-tp">Promise</span>&lt;<span class="c-tp">EIP1193Provider</span> | <span class="c-kw">null</span>&gt; {
+  <span class="c-cm">// 优先：尝试 EIP-6963 发现</span>
+  <span class="c-kw">const</span> detected = <span class="c-kw">await</span> <span class="c-fn">discoverEIP6963Providers</span>();
+  <span class="c-kw">if</span> (detected.length > <span class="c-nu">0</span>) {
+    <span class="c-cm">// 展示钱包选择器，让用户选择</span>
+    <span class="c-kw">return</span> <span class="c-fn">promptUserToSelect</span>(detected);
+  }
+
+  <span class="c-cm">// 回退：使用 window.ethereum（单钱包场景）</span>
+  <span class="c-kw">if</span> (<span class="c-kw">typeof</span> window !== <span class="c-st">'undefined'</span> &amp;&amp; window.ethereum) {
+    <span class="c-kw">return</span> window.ethereum;
+  }
+
+  <span class="c-kw">return null</span>;
+}</div>
+
+<hr>
+
+<!-- ════════════════════════════════════════════ -->
+<h2 id="security">安全考量</h2>
+<a href="#top" class="back-top">↑ top</a>
+
+<h3>EIP-1193 的安全边界</h3>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>风险</th><th>说明</th><th>缓解措施</th></tr>
+  <tr>
+    <td class="fn">钓鱼 Provider</td>
+    <td class="desc">恶意页面注入伪造的 <code>window.ethereum</code>，劫持 <code>request()</code> 调用</td>
+    <td class="desc">用户应通过浏览器扩展安装钱包，不信任页面注入的 Provider；钱包应在安全上下文（content script）中注入</td>
+  </tr>
+  <tr>
+    <td class="fn">过度权限请求</td>
+    <td class="desc">dApp 在未告知用户的情况下调用高权限方法（如 <code>eth_sign</code>）</td>
+    <td class="desc">钱包应对每个高危方法显示清晰的用户确认弹窗</td>
+  </tr>
+  <tr>
+    <td class="fn">事件监听泄漏</td>
+    <td class="desc">忘记移除事件监听器，导致内存泄漏和重复触发</td>
+    <td class="desc">使用 <code>removeListener</code> 及时清理；只在需要时注册监听器</td>
+  </tr>
+</table>
+</div>
+
+<h3>EIP-6963 的安全考量</h3>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>风险</th><th>说明</th><th>缓解措施</th></tr>
+  <tr>
+    <td class="fn">恶意 announceProvider</td>
+    <td class="desc">恶意脚本派发伪造的 <code>announceProvider</code> 事件，冒充合法钱包</td>
+    <td class="desc">协议本身无法完全防止；用户应辨别钱包名称和图标，dApp 可通过 <code>rdns</code> 做已知钱包白名单校验</td>
+  </tr>
+  <tr>
+    <td class="fn">Provider 对象篡改</td>
+    <td class="desc">事件 detail 被中间代码修改，Provider 行为被劫持</td>
+    <td class="desc">规范要求 <code>Object.freeze(detail)</code>，使 detail 不可变</td>
+  </tr>
+  <tr>
+    <td class="fn">UUID 碰撞</td>
+    <td class="desc">两个钱包使用相同的 UUID，导致 dApp 错误去重</td>
+    <td class="desc">UUID v4 碰撞概率极低；dApp 可同时使用 <code>rdns</code> 辅助去重</td>
+  </tr>
+</table>
+</div>
+
+<div class="box caution">
+  <span class="box-label">根本限制</span>
+  <p>EIP-6963 的安全模型依赖于"合法钱包在受信任的浏览器扩展上下文中运行"这一前提。
+  它无法防止运行在同一页面上下文中的恶意脚本伪造钱包事件。
+  最终的安全保障来自浏览器的扩展隔离机制，而不是协议本身。</p>
+</div>
+
+<hr>
+
+<!-- ════════════════════════════════════════════ -->
+<h2 id="quick-ref">Quick Reference</h2>
+<a href="#top" class="back-top">↑ top</a>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3" style="background:#1a1a1a;color:#f0a500;font-size:1rem">EIP-1193 — Provider 接口</th></tr>
+  <tr><th>项目</th><th>值</th><th>说明</th></tr>
+  <tr>
+    <td class="fn">核心方法</td>
+    <td class="fn"><code>provider.request({ method, params })</code></td>
+    <td class="desc">所有 JSON-RPC 调用的统一入口，返回 Promise</td>
+  </tr>
+  <tr>
+    <td class="fn">事件订阅</td>
+    <td class="fn"><code>provider.on(event, listener)</code></td>
+    <td class="desc">监听 connect / disconnect / chainChanged / accountsChanged</td>
+  </tr>
+  <tr>
+    <td class="fn">错误基类</td>
+    <td class="fn"><code>ProviderRpcError</code></td>
+    <td class="desc">扩展自 Error，附带 <code>code</code> 字段（4001=拒绝，4100=未授权…）</td>
+  </tr>
+  <tr>
+    <td class="fn">连接账户</td>
+    <td class="fn"><code>eth_requestAccounts</code></td>
+    <td class="desc">弹出授权弹窗，返回账户地址数组</td>
+  </tr>
+  <tr>
+    <td class="fn">获取链</td>
+    <td class="fn"><code>eth_chainId</code></td>
+    <td class="desc">返回十六进制字符串，如 <code>"0x1"</code>（主网）、<code>"0xc4"</code>（X Layer）</td>
+  </tr>
+</table>
+</div>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3" style="background:#1a1a1a;color:#f0a500;font-size:1rem">EIP-6963 — 多钱包发现</th></tr>
+  <tr><th>项目</th><th>值</th><th>说明</th></tr>
+  <tr>
+    <td class="fn">钱包广播事件</td>
+    <td class="fn"><code>eip6963:announceProvider</code></td>
+    <td class="desc">钱包主动派发，携带 frozen EIP6963ProviderDetail</td>
+  </tr>
+  <tr>
+    <td class="fn">dApp 请求事件</td>
+    <td class="fn"><code>eip6963:requestProvider</code></td>
+    <td class="desc">dApp 派发，触发所有钱包重新广播</td>
+  </tr>
+  <tr>
+    <td class="fn">身份字段</td>
+    <td class="fn"><code>rdns</code></td>
+    <td class="desc">反向域名，全局唯一，用于精确识别钱包（如 <code>"io.metamask"</code>）</td>
+  </tr>
+  <tr>
+    <td class="fn">去重字段</td>
+    <td class="fn"><code>uuid</code></td>
+    <td class="desc">UUID v4，每个钱包实例唯一，用于 Map 去重</td>
+  </tr>
+  <tr>
+    <td class="fn">不可变要求</td>
+    <td class="fn"><code>Object.freeze(detail)</code></td>
+    <td class="desc">防止 Provider 对象被篡改，协议安全基础</td>
+  </tr>
+</table>
+</div>
+
+<hr>
+
+<!-- ════════════════════════════════════════════ -->
+<h2 id="quiz">理解测验</h2>
+<a href="#top" class="back-top">↑ top</a>
+
+<div id="quiz-container">
+
+  <div class="quiz-q" id="q1">
+    <p>Q1. EIP-1193 定义的 <code>request()</code> 方法的正确返回类型是？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer(this,'q1','A')">A. <code>void</code>，结果通过回调函数传递</button>
+      <button class="quiz-opt" onclick="answer(this,'q1','B')">B. <code>Promise&lt;unknown&gt;</code>，异步解析或拒绝</button>
+      <button class="quiz-opt" onclick="answer(this,'q1','C')">C. <code>string</code>，直接返回 JSON 字符串</button>
+      <button class="quiz-opt" onclick="answer(this,'q1','D')">D. <code>Observable</code>，可订阅的数据流</button>
+    </div>
+    <div class="quiz-fb" id="q1-fb"></div>
+  </div>
+
+  <div class="quiz-q" id="q2">
+    <p>Q2. 当用户在 MetaMask 中切换网络时，EIP-1193 规范要求 Provider 派发哪个事件？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer(this,'q2','A')">A. <code>networkChanged</code>，携带链的名称字符串</button>
+      <button class="quiz-opt" onclick="answer(this,'q2','B')">B. <code>chainChanged</code>，携带新链 ID 的十六进制字符串</button>
+      <button class="quiz-opt" onclick="answer(this,'q2','C')">C. <code>connect</code>，携带新链的 RPC URL</button>
+      <button class="quiz-opt" onclick="answer(this,'q2','D')">D. <code>switchChain</code>，携带 chain 对象</button>
+    </div>
+    <div class="quiz-fb" id="q2-fb"></div>
+  </div>
+
+  <div class="quiz-q" id="q3">
+    <p>Q3. EIP-1193 错误码 4001 代表什么？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer(this,'q3','A')">A. Provider 未连接到任何链（Disconnected）</button>
+      <button class="quiz-opt" onclick="answer(this,'q3','B')">B. 钱包不支持该 JSON-RPC 方法（Unsupported Method）</button>
+      <button class="quiz-opt" onclick="answer(this,'q3','C')">C. 用户主动拒绝了请求（User Rejected Request）</button>
+      <button class="quiz-opt" onclick="answer(this,'q3','D')">D. dApp 未经授权（Unauthorized）</button>
+    </div>
+    <div class="quiz-fb" id="q3-fb"></div>
+  </div>
+
+  <div class="quiz-q" id="q4">
+    <p>Q4. EIP-6963 中 <code>rdns</code> 字段的主要用途是？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer(this,'q4','A')">A. 作为 UUID 的备份，用于去重</button>
+      <button class="quiz-opt" onclick="answer(this,'q4','B')">B. 反向域名格式的全局唯一标识符，用于精确识别钱包品牌</button>
+      <button class="quiz-opt" onclick="answer(this,'q4','C')">C. 存储钱包的 DNS 解析地址，用于网络通信</button>
+      <button class="quiz-opt" onclick="answer(this,'q4','D')">D. 钱包图标的 CDN 地址</button>
+    </div>
+    <div class="quiz-fb" id="q4-fb"></div>
+  </div>
+
+  <div class="quiz-q" id="q5">
+    <p>Q5. 为什么 EIP-6963 要求钱包广播时使用 <code>Object.freeze(detail)</code>？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer(this,'q5','A')">A. 提升性能，冻结对象访问速度更快</button>
+      <button class="quiz-opt" onclick="answer(this,'q5','B')">B. 防止 dApp 或恶意脚本在事件传递后篡改 Provider 对象</button>
+      <button class="quiz-opt" onclick="answer(this,'q5','C')">C. 符合 JavaScript 不可变数据模式的最佳实践</button>
+      <button class="quiz-opt" onclick="answer(this,'q5','D')">D. 让 <code>CustomEvent</code> 能正确序列化 detail 对象</button>
+    </div>
+    <div class="quiz-fb" id="q5-fb"></div>
+  </div>
+
+  <div class="quiz-q" id="q6">
+    <p>Q6. dApp 派发 <code>eip6963:requestProvider</code> 事件的主要目的是？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer(this,'q6','A')">A. 关闭不需要的钱包连接，释放资源</button>
+      <button class="quiz-opt" onclick="answer(this,'q6','B')">B. 请求钱包更新到最新版本</button>
+      <button class="quiz-opt" onclick="answer(this,'q6','C')">C. 触发所有已安装钱包重新广播，覆盖 dApp 晚于钱包加载的场景</button>
+      <button class="quiz-opt" onclick="answer(this,'q6','D')">D. 请求钱包列出当前已连接的 dApp</button>
+    </div>
+    <div class="quiz-fb" id="q6-fb"></div>
+  </div>
+
+  <button onclick="showResult()" style="margin-top:1rem;padding:10px 28px;background:#2b2b2b;color:#fff;border:none;border-radius:3px;font-family:'Courier New',monospace;font-size:1rem;cursor:pointer;">查看结果</button>
+  <div id="quiz-result">
+    <div class="score" id="score-display">0/6</div>
+    <p id="score-msg" style="margin-top:.6rem;font-family:'Courier New',monospace;font-size:1rem;color:#555;"></p>
+  </div>
+</div>
+
+<hr>
+
+<!-- ════════════════════════════════════════════ -->
+<h2 id="summary-ref">Summary</h2>
+<a href="#top" class="back-top">↑ top</a>
+
+<table class="sum-table">
+  <tr>
+    <th>项目</th><th>EIP-1193</th><th>EIP-6963</th>
+  </tr>
+  <tr>
+    <td><strong>解决的问题</strong></td>
+    <td>dApp 与钱包如何通信（接口标准）</td>
+    <td>多钱包共存时 dApp 如何发现它们（发现协议）</td>
+  </tr>
+  <tr>
+    <td><strong>核心机制</strong></td>
+    <td><code>provider.request()</code> + 事件系统</td>
+    <td><code>announceProvider</code> / <code>requestProvider</code> 双向事件</td>
+  </tr>
+  <tr>
+    <td><strong>关键接口</strong></td>
+    <td><code>EIP1193Provider</code>：request + on + removeListener</td>
+    <td><code>EIP6963ProviderDetail</code>：info（uuid/name/icon/rdns）+ provider</td>
+  </tr>
+  <tr>
+    <td><strong>错误处理</strong></td>
+    <td><code>ProviderRpcError</code>，code 4001/4100/4200/4900/4901</td>
+    <td>—（使用底层 EIP-1193 错误）</td>
+  </tr>
+  <tr>
+    <td><strong>向后兼容</strong></td>
+    <td>沿用 <code>window.ethereum</code> 单例</td>
+    <td>推荐优先使用，回退到 <code>window.ethereum</code></td>
+  </tr>
+  <tr>
+    <td><strong>状态</strong></td>
+    <td>Final（2019）</td>
+    <td>Final（2023）</td>
+  </tr>
+</table>
+
+<div class="box note" style="margin-top:2rem">
+  <span class="box-label">两个 EIP 的关系</span>
+  <p>
+    EIP-1193 是通信层，EIP-6963 是发现层。它们不是替代关系，而是叠加关系：
+    先用 EIP-6963 发现所有可用钱包，用户选择后，用 EIP-1193 和所选钱包进行通信。
+    EIP-6963 的 <code>detail.provider</code> 直接就是一个 EIP-1193 Provider，无需任何适配。
+  </p>
+</div>
+
+<hr>
+
+<footer>
+  <p>EIP-1193 &amp; EIP-6963 · Provider Interface &amp; Multi-Wallet Discovery</p>
+  <p style="margin-top:6px">
+    参考：
+    <a href="https://eips.ethereum.org/EIPS/eip-1193" target="_blank">EIP-1193</a> ·
+    <a href="https://eips.ethereum.org/EIPS/eip-6963" target="_blank">EIP-6963</a>
+  </p>
+</footer>
+
+</div><!-- #main -->
+
+<script>
+// ── Progress Bar ──
+window.addEventListener('scroll', () => {
+  const el = document.getElementById('progressbar');
+  const h  = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  el.style.width = pct + '%';
+});
+
+// ── Sidebar Active Link ──
+const sections = Array.from(document.querySelectorAll('h2[id], h3[id]'));
+const links    = Array.from(document.querySelectorAll('#sidebar a'));
+
+window.addEventListener('scroll', () => {
+  let active = '';
+  for (const s of sections) {
+    if (window.scrollY >= s.offsetTop - 80) active = s.id;
+  }
+  links.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + active);
+  });
+});
+
+// ── EIP-1193 Request Builder ──
+function buildRequest() {
+  const method = document.getElementById('rpc-method').value;
+  const to     = document.getElementById('rpc-to').value.trim() || '0xRecipient...abcd';
+  const out    = document.getElementById('rpc-out');
+
+  const kw = s => `<span style="color:#569cd6">${s}</span>`;
+  const st = s => `<span style="color:#ce9178">${s}</span>`;
+  const cm = s => `<span style="color:#6a9955">${s}</span>`;
+  const fn = s => `<span style="color:#dcdcaa">${s}</span>`;
+  const nu = s => `<span style="color:#f0a500">${s}</span>`;
+
+  const snippets = {
+    'eth_requestAccounts': `${cm('// 连接钱包，弹出授权弹窗')}
+${kw('const')} accounts = ${kw('await')} provider.${fn('request')}({
+  method: ${st("'eth_requestAccounts'")},
+});
+console.${fn('log')}(accounts[${nu('0')}]); ${cm('// "0xYourAddress..."')}`,
+
+    'eth_accounts': `${cm('// 获取已授权账户（不弹窗）')}
+${kw('const')} accounts = ${kw('await')} provider.${fn('request')}({
+  method: ${st("'eth_accounts'")},
+});
+${cm('// 未授权时返回空数组 []')}`,
+
+    'eth_chainId': `${cm('// 获取当前链 ID')}
+${kw('const')} chainId = ${kw('await')} provider.${fn('request')}({
+  method: ${st("'eth_chainId'")},
+});
+console.${fn('log')}(chainId); ${cm('// "0x1"（主网），"0xc4"（X Layer: 196）')}`,
+
+    'eth_sendTransaction': `${cm('// 发送交易（需用户在钱包确认）')}
+${kw('const')} txHash = ${kw('await')} provider.${fn('request')}({
+  method: ${st("'eth_sendTransaction'")},
+  params: [{
+    to:    ${st(`"${to}"`)},
+    value: ${st("'0xDE0B6B3A7640000'")}, ${cm('// 1 ETH in hex wei')}
+    gas:   ${st("'0x5208'")},             ${cm('// 21000')}
+  }],
+});
+console.${fn('log')}(txHash); ${cm('// "0xTransactionHash..."')}`,
+
+    'wallet_switchEthereumChain': `${cm('// 请求切换到指定链')}
+${kw('try')} {
+  ${kw('await')} provider.${fn('request')}({
+    method: ${st("'wallet_switchEthereumChain'")},
+    params: [{ chainId: ${st("'0xc4'")} }], ${cm('// X Layer: chainId 196')}
+  });
+} ${kw('catch')} (err) {
+  ${kw('if')} (err.code === ${nu('4902')}) {
+    ${cm('// 链未添加，需要先 wallet_addEthereumChain')}
+  }
+}`,
+
+    'personal_sign': `${cm('// 签名任意消息（个人签名，不可执行）')}
+${kw('const')} msg = ${st('"Hello Web3"')};
+${kw('const')} [account] = ${kw('await')} provider.${fn('request')}({ method: ${st("'eth_accounts'")} });
+${kw('const')} sig = ${kw('await')} provider.${fn('request')}({
+  method: ${st("'personal_sign'")},
+  params: [msg, account],
+});
+console.${fn('log')}(sig); ${cm('// "0xSignature..."')}`,
+  };
+
+  out.innerHTML = `<div class="code-block" style="font-size:.82rem;margin:0">${snippets[method] || ''}</div>`;
+}
+
+// ── Quiz ──
+const answers = { q1:'B', q2:'B', q3:'C', q4:'B', q5:'B', q6:'C' };
+const feedback = {
+  q1: { B: '正确。<code>request()</code> 返回 <code>Promise&lt;unknown&gt;</code>，成功时 resolve，失败时 reject 为 <code>ProviderRpcError</code>。' },
+  q2: { B: '正确。EIP-1193 定义了 <code>chainChanged</code> 事件，携带新链 ID 的十六进制字符串（如 <code>"0x1"</code>）。' },
+  q3: { C: '正确。4001 = User Rejected Request，用户主动点击拒绝触发。4100=未授权，4200=不支持该方法，4900=未连接。' },
+  q4: { B: '正确。<code>rdns</code>（反向域名）是全局唯一的钱包标识符，如 <code>"io.metamask"</code>，允许 dApp 精确筛选特定钱包品牌。' },
+  q5: { B: '正确。<code>Object.freeze(detail)</code> 使 detail 对象不可变，防止事件派发后被恶意脚本或 dApp 代码篡改 Provider 实现。' },
+  q6: { C: '正确。dApp 可能在钱包插件注入完成后才加载，此时已错过初始广播。发送 <code>requestProvider</code> 触发所有钱包重新广播，确保不遗漏。' },
+};
+
+let score = 0;
+const answered = {};
+
+function answer(btn, qid, opt) {
+  if (answered[qid]) return;
+  answered[qid] = true;
+  const correct = answers[qid];
+  const fb = document.getElementById(qid + '-fb');
+  document.querySelectorAll('#' + qid + ' .quiz-opt').forEach(b => b.disabled = true);
+  if (opt === correct) {
+    btn.classList.add('correct');
+    score++;
+    fb.textContent = '';
+    fb.innerHTML = '✓ ' + (feedback[qid][opt] || '回答正确！');
+    fb.className = 'quiz-fb show ok';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('#' + qid + ' .quiz-opt').forEach(b => {
+      if (b.textContent.startsWith(correct + '.') || b.getAttribute('onclick')?.includes("'" + correct + "'")) {
+        b.classList.add('correct');
+      }
+    });
+    fb.innerHTML = '✗ 选项 ' + correct + ' 正确。' + (feedback[qid][correct] || '');
+    fb.className = 'quiz-fb show bad';
+  }
+}
+
+function showResult() {
+  const total = Object.keys(answers).length;
+  document.getElementById('score-display').textContent = score + '/' + total;
+  const msgs = ['继续加油，重新阅读一遍吧。', '有点感觉了，但还需要巩固。', '不错！基本掌握了核心概念。', '很好！理解相当扎实。', '优秀！几乎完美。', '满分！完全掌握。'];
+  document.getElementById('score-msg').textContent = msgs[Math.min(score, msgs.length - 1)];
+  document.getElementById('quiz-result').style.display = 'block';
+}
+</script>
+
+<!-- ── SVG Lightbox ── -->
+<div id="svg-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;">
+  <button onclick="closeLightbox()" title="关闭 (Esc)" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.4rem;width:36px;height:36px;border-radius:50%;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+  <div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);font-family:'Courier New',monospace;font-size:12px;color:rgba(255,255,255,.4);pointer-events:none;white-space:nowrap;">滚轮缩放 · 拖动平移 · ESC 关闭</div>
+  <div style="position:absolute;bottom:50px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;z-index:2;">
+    <button onclick="lbZoom(1.25)" style="background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1.15rem;width:32px;height:32px;border-radius:4px;cursor:pointer;line-height:1;">+</button>
+    <span id="lb-scale-label" style="font-family:'Courier New',monospace;font-size:13px;color:rgba(255,255,255,.65);min-width:46px;text-align:center;">100%</span>
+    <button onclick="lbZoom(0.8)" style="background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1.15rem;width:32px;height:32px;border-radius:4px;cursor:pointer;line-height:1;">−</button>
+    <button onclick="lbReset()" style="background:rgba(255,255,255,.18);border:none;color:rgba(255,255,255,.65);font-family:'Courier New',monospace;font-size:12px;padding:0 10px;height:32px;border-radius:4px;cursor:pointer;">重置</button>
+  </div>
+  <div id="lb-stage" style="position:absolute;inset:44px 0 86px 0;overflow:hidden;touch-action:none;cursor:grab;">
+    <div id="lb-inner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"></div>
+  </div>
+  <div id="lb-caption" style="position:absolute;bottom:16px;left:0;right:0;text-align:center;font-family:'Courier New',monospace;font-size:13px;color:rgba(255,255,255,.45);pointer-events:none;padding:0 56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+</div>
+<script>
+(function(){
+  var _s = 1, _tx = 0, _ty = 0;
+  var _drag = false, _dx = 0, _dy = 0, _dtx = 0, _dty = 0;
+  var _pinchDist = 0, _lastTouches = null;
+
+  function _applyTransform(){
+    document.getElementById('lb-inner').style.transform =
+      'translate('+_tx+'px,'+_ty+'px) scale('+_s+')';
+    document.getElementById('lb-scale-label').textContent = Math.round(_s*100)+'%';
+  }
+
+  window.lbZoom = function(factor, screenX, screenY){
+    var stage = document.getElementById('lb-stage');
+    var r = stage.getBoundingClientRect();
+    var mx = (screenX !== undefined ? screenX : r.left+r.width/2) - r.left - r.width/2;
+    var my = (screenY !== undefined ? screenY : r.top+r.height/2) - r.top - r.height/2;
+    var ns = Math.min(Math.max(_s * factor, 0.2), 12);
+    var cx = (mx - _tx) / _s;
+    var cy = (my - _ty) / _s;
+    _tx = mx - cx * ns;
+    _ty = my - cy * ns;
+    _s = ns;
+    _applyTransform();
+  };
+
+  window.lbReset = function(){
+    _s = 1; _tx = 0; _ty = 0;
+    _applyTransform();
+    document.getElementById('lb-stage').style.cursor = 'grab';
+  };
+
+  function _open(svgEl, caption){
+    var clone = svgEl.cloneNode(true);
+    var vb = (svgEl.getAttribute('viewBox') || '').split(/[\s,]+/);
+    var natW = parseFloat(vb[2]) || parseFloat(svgEl.getAttribute('width')) || 800;
+    var natH = parseFloat(vb[3]) || parseFloat(svgEl.getAttribute('height')) || 400;
+    clone.setAttribute('width', natW);
+    clone.setAttribute('height', natH);
+    clone.style.cssText = 'display:block;';
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'background:#f8faff;border-radius:8px;padding:28px;border:1px solid #e2e8f0;display:inline-block;line-height:0;';
+    wrapper.appendChild(clone);
+    var inner = document.getElementById('lb-inner');
+    inner.innerHTML = '';
+    inner.appendChild(wrapper);
+    document.getElementById('lb-caption').textContent = caption || '';
+    _s = 1.5;
+    _tx = 0; _ty = 0;
+    _applyTransform();
+    document.getElementById('svg-lightbox').style.display = 'block';
+    document.getElementById('lb-stage').style.cursor = 'grab';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox(){
+    document.getElementById('svg-lightbox').style.display = 'none';
+    document.getElementById('lb-inner').innerHTML = '';
+    document.body.style.overflow = '';
+  }
+  window.closeLightbox = closeLightbox;
+
+  function initLightbox(){
+    document.querySelectorAll('.diagram').forEach(function(d){
+      var svg = d.querySelector('svg');
+      if(!svg) return;
+      d.style.cursor = 'zoom-in';
+      d.title = '点击放大';
+      d.addEventListener('click', function(){
+        var cap = d.querySelector('figcaption');
+        _open(svg, cap ? cap.textContent : '');
+      });
+    });
+
+    var stage = document.getElementById('lb-stage');
+
+    stage.addEventListener('wheel', function(e){
+      e.preventDefault();
+      lbZoom(e.deltaY < 0 ? 1.12 : 1/1.12, e.clientX, e.clientY);
+    }, { passive: false });
+
+    stage.addEventListener('mousedown', function(e){
+      if(e.button !== 0) return;
+      _drag = true; _dx = e.clientX; _dy = e.clientY; _dtx = _tx; _dty = _ty;
+      stage.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', function(e){
+      if(!_drag) return;
+      _tx = _dtx + (e.clientX - _dx);
+      _ty = _dty + (e.clientY - _dy);
+      _applyTransform();
+    });
+    window.addEventListener('mouseup', function(){
+      if(_drag){ _drag = false; stage.style.cursor = 'grab'; }
+    });
+
+    stage.addEventListener('touchstart', function(e){
+      _lastTouches = Array.from(e.touches).map(function(t){ return {x:t.clientX,y:t.clientY}; });
+      if(e.touches.length === 2)
+        _pinchDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    }, { passive: true });
+    stage.addEventListener('touchmove', function(e){
+      e.preventDefault();
+      var ts = Array.from(e.touches).map(function(t){ return {x:t.clientX,y:t.clientY}; });
+      if(e.touches.length === 2 && _lastTouches && _lastTouches.length >= 2){
+        var dist = Math.hypot(ts[0].x-ts[1].x, ts[0].y-ts[1].y);
+        var cx = (ts[0].x+ts[1].x)/2;
+        var cy = (ts[0].y+ts[1].y)/2;
+        if(_pinchDist > 0) lbZoom(dist/_pinchDist, cx, cy);
+        _pinchDist = dist;
+      } else if(e.touches.length === 1 && _lastTouches && _lastTouches.length >= 1){
+        _tx += ts[0].x - _lastTouches[0].x;
+        _ty += ts[0].y - _lastTouches[0].y;
+        _applyTransform();
+      }
+      _lastTouches = ts;
+    }, { passive: false });
+    stage.addEventListener('touchend', function(e){
+      _lastTouches = Array.from(e.touches).map(function(t){ return {x:t.clientX,y:t.clientY}; });
+    });
+
+    document.getElementById('svg-lightbox').addEventListener('click', function(e){
+      if(e.target === this) closeLightbox();
+    });
+  }
+
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeLightbox(); });
+  if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initLightbox); }
+  else { initLightbox(); }
+})();
+</script>
+
+</body>
+</html>

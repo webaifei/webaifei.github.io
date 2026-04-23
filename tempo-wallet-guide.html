@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tempo Wallet | AI Agent 机器支付协议</title>
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px;
+  line-height: 1.85;
+  color: #222;
+  background: #fff;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+#sidebar {
+  width: 256px;
+  min-width: 256px;
+  background: #2b2b2b;
+  color: #ccc;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+#sidebar-logo {
+  background: #1a1a1a;
+  padding: 18px 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  color: #f0a500;
+  letter-spacing: .03em;
+  border-bottom: 1px solid #444;
+}
+#sidebar-logo span { color: #aaa; font-size: 13px; display: block; margin-top: 4px; }
+.sidebar-section { padding: 10px 0 4px; }
+.sidebar-section-label {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #888;
+  padding: 8px 20px 4px;
+}
+.sidebar-section a {
+  display: block;
+  padding: 6px 20px 6px 28px;
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  color: #bbb;
+  text-decoration: none;
+  transition: color .15s, background .15s;
+}
+.sidebar-section a:hover { color: #f0a500; background: rgba(240,165,0,.07); }
+.sidebar-section a.active { color: #f0a500; }
+.sidebar-section a.indent1 { padding-left: 36px; font-size: 14px; color: #aaa; }
+.sidebar-section a.indent1:hover { color: #f0a500; }
+.sidebar-section a.indent2 { padding-left: 46px; font-size: 13px; color: #999; }
+hr.sidebar-hr { border: none; border-top: 1px solid #3a3a3a; margin: 6px 0; }
+
+/* ── Main Content ── */
+#main {
+  flex: 1;
+  max-width: 900px;
+  padding: 0 64px 80px 64px;
+  min-width: 0;
+  background: #fff;
+}
+
+/* ── Breadcrumb ── */
+#breadcrumb {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #64748b;
+  padding: 18px 0 0;
+  margin-bottom: 24px;
+}
+#breadcrumb a { color: #2a6db5; text-decoration: none; }
+#breadcrumb a:hover { text-decoration: underline; }
+
+/* ── Page Title ── */
+h1.page-title {
+  font-family: Georgia, serif;
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #111;
+  margin-bottom: 8px;
+  line-height: 1.15;
+}
+.page-subtitle { font-size: 1.25rem; color: #555; margin-bottom: 12px; font-style: italic; }
+.page-meta { font-family: 'Courier New', monospace; font-size: 14px; color: #888; margin-bottom: 32px; }
+.page-meta a { color: #2a6db5; text-decoration: none; }
+
+/* ── Headings ── */
+h2 {
+  font-family: Georgia, serif;
+  font-size: 2.1rem;
+  color: #111;
+  margin: 3rem 0 .5rem;
+  border-bottom: 2px solid #111;
+  padding-bottom: 8px;
+}
+h3 {
+  font-family: 'Courier New', monospace;
+  font-size: 1.25rem;
+  color: #2a6db5;
+  margin: 2.2rem 0 .6rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+h3 .anchor { color: #aaa; font-size: .85rem; margin-left: 6px; text-decoration: none; }
+h4 { font-family: Georgia, serif; font-size: 1.15rem; color: #333; font-weight: bold; margin: 1.6rem 0 .4rem; }
+.back-top { font-family: 'Courier New', monospace; font-size: .82rem; color: #aaa; float: right; text-decoration: none; margin-top: .7rem; }
+.back-top:hover { color: #2a6db5; }
+.field-meta { font-family: 'Courier New', monospace; font-size: 15px; color: #666; line-height: 2; margin-bottom: .7rem; }
+
+/* ── Body Text ── */
+p { margin-bottom: 1.1rem; color: #333; }
+strong { color: #111; }
+a { color: #2a6db5; text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { padding-left: 1.8rem; margin-bottom: 1.1rem; color: #333; }
+li { margin-bottom: .35rem; }
+code {
+  font-family: 'Courier New', monospace;
+  font-size: .88em;
+  background: #1a1a1a;
+  color: #e8e8e8;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+/* ── Diagrams ── */
+.diagram {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin: 2rem 0;
+  background: #f8faff;
+  text-align: center;
+  cursor: zoom-in;
+  position: relative;
+  transition: box-shadow .2s, border-color .2s;
+}
+.diagram:hover { box-shadow: 0 4px 20px rgba(42,109,181,.15); border-color: #2a6db5; }
+.diagram::after {
+  content: '⤢ 点击放大';
+  position: absolute;
+  top: 10px; right: 14px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #aaa;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.diagram:hover::after { opacity: 1; }
+.diagram svg { max-width: 100%; display: block; margin: 0 auto; pointer-events: none; }
+.diagram figcaption { font-family: 'Courier New', monospace; font-size: 14px; color: #999; margin-top: 12px; }
+
+/* ── Callout Boxes ── */
+.box { border-left: 4px solid #ccc; padding: 14px 18px; margin: 1.4rem 0; font-size: 1rem; border-radius: 0 6px 6px 0; }
+.box-label { font-weight: bold; font-family: 'Courier New', monospace; font-size: .88rem; margin-bottom: 5px; display: block; }
+.box.note    { border-color: #f0a500; background: #fffbea; }
+.box.note    .box-label { color: #c47f00; }
+.box.tip     { border-color: #3aaa5c; background: #f0fff4; }
+.box.tip     .box-label { color: #2d8049; }
+.box.caution { border-color: #d9534f; background: #fff5f5; }
+.box.caution .box-label { color: #b52b27; }
+.box.quote   { border-color: #2a6db5; background: #f0f6ff; }
+.box.quote   .box-label { color: #1a4e8f; }
+.box p { margin: 0; color: inherit; }
+
+/* ── Tables ── */
+.ref-table-wrap { overflow-x: auto; margin: 1.6rem 0 2rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+.ref-table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+.ref-table th {
+  background: #2b2b2b;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-family: 'Courier New', monospace;
+  font-size: .9rem;
+  font-weight: normal;
+}
+.ref-table td { padding: 11px 16px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-table tr:hover td { background: #fafafa; }
+.ref-table td.fn { font-family: 'Courier New', monospace; font-size: .95rem; white-space: nowrap; }
+.ref-table td.fn a { color: #2a6db5; }
+.ref-table td.sz { font-family: 'Courier New', monospace; font-size: .9rem; color: #555; white-space: nowrap; }
+.ref-table td.desc { color: #444; line-height: 1.7; }
+.ref-table tr.seg td { background: #f0f6ff; }
+
+/* ── TOC ── */
+.toc { border: 1px solid #ddd; background: #fafafa; padding: 18px 24px; margin: 1.8rem 0; display: inline-block; min-width: 280px; max-width: 520px; border-radius: 4px; }
+.toc-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; color: #111; }
+.toc ul { margin: 0; padding-left: 1.4rem; font-size: 1rem; }
+.toc li { margin-bottom: 3px; }
+
+/* ── Code blocks ── */
+.code-block {
+  background: #1a1a1a; color: #e8e8e8;
+  padding: 20px; border-radius: 4px;
+  font-family: 'Courier New', monospace; font-size: .92rem;
+  overflow-x: auto; line-height: 1.85; margin: 1.4rem 0;
+  white-space: pre;
+}
+.c-cm { color: #7ec8e3; }
+.c-kw { color: #cce5ff; }
+.c-st { color: #a8d8a8; }
+.c-nu { color: #f0a500; }
+.c-tp { color: #ffd700; }
+.c-fn { color: #dcdcaa; }
+
+/* ── Tool Box ── */
+.tool-box { border: 1px solid #ccc; border-radius: 4px; margin: 2rem 0; overflow: hidden; }
+.tool-header { background: #2b2b2b; color: #fff; padding: 14px 20px; font-family: 'Courier New', monospace; font-size: 1rem; }
+.tool-sub { font-size: .88rem; color: #aaa; display: block; margin-top: 4px; font-family: Georgia, serif; }
+.tool-body { padding: 20px; background: #f9f9f9; }
+.tool-body label { font-family: 'Courier New', monospace; font-size: .9rem; color: #555; display: block; margin-bottom: 6px; }
+.tool-input { width: 100%; font-family: 'Courier New', monospace; font-size: .95rem; padding: 10px 14px; border: 1px solid #ccc; border-radius: 3px; background: #fff; color: #111; margin-bottom: 14px; }
+.tool-input:focus { outline: none; border-color: #2a6db5; }
+.tool-btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.tool-btn { font-family: 'Courier New', monospace; font-size: .9rem; padding: 8px 18px; background: #2b2b2b; color: #fff; border: none; border-radius: 3px; cursor: pointer; transition: background .15s; }
+.tool-btn:hover { background: #f0a500; color: #111; }
+.tool-btn.sec { background: #e8e8e8; color: #333; }
+.tool-btn.sec:hover { background: #d0d0d0; }
+.tool-output { font-family: 'Courier New', monospace; font-size: .9rem; background: #1a1a1a; color: #e8e8e8; padding: 16px; border-radius: 3px; min-height: 56px; white-space: pre-wrap; display: none; line-height: 1.85; }
+.tool-output.show { display: block; }
+.o-f { color: #f0a500; }
+.o-v { color: #a8d8a8; }
+.o-d { color: #7eb8d4; }
+.o-e { color: #ff6b6b; }
+
+/* ── Quiz ── */
+.quiz-q { margin-bottom: 1.8rem; padding-bottom: 1.8rem; border-bottom: 1px solid #eee; }
+.quiz-q:last-of-type { border-bottom: none; }
+.quiz-q p { font-weight: bold; margin-bottom: .8rem; color: #111; }
+.quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt { font-family: Georgia, serif; font-size: 1rem; padding: 10px 16px; border: 1px solid #ccc; background: #fff; border-radius: 3px; cursor: pointer; text-align: left; transition: background .12s, border-color .12s; color: #333; }
+.quiz-opt:hover { border-color: #2a6db5; background: #f0f6ff; }
+.quiz-opt.correct { border-color: #3aaa5c; background: #f0fff4; color: #1a5e30; }
+.quiz-opt.wrong   { border-color: #d9534f; background: #fff5f5; color: #8b1e1e; }
+.quiz-fb { font-size: .95rem; margin-top: 8px; padding: 8px 14px; border-radius: 3px; display: none; }
+.quiz-fb.show { display: block; }
+.quiz-fb.ok  { background: #f0fff4; color: #1a5e30; border: 1px solid #3aaa5c; }
+.quiz-fb.bad { background: #fff5f5; color: #8b1e1e; border: 1px solid #d9534f; }
+#quiz-result { text-align: center; padding: 28px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; margin-top: 1.4rem; display: none; }
+#quiz-result .score { font-size: 2.8rem; font-weight: bold; color: #2b2b2b; font-family: 'Courier New', monospace; }
+
+/* ── Summary table ── */
+.sum-table { width: 100%; border-collapse: collapse; font-size: 1rem; margin: 1.4rem 0; }
+.sum-table th { background: #f0a500; color: #111; padding: 12px 16px; text-align: left; font-family: 'Courier New', monospace; font-size: .9rem; }
+.sum-table td { padding: 11px 16px; border-bottom: 1px solid #e8e8e8; color: #333; }
+.sum-table tr:last-child td { border-bottom: none; }
+.sum-table tr:hover td { background: #fffbea; }
+
+/* ── Misc ── */
+hr { border: none; border-top: 1px solid #e0e0e0; margin: 3rem 0; }
+footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid #ddd; font-family: 'Courier New', monospace; font-size: .88rem; color: #999; }
+#progressbar { position: fixed; top: 0; left: 0; height: 3px; background: #f0a500; width: 0; z-index: 999; transition: width .1s; }
+
+@media (max-width: 768px) {
+  #sidebar { display: none; }
+  #main { padding: 0 20px 60px; }
+}
+</style>
+</head>
+<body>
+<div id="progressbar"></div>
+
+<!-- ── SIDEBAR ── -->
+<nav id="sidebar">
+  <div id="sidebar-logo">Tempo Wallet <span>Machine Payments · Mainnet 2026</span></div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Overview</div>
+    <a href="#intro">Introduction</a>
+    <a href="#motivation" class="indent1">为什么需要它</a>
+    <a href="#toc-section" class="indent1">目录</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Chain Architecture</div>
+    <a href="#chain">Tempo 链设计</a>
+    <a href="#no-gas" class="indent1">无 Gas Token</a>
+    <a href="#tip20" class="indent1">TIP-20 稳定币</a>
+    <a href="#tempo-tx">Tempo Transactions</a>
+    <a href="#tx-features" class="indent1">六大能力</a>
+    <a href="#passkey" class="indent1">Passkey 认证</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Transaction Signing</div>
+    <a href="#tx-signing">签名交易对比</a>
+    <a href="#eth-signing" class="indent1">Ethereum 签名流程</a>
+    <a href="#tempo-signing" class="indent1">Tempo 签名流程</a>
+    <a href="#passkey-signing" class="indent1">Passkey（P-256）路径</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Machine Payments</div>
+    <a href="#mpp">MPP 协议</a>
+    <a href="#mpp-flow" class="indent1">402 支付流程</a>
+    <a href="#session" class="indent1">会话级支付</a>
+    <a href="#wallet">Tempo Wallet CLI</a>
+    <a href="#wallet-cmds" class="indent1">核心命令</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Use Cases</div>
+    <a href="#usecases">应用场景</a>
+    <a href="#uc-agent" class="indent1">AI Agent 自主付费</a>
+    <a href="#uc-api" class="indent1">API 按次计费</a>
+    <a href="#uc-stream" class="indent1">流式 Token 消费</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Comparison</div>
+    <a href="#vs-x402">vs x402</a>
+    <a href="#vs-trad">vs 传统支付</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Reference</div>
+    <a href="#quick-ref">Quick Reference</a>
+    <a href="#quiz">Quiz</a>
+    <a href="#summary-ref">Summary</a>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main id="main">
+
+<div id="breadcrumb">
+  <a href="index.html">Agent Economy Research</a> › <strong>Tempo Wallet</strong>
+</div>
+
+<h1 class="page-title" id="top">Tempo Wallet</h1>
+<div class="page-subtitle">让 AI Agent 像调 HTTP 接口一样完成支付</div>
+<div class="page-meta">
+  整理自官方文档与主网发布 · 2026-03 上线 ·
+  <a href="https://tempo.xyz">官网 ↗</a> ·
+  <a href="https://docs.tempo.xyz">文档 ↗</a> ·
+  <a href="https://github.com/tempoxyz/wallet">GitHub ↗</a>
+</div>
+
+<!-- Opening diagram -->
+<div class="diagram">
+<svg viewBox="0 0 780 210" xmlns="http://www.w3.org/2000/svg" style="max-height:260px;width:100%">
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#555"/></marker>
+    <marker id="b" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#f0a500"/></marker>
+    <marker id="c" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#3aaa5c"/></marker>
+  </defs>
+
+  <!-- AI Agent -->
+  <rect x="10" y="60" width="110" height="90" rx="6" fill="none" stroke="#555" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="65" y="98" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="bold" fill="#333">AI Agent</text>
+  <text x="65" y="118" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#888">GET /data</text>
+  <text x="65" y="136" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">no API key</text>
+
+  <!-- Arrow: Agent → API -->
+  <line x1="122" y1="105" x2="178" y2="105" stroke="#555" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- API Server -->
+  <rect x="180" y="40" width="130" height="130" rx="6" fill="#fff8f0" stroke="#f0a500" stroke-width="2"/>
+  <text x="245" y="72" text-anchor="middle" font-family="Courier New,monospace" font-size="13" font-weight="bold" fill="#c47f00">API Server</text>
+  <text x="245" y="96" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#555">HTTP 402</text>
+  <text x="245" y="116" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#888">Payment Required</text>
+  <text x="245" y="136" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">price: 0.01 USDC</text>
+  <text x="245" y="154" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">address: 0xAB…</text>
+
+  <!-- Arrow: 402 → MPP (orange, back) -->
+  <line x1="180" y1="120" x2="124" y2="140" stroke="#f0a500" stroke-width="2" marker-end="url(#b)"/>
+  <text x="148" y="155" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#c47f00">402 ↩</text>
+
+  <!-- MPP / Tempo Wallet -->
+  <rect x="360" y="30" width="160" height="150" rx="6" fill="#f0f6ff" stroke="#2a6db5" stroke-width="2"/>
+  <text x="440" y="62" text-anchor="middle" font-family="Courier New,monospace" font-size="13" font-weight="bold" fill="#1a4e8f">Tempo Wallet</text>
+  <text x="440" y="84" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#555">MPP Engine</text>
+  <text x="440" y="106" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">verify price</text>
+  <text x="440" y="124" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">sign tx</text>
+  <text x="440" y="142" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">broadcast</text>
+  <text x="440" y="162" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#2a6db5">≈ 400ms</text>
+
+  <!-- Arrow: Agent → MPP -->
+  <line x1="122" y1="140" x2="358" y2="130" stroke="#f0a500" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#b)"/>
+
+  <!-- Arrow: MPP → Chain -->
+  <line x1="522" y1="105" x2="576" y2="105" stroke="#555" stroke-width="2" marker-end="url(#a)"/>
+  <text x="549" y="96" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">settle</text>
+
+  <!-- Tempo Chain -->
+  <rect x="578" y="60" width="116" height="90" rx="6" fill="#f0fff4" stroke="#3aaa5c" stroke-width="2"/>
+  <text x="636" y="92" text-anchor="middle" font-family="Georgia,serif" font-size="14" font-weight="bold" fill="#1a5e30">Tempo</text>
+  <text x="636" y="112" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#2d8049">Chain</text>
+  <text x="636" y="132" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">USDC settled</text>
+
+  <!-- Arrow: Chain → API (green, response) -->
+  <line x1="694" y1="95" x2="750" y2="75" stroke="#3aaa5c" stroke-width="2" marker-end="url(#c)"/>
+  <!-- Arrow: API → Agent (green, data) -->
+  <line x1="312" y1="85" x2="358" y2="75" stroke="#3aaa5c" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+  <!-- Receipt label -->
+  <rect x="706" y="50" width="68" height="46" rx="4" fill="#f0fff4" stroke="#3aaa5c" stroke-width="1.5"/>
+  <text x="740" y="71" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#2d8049">200 OK</text>
+  <text x="740" y="87" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#888">data ✓</text>
+</svg>
+<figcaption>AI Agent 无需 API Key，Tempo Wallet 自动处理 HTTP 402 挑战，完成链上结算后返回数据</figcaption>
+</div>
+
+<p id="intro">
+  HTTP 状态码 402 叫做"Payment Required"。它在 1991 年就写进了 RFC，标注为"reserved for future use"，然后被搁置了三十年。
+  没有人实现它，因为没有支付层——把信用卡塞进 HTTP 响应头里，没有任何意义。
+</p>
+
+<p>
+  Stripe 解决了人类支付。它让任何开发者能在网站上收钱。
+  但 Stripe 的收款对象是人——需要账号、需要信用卡、需要 KYC。
+  当付款方是一个 AI Agent，Stripe 就无从下手了。
+</p>
+
+<p>
+  <strong>Tempo 就是为这个缺口而来的。</strong>它是一条专为稳定币支付设计的 Layer 1 链，
+  搭配一套叫做 <strong>Machine Payments Protocol（MPP）</strong> 的协议，
+  让那个搁置了三十年的 402 状态码终于有了意义：
+  Agent 遇到 402，钱包自动结算，数据继续流。整个过程不需要 API Key，不需要人类介入。
+</p>
+
+<div class="box note">
+  <span class="box-label">核心洞察</span>
+  <p>Tempo 不是在区块链上重造 Stripe。它是在 HTTP 层里嵌入了一个支付层——让机器之间的服务交换，和调用一个普通 REST API 一样自然。</p>
+</div>
+
+<!-- TOC -->
+<div class="toc" id="toc-section">
+  <div class="toc-title">目录</div>
+  <ul>
+    <li><a href="#chain">Tempo 链设计</a>
+      <ul>
+        <li><a href="#no-gas">无 Gas Token 设计</a></li>
+        <li><a href="#tip20">TIP-20 稳定币标准</a></li>
+      </ul>
+    </li>
+    <li><a href="#tempo-tx">Tempo Transactions</a></li>
+    <li><a href="#tx-signing">Tempo vs Ethereum 签名交易的区别</a>
+      <ul>
+        <li><a href="#eth-signing">Ethereum 签名流程</a></li>
+        <li><a href="#tempo-signing">Tempo 签名流程</a></li>
+        <li><a href="#passkey-signing">Passkey（P-256）签名路径</a></li>
+      </ul>
+    </li>
+    <li><a href="#mpp">Machine Payments Protocol</a>
+      <ul>
+        <li><a href="#mpp-flow">402 支付流程</a></li>
+        <li><a href="#session">会话级流式支付</a></li>
+      </ul>
+    </li>
+    <li><a href="#wallet">Tempo Wallet CLI</a>
+      <ul>
+        <li><a href="#wallet-cmds">核心命令</a></li>
+      </ul>
+    </li>
+    <li><a href="#usecases">应用场景</a></li>
+    <li><a href="#vs-x402">对比：Tempo vs x402</a></li>
+    <li><a href="#quick-ref">Quick Reference</a></li>
+    <li><a href="#quiz">测验</a></li>
+  </ul>
+</div>
+
+<!-- ══════════════════ CHAIN ARCHITECTURE ══════════════════ -->
+<h2 id="chain">Tempo 链设计 <a href="#top" class="back-top">↑ top</a></h2>
+
+<p>
+  Tempo 是一条 <strong>EVM 兼容的 Layer 1 链</strong>，基于 Reth SDK 构建，由 Stripe 和 Paradigm 联合主导，2026 年 3 月主网上线。
+  它的定位不是通用区块链，而是<em>支付基础设施</em>——设计决策围绕"如何让稳定币转账又快又便宜又对机构友好"展开。
+</p>
+
+<div class="box quote">
+  <div class="box-label">— Tempo 官方定位</div>
+  <p>"A blockchain designed specifically for stablecoin payments at scale — high throughput, low cost, with features that financial institutions and fintech platforms expect."</p>
+</div>
+
+<h3 id="no-gas">无 Gas Token 设计 <a href="#chain" class="anchor">[↑]</a></h3>
+
+<p>
+  几乎所有区块链都有一个同样的入场摩擦：<strong>先买 Gas，才能转账。</strong>
+  这对人类已经够烦了，对 AI Agent 更是一道荒谬的关卡——Agent 要用 USDC 买服务，先要持有 ETH，而 ETH 的价格随时在变。
+</p>
+
+<p>
+  Tempo 彻底移除了这个摩擦。<strong>链上没有原生 Gas 代币。</strong>
+  手续费直接用 TIP-20 稳定币支付，通常是 USDC。
+  Agent 只需要持有稳定币，不需要维护任何 Gas 余额。
+</p>
+
+<div class="box tip">
+  <span class="box-label">Tip:</span>
+  <p>对于 AI Agent 来说，"不需要 Gas Token"意味着账户管理的复杂度下降一个数量级。资金模型只有一种资产：稳定币。</p>
+</div>
+
+<h3 id="tip20">TIP-20 稳定币标准 <a href="#chain" class="anchor">[↑]</a></h3>
+
+<div class="field-meta">
+  标准: &nbsp;&nbsp;TIP-20（Tempo 的同质化代币标准，对标 ERC-20）<br>
+  用途: &nbsp;&nbsp;链上手续费 · 服务结算 · MPP 支付
+</div>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3" style="background:#0f172a">TIP-20 vs ERC-20 关键差异</th></tr>
+  <tr><th>维度</th><th>TIP-20（Tempo）</th><th>ERC-20（以太坊）</th></tr>
+  <tr>
+    <td class="fn">Gas 支付</td>
+    <td class="desc">直接用 TIP-20 支付手续费</td>
+    <td class="desc">必须持有 ETH</td>
+  </tr>
+  <tr>
+    <td class="fn">Fee Sponsorship</td>
+    <td class="desc">原生支持第三方代付</td>
+    <td class="desc">需要 ERC-4337 等额外基础设施</td>
+  </tr>
+  <tr>
+    <td class="fn">批量转账</td>
+    <td class="desc">协议级原生批量</td>
+    <td class="desc">需要 Multicall 合约</td>
+  </tr>
+  <tr>
+    <td class="fn">接口兼容</td>
+    <td class="desc">EVM 兼容，工具链复用</td>
+    <td class="desc">—</td>
+  </tr>
+</table>
+</div>
+
+<!-- ══════════════════ TEMPO TRANSACTIONS ══════════════════ -->
+<h2 id="tempo-tx">Tempo Transactions <a href="#top" class="back-top">↑ top</a></h2>
+
+<p>
+  Tempo 在协议层内置了一套交易能力，让以往需要额外合约或中间件才能做到的事情，变成了一个标准 API 调用。
+</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="2" style="background:#0f172a">Tempo Transactions 六大能力</th></tr>
+  <tr><th>能力</th><th>说明</th></tr>
+  <tr>
+    <td class="fn">任意稳定币付 Gas</td>
+    <td class="desc">用 USDC、USDT 等任何 TIP-20 稳定币支付链上手续费，无需原生 Gas Token</td>
+  </tr>
+  <tr>
+    <td class="fn">批量 &amp; 并发交易</td>
+    <td class="desc">单次签名执行多笔转账，大幅降低 Agent 批量操作的成本与延迟</td>
+  </tr>
+  <tr>
+    <td class="fn">Fee Sponsorship</td>
+    <td class="desc">第三方（如平台方）可代 Agent 支付手续费，Agent 账户零余额也能发送交易</td>
+  </tr>
+  <tr>
+    <td class="fn">定时支付</td>
+    <td class="desc">协议层原生支持预设时间点触发的转账，无需外部调度服务</td>
+  </tr>
+  <tr>
+    <td class="fn">Passkey 认证</td>
+    <td class="desc">支持 Touch ID / Face ID / 硬件密钥签名，替代私钥管理</td>
+  </tr>
+  <tr>
+    <td class="fn">备注（Memo）</td>
+    <td class="desc">每笔交易可附加结构化备注，供对账、审计、Agent 间协议协商使用</td>
+  </tr>
+</table>
+</div>
+
+<h3 id="passkey">Passkey 认证 <a href="#tempo-tx" class="anchor">[↑]</a></h3>
+<p>
+  Tempo Wallet 支持用系统 Passkey（Touch ID、Face ID、YubiKey）直接签名交易，完全绕过私钥文件的管理问题。
+  对于人类用户，这意味着"刷指纹就能付款"。
+  对于 Agent，这为 TEE 环境下的无私钥签名提供了基础。
+</p>
+
+<div class="box caution">
+  <span class="box-label">注意:</span>
+  <p>Passkey 认证目前主要服务于 <code>wallet.tempo.xyz</code> 的浏览器端。CLI 钱包在服务端环境下仍使用密钥文件或环境变量注入的方式管理凭证。</p>
+</div>
+
+<!-- ══════════════════ TX SIGNING ══════════════════ -->
+<h2 id="tx-signing">Tempo vs Ethereum 签名交易的区别 <a href="#top" class="back-top">↑ top</a></h2>
+
+<p>
+  Tempo 是 EVM 兼容链，因此大量底层概念沿用以太坊——同样基于 ECDSA 椭圆曲线、同样的账户模型。
+  但在<strong>签名算法、交易字段、Gas 模型</strong>三个维度上，Tempo 做出了系统性的差异化设计，
+  尤其是引入了 <strong>Passkey（WebAuthn P-256）</strong> 作为第二条签名路径，彻底改变了私钥管理方式。
+</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3" style="background:#0f172a">Tempo 签名交易 vs Ethereum 签名交易 — 关键差异</th></tr>
+  <tr><th>维度</th><th>Ethereum</th><th>Tempo</th></tr>
+  <tr>
+    <td class="fn">签名曲线</td>
+    <td class="desc">secp256k1（唯一选项）</td>
+    <td class="desc">secp256k1（传统路径）<br><em>或</em> secp256r1 / P-256（Passkey 路径）</td>
+  </tr>
+  <tr>
+    <td class="fn">签名组件</td>
+    <td class="desc"><code>v, r, s</code>（或 EIP-2718 的 <code>yParity, r, s</code>）</td>
+    <td class="desc">传统路径同 Ethereum；<br>Passkey 路径：<code>authenticatorData + clientDataJSON + (r, s)</code></td>
+  </tr>
+  <tr>
+    <td class="fn">哈希算法</td>
+    <td class="desc">RLP 编码 → keccak256</td>
+    <td class="desc">传统路径：RLP → keccak256；<br>Passkey 路径：SHA-256（WebAuthn 规范）</td>
+  </tr>
+  <tr>
+    <td class="fn">Gas 字段</td>
+    <td class="desc"><code>gasLimit</code> + <code>gasPrice</code> / <code>maxFeePerGas</code>，以 ETH 计价</td>
+    <td class="desc"><code>fee_amount</code> + <code>fee_token</code>（稳定币地址），无原生 Gas Token</td>
+  </tr>
+  <tr>
+    <td class="fn">额外字段</td>
+    <td class="desc">标准字段：nonce, to, value, data, chainId</td>
+    <td class="desc">新增：<code>memo</code>（结构化备注）、<code>sponsor</code>（代付方地址）、<code>batch_ops</code>（批量操作列表）</td>
+  </tr>
+  <tr>
+    <td class="fn">批量交易</td>
+    <td class="desc">需要 Multicall 合约，多次签名或一次签名调用合约</td>
+    <td class="desc">协议原生支持，<code>batch_ops</code> 字段携带多笔转账，单次签名覆盖所有操作</td>
+  </tr>
+  <tr>
+    <td class="fn">Fee Sponsorship</td>
+    <td class="desc">依赖 ERC-4337 UserOperation，需要 Bundler + Paymaster 基础设施</td>
+    <td class="desc">交易结构原生包含 <code>sponsor</code> 字段，链上协议层直接验证，无需额外合约</td>
+  </tr>
+  <tr>
+    <td class="fn">链上验证复杂度</td>
+    <td class="desc">单一 ecrecover（secp256k1），验证成本固定</td>
+    <td class="desc">传统路径同 Ethereum；Passkey 路径需链上验证 WebAuthn 断言，成本略高</td>
+  </tr>
+</table>
+</div>
+
+<h3 id="eth-signing">Ethereum 签名流程 <a href="#tx-signing" class="anchor">[↑]</a></h3>
+
+<p>以太坊的交易签名流程相对固定：对交易体做 RLP 编码后求 keccak256 哈希，再用 secp256k1 私钥生成 ECDSA 签名。</p>
+
+<div class="code-block"><span class="c-cm">// Ethereum EIP-1559 交易签名（伪代码）</span>
+<span class="c-kw">const</span> tx = {
+  chainId:              <span class="c-nu">1</span>,
+  nonce:                <span class="c-nu">42</span>,
+  maxFeePerGas:         <span class="c-nu">20_000_000_000n</span>,   <span class="c-cm">// wei，ETH 计价</span>
+  maxPriorityFeePerGas: <span class="c-nu">1_000_000_000n</span>,
+  gasLimit:             <span class="c-nu">21_000n</span>,
+  to:                   <span class="c-st">"0xRecipient..."</span>,
+  value:                <span class="c-nu">0n</span>,
+  data:                 <span class="c-st">"0x"</span>,
+};
+
+<span class="c-cm">// 1. RLP 编码 → keccak256 哈希</span>
+<span class="c-kw">const</span> txHash = keccak256(rlpEncode(tx));
+
+<span class="c-cm">// 2. secp256k1 ECDSA 签名</span>
+<span class="c-kw">const</span> { r, s, yParity } = secp256k1.sign(txHash, privateKey);
+
+<span class="c-cm">// 3. 广播：链上用 ecrecover 还原公钥，验证发送方地址</span></div>
+
+<div class="box note">
+  <span class="box-label">关键约束:</span>
+  <p>Ethereum 签名<strong>强依赖私钥文件</strong>。私钥泄露 = 账户完全失控，且无法撤销。这对 AI Agent 和服务端场景是安全瓶颈。</p>
+</div>
+
+<h3 id="tempo-signing">Tempo 传统路径签名流程 <a href="#tx-signing" class="anchor">[↑]</a></h3>
+
+<p>
+  Tempo 的传统签名路径与 Ethereum 兼容，但交易字段结构不同——
+  <strong>移除了 ETH Gas 字段</strong>，改为稳定币计价的 <code>fee_amount</code> / <code>fee_token</code>，
+  并新增了 Tempo 专属字段。
+</p>
+
+<div class="code-block"><span class="c-cm">// Tempo 交易签名（传统 secp256k1 路径，伪代码）</span>
+<span class="c-kw">const</span> tx = {
+  chainId:    <span class="c-nu">tempo_chain_id</span>,
+  nonce:      <span class="c-nu">42</span>,
+  <span class="c-cm">// ↓ 替代 gasPrice / gasLimit：稳定币计价手续费</span>
+  fee_amount: <span class="c-nu">"0.001"</span>,
+  fee_token:  <span class="c-st">"0xUSDC_on_Tempo..."</span>,
+  to:         <span class="c-st">"0xRecipient..."</span>,
+  value:      <span class="c-nu">"1.00"</span>,           <span class="c-cm">// USDC 金额</span>
+  memo:       <span class="c-st">"服务费-2026-04"</span>,   <span class="c-cm">// Tempo 新增：结构化备注</span>
+  sponsor:    <span class="c-st">"0xPlatform..."</span>,   <span class="c-cm">// Tempo 新增：代付方（可选）</span>
+  batch_ops:  [],                   <span class="c-cm">// Tempo 新增：批量操作列表</span>
+};
+
+<span class="c-cm">// 签名机制与 Ethereum 相同：RLP → keccak256 → secp256k1</span>
+<span class="c-kw">const</span> txHash = keccak256(rlpEncode(tx));
+<span class="c-kw">const</span> { r, s, yParity } = secp256k1.sign(txHash, privateKey);
+
+<span class="c-cm">// 批量示例：单次签名，多笔转账</span>
+tx.batch_ops = [
+  { to: <span class="c-st">"0xA..."</span>, value: <span class="c-st">"0.50"</span>, memo: <span class="c-st">"pay-A"</span> },
+  { to: <span class="c-st">"0xB..."</span>, value: <span class="c-st">"0.30"</span>, memo: <span class="c-st">"pay-B"</span> },
+];
+<span class="c-cm">// 链上一次性执行全部操作，无需 Multicall 合约</span></div>
+
+<h3 id="passkey-signing">Passkey（P-256）签名路径 <a href="#tx-signing" class="anchor">[↑]</a></h3>
+
+<p>
+  这是 Tempo 与 Ethereum 最本质的签名差异：Tempo 支持 <strong>WebAuthn Passkey</strong> 作为签名者，
+  使用的是 <strong>P-256（secp256r1）</strong> 曲线，而非 Ethereum 的 secp256k1。
+  签名由设备安全芯片（Secure Enclave / YubiKey）完成，私钥永远不离开设备。
+</p>
+
+<!-- Passkey vs ECDSA signing diagram -->
+<div class="diagram">
+<svg viewBox="0 0 740 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:280px">
+  <defs>
+    <marker id="pk1" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#555"/></marker>
+    <marker id="pk2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#2a6db5"/></marker>
+    <marker id="pk3" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#3aaa5c"/></marker>
+  </defs>
+
+  <!-- LEFT: Ethereum path -->
+  <text x="170" y="22" text-anchor="middle" font-family="Courier New,monospace" font-size="13" font-weight="bold" fill="#555">Ethereum 路径</text>
+
+  <rect x="30" y="36" width="120" height="40" rx="4" fill="#f5f5f5" stroke="#999" stroke-width="1.5"/>
+  <text x="90" y="60" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#444">私钥文件</text>
+  <text x="90" y="75" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#888">.pem / env var</text>
+
+  <line x1="90" y1="78" x2="90" y2="108" stroke="#555" stroke-width="1.5" marker-end="url(#pk1)"/>
+
+  <rect x="30" y="110" width="120" height="36" rx="4" fill="#fffbea" stroke="#f0a500" stroke-width="1.5"/>
+  <text x="90" y="132" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#c47f00">RLP → keccak256</text>
+
+  <line x1="90" y1="148" x2="90" y2="178" stroke="#555" stroke-width="1.5" marker-end="url(#pk1)"/>
+
+  <rect x="20" y="180" width="140" height="40" rx="4" fill="#fff5f5" stroke="#d9534f" stroke-width="1.5"/>
+  <text x="90" y="200" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#b52b27">secp256k1 ECDSA</text>
+  <text x="90" y="215" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#888">v, r, s</text>
+
+  <line x1="90" y1="222" x2="90" y2="248" stroke="#555" stroke-width="1.5" marker-end="url(#pk1)"/>
+  <text x="90" y="258" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">ecrecover 验证</text>
+
+  <!-- DIVIDER -->
+  <line x1="310" y1="20" x2="310" y2="265" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- RIGHT: Tempo Passkey path -->
+  <text x="530" y="22" text-anchor="middle" font-family="Courier New,monospace" font-size="13" font-weight="bold" fill="#2a6db5">Tempo Passkey 路径</text>
+
+  <rect x="380" y="36" width="140" height="40" rx="4" fill="#f0f6ff" stroke="#2a6db5" stroke-width="1.5"/>
+  <text x="450" y="57" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#1a4e8f">Touch ID / Face ID</text>
+  <text x="450" y="72" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#888">Secure Enclave / YubiKey</text>
+
+  <line x1="450" y1="78" x2="450" y2="108" stroke="#2a6db5" stroke-width="1.5" marker-end="url(#pk2)"/>
+
+  <rect x="370" y="110" width="160" height="36" rx="4" fill="#f0f6ff" stroke="#2a6db5" stroke-width="1.5"/>
+  <text x="450" y="133" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#1a4e8f">WebAuthn assertion</text>
+
+  <line x1="450" y1="148" x2="450" y2="178" stroke="#2a6db5" stroke-width="1.5" marker-end="url(#pk2)"/>
+
+  <rect x="360" y="180" width="180" height="40" rx="4" fill="#f0fff4" stroke="#3aaa5c" stroke-width="1.5"/>
+  <text x="450" y="200" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#2d8049">P-256 签名（SHA-256）</text>
+  <text x="450" y="215" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#888">authenticatorData + clientDataJSON + (r,s)</text>
+
+  <line x1="450" y1="222" x2="450" y2="248" stroke="#3aaa5c" stroke-width="1.5" marker-end="url(#pk3)"/>
+  <text x="450" y="258" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#3aaa5c">链上 P-256 验证合约</text>
+
+  <!-- Label: private key never leaves device -->
+  <rect x="590" y="100" width="136" height="50" rx="4" fill="#f0fff4" stroke="#3aaa5c" stroke-width="1"/>
+  <text x="658" y="120" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#2d8049">私钥永不离开设备</text>
+  <text x="658" y="136" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#2d8049">设备生成 → 设备签名</text>
+  <line x1="540" y1="125" x2="588" y2="125" stroke="#3aaa5c" stroke-width="1" stroke-dasharray="3,2"/>
+</svg>
+<figcaption>左：Ethereum secp256k1 路径，私钥文件参与签名；右：Tempo Passkey 路径，私钥由设备安全芯片持有，永不导出</figcaption>
+</div>
+
+<div class="code-block"><span class="c-cm">// Tempo Passkey 签名流程（伪代码）</span>
+
+<span class="c-cm">// 1. 构造 Tempo 交易体（同传统路径）</span>
+<span class="c-kw">const</span> tx = { fee_token: USDC, to: <span class="c-st">"0x..."</span>, value: <span class="c-st">"1.00"</span>, memo: <span class="c-st">"..."</span> };
+
+<span class="c-cm">// 2. 序列化为 clientDataJSON（WebAuthn 挑战）</span>
+<span class="c-kw">const</span> challenge = base64url(sha256(cbor_encode(tx)));
+
+<span class="c-cm">// 3. 调用 WebAuthn API，设备安全芯片完成签名（P-256 曲线）</span>
+<span class="c-kw">const</span> assertion = <span class="c-kw">await</span> navigator.credentials.get({
+  publicKey: { challenge, allowCredentials: [{ id: credentialId }] }
+});
+<span class="c-cm">// assertion 包含：authenticatorData, clientDataJSON, signature(r, s)</span>
+
+<span class="c-cm">// 4. 将 WebAuthn 断言附加到 Tempo 交易并广播</span>
+<span class="c-kw">const</span> signedTx = { ...tx, auth: {
+  type:              <span class="c-st">"passkey"</span>,
+  authenticatorData: assertion.authenticatorData,
+  clientDataJSON:    assertion.clientDataJSON,
+  signature:         assertion.signature,   <span class="c-cm">// (r, s) over P-256</span>
+}};
+
+<span class="c-cm">// 5. 链上：Tempo 节点调用 P-256 验证合约还原公钥并匹配账户</span></div>
+
+<div class="box tip">
+  <span class="box-label">为什么 Passkey 更安全？</span>
+  <p>secp256k1 私钥一旦写入文件，就存在泄露风险（备份、日志、内存 dump）。P-256 Passkey 的私钥由设备安全芯片生成，<strong>永远不会以任何形式导出</strong>——攻击者即使拿到服务器也无法盗走密钥，因为密钥根本不在服务器上。</p>
+</div>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3" style="background:#0f172a">签名路径选择指南</th></tr>
+  <tr><th>场景</th><th>推荐路径</th><th>原因</th></tr>
+  <tr>
+    <td class="desc">服务端 Agent 自动签名</td>
+    <td class="desc">secp256k1（传统）</td>
+    <td class="desc">无需用户交互，私钥通过 TEE 或 HSM 注入环境变量</td>
+  </tr>
+  <tr>
+    <td class="desc">浏览器端用户授权支付</td>
+    <td class="desc">Passkey（P-256）</td>
+    <td class="desc">Touch ID / Face ID 确认，零私钥管理，用户体验最佳</td>
+  </tr>
+  <tr>
+    <td class="desc">高安全级别批量结算</td>
+    <td class="desc">Passkey + 硬件密钥（YubiKey）</td>
+    <td class="desc">物理介质双重保护，适合大额资金操作</td>
+  </tr>
+  <tr>
+    <td class="desc">跨工具链兼容（ethers.js / viem）</td>
+    <td class="desc">secp256k1（传统）</td>
+    <td class="desc">EVM 兼容，现有以太坊工具链可直接复用</td>
+  </tr>
+</table>
+</div>
+
+<!-- ══════════════════ MPP ══════════════════ -->
+<h2 id="mpp">Machine Payments Protocol <a href="#top" class="back-top">↑ top</a></h2>
+
+<p>
+  MPP 是 Tempo 的核心创新，也是让 HTTP 402 真正"活起来"的那层协议。
+  它定义了一套标准的请求—挑战—结算—重试流程，让任何支持 MPP 的钱包都能自动处理付费 API，而无需在每个 API 集成时手动管理支付逻辑。
+</p>
+
+<h3 id="mpp-flow">HTTP 402 支付流程 <a href="#mpp" class="anchor">[↑]</a></h3>
+
+<!-- Flow diagram -->
+<div class="diagram">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:320px">
+  <defs>
+    <marker id="d" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#555"/></marker>
+    <marker id="e" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#f0a500"/></marker>
+    <marker id="f" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#3aaa5c"/></marker>
+  </defs>
+
+  <!-- Step labels -->
+  <text x="30" y="30" font-family="Courier New,monospace" font-size="12" fill="#f0a500" font-weight="bold">① Request</text>
+  <text x="30" y="100" font-family="Courier New,monospace" font-size="12" fill="#f0a500" font-weight="bold">② 402 Challenge</text>
+  <text x="30" y="170" font-family="Courier New,monospace" font-size="12" fill="#f0a500" font-weight="bold">③ Settle</text>
+  <text x="30" y="240" font-family="Courier New,monospace" font-size="12" fill="#3aaa5c" font-weight="bold">④ 200 Response</text>
+
+  <!-- Agent column -->
+  <line x1="160" y1="10" x2="160" y2="290" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="160" y="8" text-anchor="middle" font-family="Courier New,monospace" font-size="13" fill="#333" font-weight="bold">Agent</text>
+
+  <!-- MPP Wallet column -->
+  <line x1="370" y1="10" x2="370" y2="290" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="370" y="8" text-anchor="middle" font-family="Courier New,monospace" font-size="13" fill="#2a6db5" font-weight="bold">MPP Wallet</text>
+
+  <!-- Server column -->
+  <line x1="580" y1="10" x2="580" y2="290" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="580" y="8" text-anchor="middle" font-family="Courier New,monospace" font-size="13" fill="#333" font-weight="bold">API Server</text>
+
+  <!-- ① GET /data -->
+  <line x1="162" y1="40" x2="578" y2="40" stroke="#555" stroke-width="1.5" marker-end="url(#d)"/>
+  <text x="370" y="35" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">GET /data</text>
+
+  <!-- ② 402 + X-Payment -->
+  <line x1="578" y1="60" x2="372" y2="60" stroke="#f0a500" stroke-width="1.5" marker-end="url(#e)"/>
+  <text x="475" y="55" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#c47f00">402 + X-Payment header</text>
+  <!-- MPP intercepts, forwards to wallet -->
+  <line x1="368" y1="80" x2="162" y2="80" stroke="#f0a500" stroke-width="1.5" marker-end="url(#e)"/>
+  <text x="265" y="75" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#c47f00">intercept → parse</text>
+
+  <!-- ③ Sign & broadcast -->
+  <line x1="162" y1="115" x2="368" y2="115" stroke="#555" stroke-width="1.5" marker-end="url(#d)"/>
+  <text x="265" y="110" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">approve payment</text>
+  <line x1="372" y1="135" x2="578" y2="135" stroke="#555" stroke-width="1.5" marker-end="url(#d)"/>
+  <text x="475" y="130" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">retry + X-Payment-Receipt</text>
+
+  <!-- Tempo chain settle -->
+  <rect x="310" y="148" width="120" height="32" rx="4" fill="#f0f6ff" stroke="#2a6db5" stroke-width="1.5"/>
+  <text x="370" y="168" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#2a6db5">Tempo chain settle</text>
+
+  <!-- ④ 200 OK -->
+  <line x1="578" y1="200" x2="162" y2="200" stroke="#3aaa5c" stroke-width="2" marker-end="url(#f)"/>
+  <text x="370" y="195" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#2d8049" font-weight="bold">200 OK · data returned</text>
+
+  <!-- timing label -->
+  <text x="370" y="275" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">全程 ≈ 400 – 800ms，对 Agent 透明</text>
+</svg>
+<figcaption>MPP 完整的 402 支付握手：Agent 感知不到支付过程，只看到最终的 200 响应</figcaption>
+</div>
+
+<p>整个流程对 Agent 透明：</p>
+<ol>
+  <li>Agent 发送普通 HTTP 请求</li>
+  <li>服务器返回 <code>402 Payment Required</code>，响应头带 <code>X-Payment</code> 字段（含价格、收款地址、代币类型）</li>
+  <li>MPP Engine 拦截 402，解析支付要求，向用户确认（或按策略自动批准）</li>
+  <li>Wallet 签名并广播 Tempo 链交易，获取收据</li>
+  <li>带 <code>X-Payment-Receipt</code> 头重试原始请求</li>
+  <li>服务器验证收据，返回 <code>200 OK</code> 与数据</li>
+</ol>
+
+<h3 id="session">会话级流式支付 <a href="#mpp" class="anchor">[↑]</a></h3>
+
+<p>
+  大语言模型的 API 按 token 计费。如果每个 token 都触发一次链上交易，成本和延迟都不可接受。
+  MPP 为此设计了<strong>会话支付（Session Payments）</strong>：
+</p>
+
+<ul>
+  <li>建立连接时预付一笔押金（voucher）</li>
+  <li>流式 token 通过 <strong>SSE（Server-Sent Events）</strong> 实时返回</li>
+  <li>每消耗一定量 token，自动追加充值（voucher top-up）</li>
+  <li>会话结束后，未消费的余额退还</li>
+</ul>
+
+<div class="box tip">
+  <span class="box-label">核心价值:</span>
+  <p>付你实际消费的，不多付一分。传统 API 预充值方案通常要求固定额度，MPP 会话支付实现了真正的按量计费，且全程链上可审计。</p>
+</div>
+
+<!-- ══════════════════ WALLET CLI ══════════════════ -->
+<h2 id="wallet">Tempo Wallet CLI <a href="#top" class="back-top">↑ top</a></h2>
+
+<p>
+  <code>tempo-wallet</code> 是官方提供的命令行工具，是开发者和 Agent 与 Tempo 链交互的主要入口。
+  它不只是一个转账工具——它内置了完整的 MPP Engine，能够代理任何 HTTP 请求并自动处理 402 挑战。
+</p>
+
+<div class="box quote">
+  <div class="box-label">官方定义</div>
+  <p>"Command-line wallet and HTTP client for the Tempo blockchain, with built-in Machine Payments Protocol support. No API keys required."</p>
+</div>
+
+<h3 id="wallet-cmds">核心命令 <a href="#wallet" class="anchor">[↑]</a></h3>
+
+<div class="code-block"><span class="c-cm"># 创建新钱包</span>
+<span class="c-fn">tempo</span> wallet create
+
+<span class="c-cm"># 查看余额</span>
+<span class="c-fn">tempo</span> wallet balance
+
+<span class="c-cm"># 普通稳定币转账</span>
+<span class="c-fn">tempo</span> pay --to <span class="c-st">0xRecipient...</span> --amount <span class="c-nu">1.00</span> --token USDC --memo <span class="c-st">"服务费"</span>
+
+<span class="c-cm"># MPP 代理 HTTP 请求（自动处理 402）</span>
+<span class="c-fn">tempo</span> http GET <span class="c-st">https://api.example.com/v1/data</span>
+
+<span class="c-cm"># 会话支付（流式 LLM API）</span>
+<span class="c-fn">tempo</span> http POST <span class="c-st">https://llm.example.com/v1/stream</span> \
+  --session --voucher <span class="c-nu">0.50</span> USDC
+
+<span class="c-cm"># 批量转账（单签名）</span>
+<span class="c-fn">tempo</span> pay --batch payments.json</div>
+
+<!-- Interactive tool: simulate 402 flow -->
+<div class="tool-box">
+  <div class="tool-header">模拟 MPP 支付流程
+    <span class="tool-sub">输入 API 地址，查看 402 处理步骤</span>
+  </div>
+  <div class="tool-body">
+    <div class="tool-btn-row">
+      <button class="tool-btn sec" onclick="document.getElementById('api-url').value='https://data.example.com/v1/market-feed'">加载示例</button>
+    </div>
+    <label>API Endpoint</label>
+    <input class="tool-input" id="api-url" placeholder="https://api.example.com/v1/data">
+    <div class="tool-btn-row">
+      <button class="tool-btn" onclick="simulateMPP()">模拟请求 →</button>
+      <button class="tool-btn sec" onclick="clearMPP()">清除</button>
+    </div>
+    <div class="tool-output" id="mpp-out"></div>
+  </div>
+</div>
+
+<!-- ══════════════════ USE CASES ══════════════════ -->
+<h2 id="usecases">应用场景 <a href="#top" class="back-top">↑ top</a></h2>
+
+<h3 id="uc-agent">AI Agent 自主消费服务 <a href="#usecases" class="anchor">[↑]</a></h3>
+<p>
+  AI Agent 在执行任务过程中，可能需要调用数十个外部 API：数据提供方、算力租用、工具调用、知识库查询。
+  传统做法是预申请每个 API 的密钥，充值，管理额度。
+  有了 MPP，Agent 只需持有 USDC，遇到 402 就自动付款，整个服务网络对它来说就是一张无摩擦的"按需市场"。
+</p>
+
+<h3 id="uc-api">API 按次计费 <a href="#usecases" class="anchor">[↑]</a></h3>
+<p>
+  对于 API 提供方，支持 MPP 意味着：
+</p>
+<ul>
+  <li>不需要构建账号系统，不需要 KYC</li>
+  <li>不需要管理 API Key 发放与撤销</li>
+  <li>资金直接到账，链上可审计</li>
+  <li>天然防止 API 滥用（每次调用需付费，垃圾请求成本倍增）</li>
+</ul>
+
+<div class="box note">
+  <span class="box-label">Note:</span>
+  <p>MPP 的付费单位可以细化到 0.001 USDC 级别。这让"每次查询收费 $0.001"这样的商业模型第一次在技术上变得可行。</p>
+</div>
+
+<h3 id="uc-stream">流式 Token 消费 <a href="#usecases" class="anchor">[↑]</a></h3>
+<p>
+  LLM API 通常以 token 为单位计费。MPP 会话支付让这个模型在链上落地：
+  Agent 调用 LLM，预存 voucher，按实际消费的 token 数量结算，
+  未消费部分原路退回。这是第一个真正意义上的"按 AI token 付款"的链上原语。
+</p>
+
+<!-- ══════════════════ COMPARISON ══════════════════ -->
+<h2 id="vs-x402">对比：Tempo vs x402 <a href="#top" class="back-top">↑ top</a></h2>
+
+<p>
+  x402 是 Coinbase 联合 Cloudflare 推出的 HTTP 原生支付协议，与 Tempo MPP 在表面上高度相似——都利用 HTTP 402 状态码，
+  都面向 AI Agent，都用稳定币结算。但两者在架构层面有本质差异。
+</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3" style="background:#0f172a">Tempo MPP vs x402</th></tr>
+  <tr><th>维度</th><th>Tempo MPP</th><th>x402（Coinbase/Cloudflare）</th></tr>
+  <tr>
+    <td class="fn">协议层</td>
+    <td class="desc">HTTP 402，Tempo 链上结算</td>
+    <td class="desc">HTTP 402，多链（Base / 以太坊等）</td>
+  </tr>
+  <tr>
+    <td class="fn">结算链</td>
+    <td class="desc">Tempo 专属 L1，专为支付优化</td>
+    <td class="desc">多链，依赖现有链基础设施</td>
+  </tr>
+  <tr>
+    <td class="fn">Gas 模型</td>
+    <td class="desc">无原生 Gas Token，稳定币付费</td>
+    <td class="desc">依赖目标链的 Gas Token</td>
+  </tr>
+  <tr>
+    <td class="fn">会话支付</td>
+    <td class="desc">原生支持 SSE 流式 voucher</td>
+    <td class="desc">协议层未定义，需自行实现</td>
+  </tr>
+  <tr>
+    <td class="fn">生态背书</td>
+    <td class="desc">Stripe, Paradigm, OpenAI, Anthropic…</td>
+    <td class="desc">Coinbase, Cloudflare</td>
+  </tr>
+  <tr>
+    <td class="fn">开放性</td>
+    <td class="desc">专属链，部分中心化</td>
+    <td class="desc">多链开放，完全去中心化可选</td>
+  </tr>
+  <tr>
+    <td class="fn">适用场景</td>
+    <td class="desc">深度集成 Tempo 生态的支付场景</td>
+    <td class="desc">多链环境下的轻量级 API 收费</td>
+  </tr>
+</table>
+</div>
+
+<div class="box note">
+  <span class="box-label">判断视角:</span>
+  <p>Tempo 和 x402 在方向上高度一致，竞争大于互补。关键分叉点在于"是否愿意锁定在 Tempo 专属链上"。Tempo 的生态背书更强，但 x402 对多链环境更友好。</p>
+</div>
+
+<h3 id="vs-trad">vs 传统支付（Stripe / 预充值 API Key） <a href="#usecases" class="anchor">[↑]</a></h3>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th>对比项</th><th>Tempo MPP</th><th>传统 API Key + 预充值</th></tr>
+  <tr><td class="fn">适用付款方</td><td class="desc">AI Agent（无账号，无人工介入）</td><td class="desc">人类（需注册、KYC、绑卡）</td></tr>
+  <tr><td class="fn">接入成本</td><td class="desc">服务端加 402 响应头即可</td><td class="desc">需接入 Stripe SDK，管理 Webhook</td></tr>
+  <tr><td class="fn">结算速度</td><td class="desc">≈ 400ms，链上即时结算</td><td class="desc">T+1 到 T+7，银行清算周期</td></tr>
+  <tr><td class="fn">最小金额</td><td class="desc">$0.001 级别</td><td class="desc">通常 $0.50+ 起，手续费吞噬小额</td></tr>
+  <tr><td class="fn">跨境支付</td><td class="desc">链上稳定币，无国界限制</td><td class="desc">受汇率、监管、银行网络限制</td></tr>
+  <tr><td class="fn">可审计性</td><td class="desc">链上全透明</td><td class="desc">依赖服务商后台</td></tr>
+</table>
+</div>
+
+<!-- ══════════════════ QUICK REFERENCE ══════════════════ -->
+<h2 id="quick-ref">Quick Reference <a href="#top" class="back-top">↑ top</a></h2>
+
+<table class="sum-table">
+  <tr><th>概念</th><th>一句话说明</th></tr>
+  <tr><td>Tempo Chain</td><td>专为稳定币支付设计的 EVM 兼容 L1，2026-03 主网上线</td></tr>
+  <tr><td>TIP-20</td><td>Tempo 的同质化代币标准，替代 ERC-20，手续费直接用稳定币支付</td></tr>
+  <tr><td>Tempo Transactions</td><td>协议层原生的批量、定时、Fee Sponsorship、Passkey 等高级交易能力</td></tr>
+  <tr><td>MPP</td><td>Machine Payments Protocol，将 HTTP 402 变为可执行的机器支付协议</td></tr>
+  <tr><td>Session Payment</td><td>SSE 流式场景下的 voucher 预付 + 按消费退款机制</td></tr>
+  <tr><td>Tempo Wallet</td><td>内置 MPP 的命令行钱包，<code>tempo http GET url</code> 自动处理 402</td></tr>
+  <tr><td>Fee Sponsorship</td><td>平台代 Agent 支付链上手续费，Agent 账户零余额也能发交易</td></tr>
+  <tr><td>X-Payment</td><td>402 响应头，携带价格、收款地址、代币类型，MPP 解析此头完成支付</td></tr>
+</table>
+
+<hr>
+
+<!-- ══════════════════ QUIZ ══════════════════ -->
+<h2 id="quiz">测验 <a href="#top" class="back-top">↑ top</a></h2>
+<p>检验对 Tempo Wallet 核心概念的理解。</p>
+
+<div class="quiz-q">
+  <p>1. Tempo 链上的手续费用什么支付？</p>
+  <div class="quiz-opts">
+    <button class="quiz-opt" onclick="ans(this,false,'Tempo 没有原生 Gas Token，MATIC 是 Polygon 的代币。')">MATIC</button>
+    <button class="quiz-opt" onclick="ans(this,false,'ETH 是以太坊主网的 Gas Token，Tempo 的设计目标之一就是消除对它的依赖。')">ETH</button>
+    <button class="quiz-opt" onclick="ans(this,true,'正确。Tempo 使用 TIP-20 稳定币（如 USDC）支付链上手续费，没有原生 Gas Token。')">TIP-20 稳定币（如 USDC）</button>
+    <button class="quiz-opt" onclick="ans(this,false,'Tempo 没有发行 TEMPO 原生代币用于 Gas 支付。')">TEMPO 原生代币</button>
+  </div>
+  <div class="quiz-fb" id="fb0"></div>
+</div>
+
+<div class="quiz-q">
+  <p>2. MPP 会话支付中，SSE 流式场景的付款方式是？</p>
+  <div class="quiz-opts">
+    <button class="quiz-opt" onclick="ans(this,false,'每个 token 一笔链上交易会产生极高的 Gas 成本和延迟，MPP 专门为此设计了 voucher 机制。')">每个 LLM token 发一笔链上交易</button>
+    <button class="quiz-opt" onclick="ans(this,true,'正确。预存 voucher，按消费追加充值，会话结束后退还余额，实现真正的按量计费。')">预存 voucher，按消费追加充值，会话后退余</button>
+    <button class="quiz-opt" onclick="ans(this,false,'传统预充值不支持会话结束退款，也无法精确按量计费。')">会话开始时一次性扣除固定金额</button>
+    <button class="quiz-opt" onclick="ans(this,false,'会话支付是实时结算的，不是月账单。')">按月汇总结算</button>
+  </div>
+  <div class="quiz-fb" id="fb1"></div>
+</div>
+
+<div class="quiz-q">
+  <p>3. 下列哪个命令让 Tempo Wallet 自动处理 HTTP 402 挑战？</p>
+  <div class="quiz-opts">
+    <button class="quiz-opt" onclick="ans(this,false,'tempo pay 用于主动发起转账，不代理 HTTP 请求。')"><code>tempo pay --to 0x... --amount 1.00</code></button>
+    <button class="quiz-opt" onclick="ans(this,true,'正确。tempo http 命令是 MPP 的 HTTP 代理入口，自动拦截并处理 402 响应。')"><code>tempo http GET https://api.example.com/data</code></button>
+    <button class="quiz-opt" onclick="ans(this,false,'wallet create 只用于生成新钱包，不处理 HTTP 请求。')"><code>tempo wallet create</code></button>
+    <button class="quiz-opt" onclick="ans(this,false,'这不是 Tempo Wallet 的命令格式。')"><code>tempo mpp --url https://api.example.com/data</code></button>
+  </div>
+  <div class="quiz-fb" id="fb2"></div>
+</div>
+
+<div class="quiz-q">
+  <p>4. Tempo MPP 和 x402 最本质的区别在于？</p>
+  <div class="quiz-opts">
+    <button class="quiz-opt" onclick="ans(this,false,'两者都利用 HTTP 402 状态码，这是它们共同点而非差异。')">Tempo 不使用 HTTP 402</button>
+    <button class="quiz-opt" onclick="ans(this,false,'两者都面向 AI Agent 场景，均支持 Agent 作为付款方。')">x402 不支持 AI Agent 付款</button>
+    <button class="quiz-opt" onclick="ans(this,true,'正确。Tempo MPP 绑定在 Tempo 专属 L1 上，而 x402 是多链协议，可在 Base、以太坊等多条链上结算。')">Tempo 绑定专属 L1，x402 是多链协议</button>
+    <button class="quiz-opt" onclick="ans(this,false,'两者都支持 USDC 结算，稳定币类型不是本质区别。')">Tempo 不支持 USDC</button>
+  </div>
+  <div class="quiz-fb" id="fb3"></div>
+</div>
+
+<button onclick="showResult()" style="font-family:'Courier New',monospace;font-size:.95rem;padding:10px 28px;background:#2b2b2b;color:#fff;border:none;border-radius:3px;cursor:pointer;margin-top:.5rem;">查看得分</button>
+
+<div id="quiz-result">
+  <div class="score" id="score-display"></div>
+  <p style="margin-top:12px;font-size:1rem;color:#555;" id="score-msg"></p>
+</div>
+
+<!-- ══════════════════ SUMMARY ══════════════════ -->
+<h2 id="summary-ref">Summary <a href="#top" class="back-top">↑ top</a></h2>
+
+<table class="sum-table">
+  <tr><th>维度</th><th>Tempo 的答案</th></tr>
+  <tr><td>链定位</td><td>支付专用 L1，非通用区块链</td></tr>
+  <tr><td>Gas 模型</td><td>无原生 Gas Token，全链用稳定币</td></tr>
+  <tr><td>核心协议</td><td>MPP — HTTP 402 机器支付标准</td></tr>
+  <tr><td>适用对象</td><td>AI Agent、API 提供商、金融机构</td></tr>
+  <tr><td>钱包工具</td><td>CLI（<code>tempo</code>）+ 浏览器（wallet.tempo.xyz）</td></tr>
+  <tr><td>认证方式</td><td>Passkey（Touch ID / Face ID / 硬件密钥）</td></tr>
+  <tr><td>结算速度</td><td>≈ 400ms，链上即时确认</td></tr>
+  <tr><td>最小支付单位</td><td>$0.001 USDC 级别</td></tr>
+  <tr><td>与 x402 关系</td><td>竞争关系，方向一致，架构不同</td></tr>
+  <tr><td>主网时间</td><td>2026-03 上线，融资 $500M @$5B 估值</td></tr>
+</table>
+
+<footer>
+  整理自 <a href="https://tempo.xyz">tempo.xyz</a> · <a href="https://docs.tempo.xyz">docs.tempo.xyz</a> · <a href="https://github.com/tempoxyz/wallet">GitHub tempoxyz/wallet</a> ·
+  更新于 2026-04 · <a href="index.html">← Agent Economy Research</a>
+</footer>
+
+</main>
+
+<script>
+// ── Progress bar ──
+window.addEventListener('scroll', () => {
+  const el = document.getElementById('progressbar');
+  const doc = document.documentElement;
+  const pct = (doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100;
+  el.style.width = Math.min(pct, 100) + '%';
+});
+
+// ── Sidebar active link ──
+const links = document.querySelectorAll('#sidebar a[href^="#"]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const active = [...links].find(l => l.getAttribute('href') === '#' + e.target.id);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+document.querySelectorAll('h2[id], h3[id]').forEach(h => observer.observe(h));
+
+// ── Quiz logic ──
+let answered = new Array(4).fill(false);
+let score = 0;
+
+function ans(btn, correct, msg) {
+  const q = btn.closest('.quiz-q');
+  const idx = [...document.querySelectorAll('.quiz-q')].indexOf(q);
+  if (answered[idx]) return;
+  answered[idx] = true;
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (correct) score++;
+  const fb = document.getElementById('fb' + idx);
+  fb.textContent = msg;
+  fb.className = 'quiz-fb show ' + (correct ? 'ok' : 'bad');
+  q.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
+}
+
+function showResult() {
+  const el = document.getElementById('quiz-result');
+  el.style.display = 'block';
+  document.getElementById('score-display').textContent = score + ' / 4';
+  const msgs = ['继续学习，基础概念需要加强。', '还不错，再巩固一下细节。', '很好，只差一步！', '满分！你已掌握 Tempo Wallet 的核心概念。'];
+  document.getElementById('score-msg').textContent = msgs[score];
+}
+
+// ── MPP simulator ──
+function simulateMPP() {
+  const url = document.getElementById('api-url').value.trim() || 'https://api.example.com/v1/data';
+  const out = document.getElementById('mpp-out');
+  out.classList.add('show');
+  const steps = [
+    '<span class="o-d">[①]</span> <span class="o-f">GET</span> ' + url,
+    '<span class="o-d">[②]</span> <span style="color:#ff9900">← 402 Payment Required</span>',
+    '    X-Payment: {"price":"0.01","token":"USDC","to":"0xAB12..."}',
+    '<span class="o-d">[③]</span> MPP Engine: price within policy → signing tx…',
+    '    Broadcasting to Tempo chain…',
+    '    <span class="o-v">✓</span> Settled: txHash 0x7f3a…  (412ms)',
+    '<span class="o-d">[④]</span> <span class="o-f">GET</span> ' + url + ' (retry)',
+    '    X-Payment-Receipt: 0x7f3a…',
+    '<span class="o-v">← 200 OK</span>  data returned ✓'
+  ];
+  out.textContent = '';
+  let i = 0;
+  const t = setInterval(() => {
+    if (i >= steps.length) { clearInterval(t); return; }
+    out.innerHTML += steps[i] + '\n';
+    i++;
+  }, 320);
+}
+
+function clearMPP() {
+  const out = document.getElementById('mpp-out');
+  out.classList.remove('show');
+  out.textContent = '';
+}
+</script>
+<!-- ── SVG Lightbox ── -->
+<div id="svg-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;">
+  <button onclick="closeLightbox()" title="关闭 (Esc)" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.4rem;width:36px;height:36px;border-radius:50%;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+  <div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);font-family:'Courier New',monospace;font-size:12px;color:rgba(255,255,255,.4);pointer-events:none;white-space:nowrap;">滚轮缩放 · 拖动平移 · ESC 关闭</div>
+  <div style="position:absolute;bottom:50px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;z-index:2;">
+    <button onclick="lbZoom(1.25)" style="background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1.15rem;width:32px;height:32px;border-radius:4px;cursor:pointer;line-height:1;">+</button>
+    <span id="lb-scale-label" style="font-family:'Courier New',monospace;font-size:13px;color:rgba(255,255,255,.65);min-width:46px;text-align:center;">100%</span>
+    <button onclick="lbZoom(0.8)" style="background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1.15rem;width:32px;height:32px;border-radius:4px;cursor:pointer;line-height:1;">−</button>
+    <button onclick="lbReset()" style="background:rgba(255,255,255,.18);border:none;color:rgba(255,255,255,.65);font-family:'Courier New',monospace;font-size:12px;padding:0 10px;height:32px;border-radius:4px;cursor:pointer;">重置</button>
+  </div>
+  <div id="lb-stage" style="position:absolute;inset:44px 0 86px 0;overflow:hidden;touch-action:none;cursor:grab;">
+    <div id="lb-inner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"></div>
+  </div>
+  <div id="lb-caption" style="position:absolute;bottom:16px;left:0;right:0;text-align:center;font-family:'Courier New',monospace;font-size:13px;color:rgba(255,255,255,.45);pointer-events:none;padding:0 56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+</div>
+<script>
+(function(){
+  var _s=1,_tx=0,_ty=0,_drag=false,_dx=0,_dy=0,_dtx=0,_dty=0,_pinchDist=0,_lastTouches=null;
+  function _applyTransform(){
+    document.getElementById('lb-inner').style.transform='translate('+_tx+'px,'+_ty+'px) scale('+_s+')';
+    document.getElementById('lb-scale-label').textContent=Math.round(_s*100)+'%';
+  }
+  window.lbZoom=function(factor,screenX,screenY){
+    var stage=document.getElementById('lb-stage'),r=stage.getBoundingClientRect();
+    var mx=(screenX!==undefined?screenX:r.left+r.width/2)-r.left-r.width/2;
+    var my=(screenY!==undefined?screenY:r.top+r.height/2)-r.top-r.height/2;
+    var ns=Math.min(Math.max(_s*factor,0.2),12);
+    _tx=mx-(mx-_tx)/_s*ns; _ty=my-(my-_ty)/_s*ns; _s=ns; _applyTransform();
+  };
+  window.lbReset=function(){_s=1;_tx=0;_ty=0;_applyTransform();document.getElementById('lb-stage').style.cursor='grab';};
+  function _open(svgEl,caption){
+    var clone=svgEl.cloneNode(true);
+    var vb=(svgEl.getAttribute('viewBox')||'').split(/[\s,]+/);
+    var natW=parseFloat(vb[2])||parseFloat(svgEl.getAttribute('width'))||800;
+    var natH=parseFloat(vb[3])||parseFloat(svgEl.getAttribute('height'))||400;
+    clone.setAttribute('width',natW); clone.setAttribute('height',natH);
+    clone.style.cssText='display:block;';
+    var wrap=document.createElement('div');
+    wrap.style.cssText='background:#f8faff;border-radius:8px;padding:28px;border:1px solid #e2e8f0;display:inline-block;line-height:0;';
+    wrap.appendChild(clone);
+    var inner=document.getElementById('lb-inner');
+    inner.innerHTML=''; inner.appendChild(wrap);
+    document.getElementById('lb-caption').textContent=caption||'';
+    _s=1.5; _tx=0; _ty=0; _applyTransform();
+    document.getElementById('svg-lightbox').style.display='block';
+    document.getElementById('lb-stage').style.cursor='grab';
+    document.body.style.overflow='hidden';
+  }
+  function closeLightbox(){
+    document.getElementById('svg-lightbox').style.display='none';
+    document.getElementById('lb-inner').innerHTML='';
+    document.body.style.overflow='';
+  }
+  window.closeLightbox=closeLightbox;
+  function initLightbox(){
+    document.querySelectorAll('.diagram').forEach(function(d){
+      var svg=d.querySelector('svg'); if(!svg) return;
+      d.style.cursor='zoom-in'; d.title='点击放大';
+      d.addEventListener('click',function(){ _open(svg,(d.querySelector('figcaption')||{}).textContent||''); });
+    });
+    var stage=document.getElementById('lb-stage');
+    stage.addEventListener('wheel',function(e){e.preventDefault();lbZoom(e.deltaY<0?1.12:1/1.12,e.clientX,e.clientY);},{passive:false});
+    stage.addEventListener('mousedown',function(e){if(e.button!==0)return;_drag=true;_dx=e.clientX;_dy=e.clientY;_dtx=_tx;_dty=_ty;stage.style.cursor='grabbing';e.preventDefault();});
+    window.addEventListener('mousemove',function(e){if(!_drag)return;_tx=_dtx+(e.clientX-_dx);_ty=_dty+(e.clientY-_dy);_applyTransform();});
+    window.addEventListener('mouseup',function(){if(_drag){_drag=false;stage.style.cursor='grab';}});
+    stage.addEventListener('touchstart',function(e){_lastTouches=Array.from(e.touches).map(function(t){return{x:t.clientX,y:t.clientY};});if(e.touches.length===2)_pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);},{passive:true});
+    stage.addEventListener('touchmove',function(e){e.preventDefault();var ts=Array.from(e.touches).map(function(t){return{x:t.clientX,y:t.clientY};});if(e.touches.length===2&&_lastTouches&&_lastTouches.length>=2){var dist=Math.hypot(ts[0].x-ts[1].x,ts[0].y-ts[1].y);var cx=(ts[0].x+ts[1].x)/2,cy=(ts[0].y+ts[1].y)/2;if(_pinchDist>0)lbZoom(dist/_pinchDist,cx,cy);_pinchDist=dist;}else if(e.touches.length===1&&_lastTouches&&_lastTouches.length>=1){_tx+=ts[0].x-_lastTouches[0].x;_ty+=ts[0].y-_lastTouches[0].y;_applyTransform();}_lastTouches=ts;},{passive:false});
+    stage.addEventListener('touchend',function(e){_lastTouches=Array.from(e.touches).map(function(t){return{x:t.clientX,y:t.clientY};});});
+    document.getElementById('svg-lightbox').addEventListener('click',function(e){if(e.target===this)closeLightbox();});
+  }
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initLightbox);}else{initLightbox();}
+})();
+</script>
+</body>
+</html>

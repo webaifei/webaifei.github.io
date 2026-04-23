@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERC-8211 | Smart Batching — AI Agent DeFi 执行标准</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Georgia,"Times New Roman",serif;font-size:20px;line-height:1.85;color:#222;background:#fff;display:flex;min-height:100vh}
+#sidebar{width:256px;min-width:256px;background:#2b2b2b;color:#ccc;padding:0;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
+#sidebar-logo{background:#1a1a1a;padding:18px 20px;font-family:"Courier New",monospace;font-size:16px;color:#f0a500;letter-spacing:.03em;border-bottom:2px solid #f0a500;font-weight:700}
+#sidebar-logo span{color:#888;font-size:11px;display:block;margin-top:4px;font-weight:400;letter-spacing:0}
+.sidebar-section{padding:10px 0 4px}
+.sidebar-section-label{font-family:"Courier New",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#666;padding:8px 20px 4px;font-weight:700}
+.sidebar-section a{display:block;padding:5px 18px 5px 22px;font-family:"Courier New",monospace;font-size:14px;color:#bbb;text-decoration:none;border-left:3px solid transparent;transition:all .15s}
+.sidebar-section a:hover,.sidebar-section a.active{color:#f0a500;border-left-color:#f0a500;background:rgba(240,165,0,.06)}
+.sidebar-section a.sub{padding-left:32px;font-size:13px;color:#999}
+.sidebar-section a.sub:hover{color:#f0a500}
+hr.sidebar-hr{border:none;border-top:1px solid #3a3a3a;margin:6px 0}
+#main{flex:1;max-width:900px;padding:0 64px 80px 64px;min-width:0;background:#fff}
+#breadcrumb{font-family:"Courier New",monospace;font-size:14px;color:#64748b;padding:18px 0 0;margin-bottom:24px}
+#breadcrumb a{color:#2a6db5;text-decoration:none}
+h1.page-title{font-family:Georgia,serif;font-size:2.8rem;font-weight:bold;color:#111;margin-bottom:8px;line-height:1.15}
+.page-subtitle{font-size:1.25rem;color:#555;margin-bottom:12px;font-style:italic}
+.page-meta{font-family:"Courier New",monospace;font-size:14px;color:#888;margin-bottom:32px}
+.page-meta a{color:#2a6db5;text-decoration:none}
+h2{font-family:Georgia,serif;font-size:2.1rem;color:#111;margin:3rem 0 .5rem;border-bottom:2px solid #111;padding-bottom:8px}
+h3{font-family:"Courier New",monospace;font-size:1.25rem;color:#2a6db5;margin:2.2rem 0 .6rem;text-decoration:underline;text-underline-offset:4px}
+h4{font-family:Georgia,serif;font-size:1.15rem;color:#333;font-weight:bold;margin:1.6rem 0 .4rem}
+.back-top{font-family:"Courier New",monospace;font-size:.82rem;color:#aaa;float:right;text-decoration:none;margin-top:.7rem}
+.back-top:hover{color:#2a6db5}
+p{margin-bottom:1.1rem;color:#333}
+strong{color:#111}
+a{color:#2a6db5;text-decoration:none}
+a:hover{text-decoration:underline}
+ul,ol{padding-left:1.8rem;margin-bottom:1.1rem;color:#333}
+li{margin-bottom:.35rem}
+code{font-family:"Courier New",monospace;font-size:.88em;background:#1a1a1a;color:#e8e8e8;padding:2px 7px;border-radius:4px}
+.diagram{border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:2rem 0;background:#f8faff;text-align:center}
+.diagram svg{max-width:100%;display:block;margin:0 auto}
+.diagram figcaption{font-family:"Courier New",monospace;font-size:14px;color:#999;margin-top:12px}
+.box{border-left:4px solid #ccc;padding:14px 18px;margin:1.4rem 0;font-size:1rem;border-radius:0 6px 6px 0}
+.box-label{font-weight:bold;font-family:"Courier New",monospace;font-size:.88rem;margin-bottom:5px;display:block}
+.box.note{border-color:#f0a500;background:#fffbea}
+.box.note .box-label{color:#c47f00}
+.box.tip{border-color:#3aaa5c;background:#f0fff4}
+.box.tip .box-label{color:#2d8049}
+.box.caution{border-color:#d9534f;background:#fff5f5}
+.box.caution .box-label{color:#b52b27}
+.box.quote{border-color:#2a6db5;background:#f0f6ff}
+.box.quote .box-label{color:#1a4e8f}
+.box p{margin:0;color:inherit}
+.ref-table-wrap{overflow-x:auto;margin:1.6rem 0 2rem;border-radius:8px;border:1px solid #e2e8f0}
+.ref-table{width:100%;border-collapse:collapse;font-size:1rem}
+.ref-table th{background:#2b2b2b;color:#fff;padding:12px 16px;text-align:left;font-family:"Courier New",monospace;font-size:.9rem;font-weight:normal}
+.ref-table td{padding:11px 16px;border-bottom:1px solid #e8e8e8;vertical-align:top}
+.ref-table tr:last-child td{border-bottom:none}
+.ref-table tr:hover td{background:#fafafa}
+.ref-table td.fn{font-family:"Courier New",monospace;font-size:.95rem;white-space:nowrap}
+.ref-table td.fn a{color:#2a6db5}
+.ref-table td.sz{font-family:"Courier New",monospace;font-size:.9rem;color:#555;white-space:nowrap}
+.ref-table td.desc{color:#444;line-height:1.7}
+.ref-table tr.seg td{background:#f0f6ff}
+.toc{border:1px solid #ddd;background:#fafafa;padding:18px 24px;margin:1.8rem 0;display:inline-block;min-width:280px;max-width:520px;border-radius:4px}
+.toc-title{font-weight:bold;font-size:1.05rem;margin-bottom:10px;color:#111}
+.toc ul{margin:0;padding-left:1.4rem;font-size:1rem}
+.toc li{margin-bottom:3px}
+.code-block{background:#1a1a1a;color:#e8e8e8;padding:20px;border-radius:4px;font-family:"Courier New",monospace;font-size:.92rem;overflow-x:auto;line-height:1.6;margin:1.4rem 0}
+.c-cm{color:#7ec8e3}.c-kw{color:#cce5ff}.c-st{color:#a8d8a8}.c-nu{color:#f0a500}.c-tp{color:#ffd700}.c-fn{color:#dcdcaa}.c-var{color:#9cdcfe}.c-op{color:#d4d4d4}
+.flow-step-list{margin:1.6rem 0}
+.flow-step{display:flex;gap:18px;align-items:flex-start;padding:16px 20px;margin-bottom:10px;border-radius:6px;background:#fafafa;border:1px solid #e8e8e8}
+.flow-step-num{font-family:"Courier New",monospace;font-size:1rem;font-weight:700;color:#fff;background:#f0a500;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.flow-step-body h4{margin:0 0 4px;font-size:1rem;color:#111}
+.flow-step-body p{margin:0;font-size:.95rem;color:#555}
+.param-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:1.6rem 0}
+.param-card{border:1px solid #e2e8f0;border-radius:8px;padding:18px 16px;background:#fafafa}
+.param-card-title{font-family:"Courier New",monospace;font-size:1rem;font-weight:700;color:#111;margin-bottom:6px;padding-bottom:8px;border-bottom:2px solid #f0a500}
+.param-card p{font-size:.9rem;color:#555;margin:0}
+.compat-list{display:flex;flex-wrap:wrap;gap:10px;margin:1rem 0 1.4rem}
+.compat-badge{font-family:"Courier New",monospace;font-size:.85rem;background:#1a1a1a;color:#f0a500;padding:4px 12px;border-radius:4px;border:1px solid #333}
+.sum-table{width:100%;border-collapse:collapse;font-size:1rem;margin:1.4rem 0}
+.sum-table th{background:#f0a500;color:#111;padding:12px 16px;text-align:left;font-family:"Courier New",monospace;font-size:.9rem}
+.sum-table td{padding:11px 16px;border-bottom:1px solid #e8e8e8;color:#333}
+.sum-table tr:last-child td{border-bottom:none}
+.sum-table tr:hover td{background:#fffbea}
+.quiz-q{margin-bottom:1.8rem;padding-bottom:1.8rem;border-bottom:1px solid #eee}
+.quiz-q:last-of-type{border-bottom:none}
+.quiz-q p{font-weight:bold;margin-bottom:.8rem;color:#111}
+.quiz-opts{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{font-family:Georgia,serif;font-size:1rem;padding:10px 16px;border:1px solid #ccc;background:#fff;border-radius:3px;cursor:pointer;text-align:left;transition:background .12s,border-color .12s;color:#333}
+.quiz-opt:hover{border-color:#2a6db5;background:#f0f6ff}
+.quiz-opt.correct{border-color:#3aaa5c;background:#f0fff4;color:#1a5e30}
+.quiz-opt.wrong{border-color:#d9534f;background:#fff5f5;color:#8b1e1e}
+.quiz-fb{font-size:.95rem;margin-top:8px;padding:8px 14px;border-radius:3px;display:none}
+.quiz-fb.show{display:block}
+.quiz-fb.ok{background:#f0fff4;color:#1a5e30;border:1px solid #3aaa5c}
+.quiz-fb.bad{background:#fff5f5;color:#8b1e1e;border:1px solid #d9534f}
+#quiz-result{text-align:center;padding:28px;background:#fafafa;border:1px solid #ddd;border-radius:4px;margin-top:1.4rem;display:none}
+#quiz-result .score{font-size:2.8rem;font-weight:bold;color:#2b2b2b;font-family:"Courier New",monospace}
+hr{border:none;border-top:1px solid #e0e0e0;margin:3rem 0}
+footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid #ddd;font-family:"Courier New",monospace;font-size:.88rem;color:#999}
+#progressbar{position:fixed;top:0;left:0;height:3px;background:#f0a500;width:0;z-index:999;transition:width .1s}
+
+
+/* -- SDK Step Cards -- */
+.sdk-steps{margin:1.6rem 0;display:flex;flex-direction:column;gap:0}
+.sdk-step{border:1px solid #dde3f0;overflow:hidden;margin-bottom:-1px}
+.sdk-step:first-child{border-radius:6px 6px 0 0}
+.sdk-step:last-child{border-radius:0 0 6px 6px;margin-bottom:0}
+.sdk-step-header{display:flex;align-items:center;gap:10px;padding:9px 16px;background:#1e1e2e;border-bottom:1px solid #2a2a3e}
+.sdk-step-num{font-family:'Courier New',monospace;font-size:.8rem;font-weight:700;color:#111;background:#f0a500;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sdk-step-num.pred{background:#27ae60;color:#fff}
+.sdk-step-num.last{background:#2a6db5;color:#fff;font-size:.95rem}
+.sdk-step-title{font-family:'Courier New',monospace;font-size:.85rem;color:#e8e8e8;font-weight:600}
+.sdk-step-badges{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.sdk-badge{font-family:'Courier New',monospace;font-size:.7rem;padding:2px 7px;border-radius:3px;font-weight:700}
+.sdk-badge.fetcher{background:#1a3a2e;color:#3aaa5c;border:1px solid #27ae60}
+.sdk-badge.constraint{background:#1a2a3e;color:#5b9bd5;border:1px solid #2a6db5}
+.sdk-badge.none{background:#2a2a2a;color:#888;border:1px solid #444}
+.sdk-step-body pre{background:#0d1117;margin:0;padding:16px 20px;font-family:'Courier New',monospace;font-size:.87rem;color:#d4d4d4;line-height:1.65;overflow-x:auto}
+.sdk-step-body pre .c-cm{color:#6a9955}
+.sdk-step-body pre .c-kw{color:#569cd6}
+.sdk-step-body pre .c-tp{color:#4ec9b0}
+.sdk-step-body pre .c-fn{color:#dcdcaa}
+.sdk-step-body pre .c-st{color:#ce9178}
+.sdk-step-body pre .c-nu{color:#b5cea8}
+.sdk-step-body pre .c-var{color:#9cdcfe}
+
+/* ── Interface blocks ── */
+.iface-section{margin:2rem 0}
+.iface-block{border:1px solid #dde3f0;border-radius:6px;overflow:hidden;margin:12px 0}
+.iface-header{background:#1a1a2e;color:#fff;padding:9px 16px;font-family:'Courier New',monospace;font-size:.85rem;display:flex;align-items:center;gap:10px}
+.iface-tag{background:#f0a500;color:#111;border-radius:3px;padding:1px 8px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.iface-tag.green{background:#27ae60;color:#fff}
+.iface-tag.blue{background:#2a6db5;color:#fff}
+.iface-tag.purple{background:#8e44ad;color:#fff}
+.iface-header-title{color:#ccc;font-size:.82rem}
+.iface-body{background:#0d1117;padding:16px 20px}
+.iface-body pre{background:transparent;margin:0;padding:0;font-family:'Courier New',monospace;font-size:.88rem;color:#d4d4d4;line-height:1.65;tab-size:4}
+.iface-body pre .c-cm{color:#6a9955}
+.iface-body pre .c-kw{color:#569cd6}
+.iface-body pre .c-tp{color:#4ec9b0}
+.iface-body pre .c-fn{color:#dcdcaa}
+.iface-body pre .c-st{color:#ce9178}
+.iface-body pre .c-nu{color:#b5cea8}
+.iface-body pre .c-var{color:#9cdcfe}
+.iface-fields{border-top:1px solid #e8e8e8}
+.iface-fields table{width:100%;border-collapse:collapse;font-size:.9rem}
+.iface-fields th{background:#f4f4f4;color:#555;padding:8px 14px;text-align:left;font-family:'Courier New',monospace;font-size:.8rem;font-weight:600;border-bottom:1px solid #e0e0e0}
+.iface-fields td{padding:8px 14px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.iface-fields tr:last-child td{border-bottom:none}
+.iface-fields td.f-name{font-family:'Courier New',monospace;font-size:.88rem;color:#111;white-space:nowrap}
+.iface-fields td.f-type{font-family:'Courier New',monospace;font-size:.82rem;color:#2a6db5;white-space:nowrap}
+.iface-fields td.f-desc{color:#555;font-size:.9rem;line-height:1.5}
+
+@media(max-width:768px){#sidebar{display:none}#main{padding:0 20px 60px}.param-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="progressbar"></div>
+
+<nav id="sidebar">
+  <div id="sidebar-logo">ERC-8211 <span>Smart Batching &middot; Draft 2026</span></div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Overview</div>
+    <a href="#intro">背景与动机</a>
+    <a href="#problem">静态批量的困境</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">核心架构</div>
+    <a href="#composable">ComposableExecution</a>
+    <a href="#fetchers" class="sub">Fetchers</a>
+    <a href="#constraints" class="sub">Constraints</a>
+    <a href="#predicates" class="sub">Predicates</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">接口参考</div>
+    <a href="#interface">Solidity 接口</a>
+    <a href="#flow">执行流程</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">实战示例</div>
+    <a href="#example-defi">4 步 DeFi 流</a>
+    <a href="#example-sdk">TypeScript SDK</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">生态集成</div>
+    <a href="#compat">兼容标准</a>
+    <a href="#erc8004">ERC-8004 集成</a>
+    <a href="#erc8183">ERC-8183 集成</a>
+  </div>
+  <hr class="sidebar-hr">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Reference</div>
+    <a href="#security">安全考量</a>
+    <a href="#summary">总结速查</a>
+    <a href="#quiz">测验</a>
+  </div>
+</nav>
+
+<main id="main">
+
+<div id="breadcrumb">
+  <a href="index.html">Agent Economy</a> &rsaquo; <strong>ERC-8211</strong>
+</div>
+
+<h1 class="page-title" id="top">ERC-8211</h1>
+<div class="page-subtitle">Smart Batching &mdash; AI Agent 链上 DeFi 执行标准</div>
+<div class="page-meta">
+  整理自 Biconomy + Ethereum Foundation 规范 &middot; 发布于 2026 年 4 月 6 日 &middot;
+  <a href="https://ethereum-magicians.org/t/erc-8211-smart-batching/28135" target="_blank">Fellowship 讨论 &nearr;</a> &middot;
+  <a href="https://www.erc8211.com/" target="_blank">官方站点 &nearr;</a>
+</div>
+
+<div class="diagram">
+<svg viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:240px">
+  <defs>
+    <marker id="arr1" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#555"/></marker>
+    <marker id="arr2" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#f0a500"/></marker>
+  </defs>
+  <rect x="10" y="18" width="204" height="146" rx="6" fill="#fff5f5" stroke="#d9534f" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="112" y="42" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#d9534f" font-weight="700">静态批量（旧）</text>
+  <rect x="26" y="54" width="172" height="36" rx="4" fill="#fdd"/>
+  <text x="112" y="77" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#333">签名时固定所有参数</text>
+  <rect x="26" y="98" width="172" height="36" rx="4" fill="#fdd"/>
+  <text x="112" y="121" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#333">执行时状态已变 &rarr; 失败</text>
+  <text x="112" y="168" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#c0392b">&#9888; 滑点 / 余额不足</text>
+  <line x1="216" y1="100" x2="258" y2="100" stroke="#999" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr1)"/>
+  <text x="237" y="91" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#888">ERC-8211</text>
+  <rect x="262" y="18" width="210" height="174" rx="6" fill="#f0fff4" stroke="#3aaa5c" stroke-width="1.5"/>
+  <text x="367" y="42" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#27ae60" font-weight="700">Smart Batch（新）</text>
+  <rect x="278" y="54" width="178" height="36" rx="4" fill="#d4edda"/>
+  <text x="367" y="77" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#333">Fetchers 实时读取链上状态</text>
+  <rect x="278" y="98" width="178" height="36" rx="4" fill="#d4edda"/>
+  <text x="367" y="121" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#333">Constraints 校验，不满足则整批 revert</text>
+  <rect x="278" y="143" width="178" height="36" rx="4" fill="#d4edda"/>
+  <text x="367" y="166" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#333">原子执行，无需多次签名</text>
+  <line x1="474" y1="105" x2="518" y2="105" stroke="#f0a500" stroke-width="2" marker-end="url(#arr2)"/>
+  <rect x="522" y="62" width="228" height="88" rx="6" fill="#fffbea" stroke="#f0a500" stroke-width="1.5"/>
+  <text x="636" y="92" text-anchor="middle" font-family="Courier New,monospace" font-size="13" font-weight="700" fill="#111">单笔原子交易</text>
+  <text x="636" y="116" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">&#8595; 89% gas 消耗 &nbsp; &#8595; 零额外签名</text>
+</svg>
+<figcaption>图1 &mdash; Smart Batching 将多步 DeFi 操作从"参数在签名时冻结"升级为"执行时实时解析"</figcaption>
+</div>
+
+<p id="intro">ERC-8211 是由 <strong>Biconomy</strong> 与 <strong>Ethereum Foundation</strong> 联合提出的链上执行标准，发布于 2026 年 4 月 6 日。它不修改以太坊协议层，而是在合约编码层引入一种新的批处理原语：<strong>Smart Batching（智能批量）</strong>。</p>
+
+<p>它的核心洞见只有一句话：</p>
+
+<div class="box quote">
+  <div class="box-label">&mdash; ERC-8211 核心命题</div>
+  <p>批量执行的参数，不应该在签名时就被冻结——它应该在链上执行时才知道自己的值。</p>
+</div>
+
+<p>这句话看似简单，却把多步 DeFi 流从"时间快照的拼接"变成了"实时协议的执行"。对于需要在链上自主操作的 AI Agent 来说，这是它们真正进入 DeFi 的通行证。</p>
+
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <ul>
+    <li><a href="#problem">静态批量的困境</a></li>
+    <li><a href="#composable">ComposableExecution 架构</a>
+      <ul>
+        <li><a href="#fetchers">Fetchers &mdash; 参数来源</a></li>
+        <li><a href="#constraints">Constraints &mdash; 执行条件</a></li>
+        <li><a href="#predicates">Predicates &mdash; 纯断言门控</a></li>
+      </ul>
+    </li>
+    <li><a href="#interface">Solidity 接口参考</a></li>
+    <li><a href="#flow">执行流程</a></li>
+    <li><a href="#example-defi">实战：4 步 DeFi 流</a></li>
+    <li><a href="#example-sdk">TypeScript SDK</a></li>
+    <li><a href="#compat">兼容标准</a></li>
+    <li><a href="#security">安全考量</a></li>
+    <li><a href="#summary">总结速查</a></li>
+    <li><a href="#quiz">测验</a></li>
+  </ul>
+</div>
+
+<h2 id="problem">静态批量的困境 <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<p>"批处理不是新东西，ERC-4337 早就支持 UserOperation 批量提交。"这是大多数开发者在第一次听到 ERC-8211 时的反应。这个判断并没有错——但它描述的是一种不同的批量。</p>
+
+<p>ERC-4337 的 UserOperation 批量是<strong>静态批量</strong>：所有参数——token 数量、滑点上限、目标合约地址——在用户签名时就固定下来。从签名到链上执行，这中间可能有数分钟的延迟，而 DeFi 的链上状态是实时变动的。</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3" style="background:#0f172a">静态批量失败场景</th></tr>
+  <tr><th>操作</th><th>签名时的参数</th><th>执行时的实际状态</th></tr>
+  <tr>
+    <td>Uniswap Swap</td>
+    <td class="fn"><code>amountIn: 1000 USDC</code></td>
+    <td class="desc">滑点超出容忍范围 &rarr; revert，整批失败</td>
+  </tr>
+  <tr>
+    <td>Aave 存款</td>
+    <td class="fn"><code>amount: 0.5 WETH</code></td>
+    <td class="desc">上一步 swap 实际输出 0.48 WETH &rarr; 余额不足 &rarr; 失败</td>
+  </tr>
+  <tr>
+    <td>跨链桥接</td>
+    <td class="fn"><code>amount: fixed</code></td>
+    <td class="desc">目标链流动性已变化 &rarr; 金额超限 &rarr; 失败</td>
+  </tr>
+</table>
+</div>
+
+<p>对于手动操作的人类用户，失败了重发就好。但对于需要全天候自主运行的 AI Agent，静态批量的高失败率意味着：要么保守地串行执行每一步（多次签名、多次 gas），要么接受频繁失败带来的资金损耗。</p>
+
+<div class="box note">
+  <div class="box-label">Note</div>
+  <p>ERC-8211 的目标用户不仅是 AI Agent——任何需要在链上执行多步策略的场景（DeFi 套利、跨链操作、组合收益策略）都适用。但 Agent 是最迫切的受益者，因为它们不能依赖人类的实时干预。</p>
+</div>
+
+<h2 id="composable">ComposableExecution 架构 <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<p>ERC-8211 的核心数据结构是 <code>ComposableExecution[]</code>——一个批次入口的数组。每个入口描述一次链上调用，但与静态批量不同，它的参数不是直接写死的值，而是一组<strong>参数声明</strong>：告诉执行引擎"在执行时去哪里取这个值，以及这个值必须满足什么条件"。</p>
+
+<p>每个 <code>ComposableExecution</code> 由三个维度控制：</p>
+
+<div class="param-grid">
+  <div class="param-card">
+    <div class="param-card-title">Fetchers</div>
+    <p>参数的<strong>值从哪来</strong>。在执行时实时读取，而非签名时写死。</p>
+  </div>
+  <div class="param-card">
+    <div class="param-card-title">Constraints</div>
+    <p>参数必须<strong>满足什么条件</strong>。不满足则整批 revert，保护执行安全。</p>
+  </div>
+  <div class="param-card">
+    <div class="param-card-title">Predicates</div>
+    <p>纯链上<strong>断言门控</strong>。<code>target = address(0)</code>，无调用，只做条件检查。</p>
+  </div>
+</div>
+
+<h3 id="fetchers">Fetchers &mdash; 参数来源</h3>
+
+<p>Fetcher 是 ERC-8211 最关键的设计。它让每一个参数都能在执行时从链上"现取"，而不是从签名时的快照里读取。</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3">Fetcher 类型</th></tr>
+  <tr><th>类型</th><th>取值方式</th><th>典型用途</th></tr>
+  <tr>
+    <td class="fn"><code>Literal</code></td>
+    <td class="desc">内联字节，直接写死</td>
+    <td class="desc">目标合约地址、固定金额、已知常量</td>
+  </tr>
+  <tr>
+    <td class="fn"><code>StaticCall</code></td>
+    <td class="desc">执行时调用指定合约的 view 函数，取返回值</td>
+    <td class="desc">读取预言机价格、链上余额、池子储量、swap 输出估算</td>
+  </tr>
+  <tr>
+    <td class="fn"><code>Balance</code></td>
+    <td class="desc">执行时读取指定账户的 ERC-20 余额</td>
+    <td class="desc">上一步 swap 实际输出多少，传递给下一步存款</td>
+  </tr>
+</table>
+</div>
+
+<p><code>Balance</code> Fetcher 是解决"下一步的输入 = 上一步的实际输出"这个经典 DeFi 问题的关键。AI Agent 不需要猜测 swap 之后会得到多少 token，执行引擎在那一刻直接读账户余额，传给下一步。</p>
+
+<div class="box tip">
+  <div class="box-label">Tip</div>
+  <p>StaticCall Fetcher 可以调用任意 view 函数——包括 Chainlink 预言机的 <code>latestAnswer()</code>、Uniswap pool 的 <code>slot0()</code>、或者任意自定义的链上计算逻辑。这让 ERC-8211 批次可以在执行时做到"完全知情"。</p>
+</div>
+
+<h3 id="constraints">Constraints &mdash; 执行条件</h3>
+
+<p>Constraint 是与 Fetcher 配套的校验器：当一个参数被 Fetcher 解析出来之后，Constraint 验证它是否在可接受范围内。如果不满足，整个批次立即 revert。</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3">Constraint 操作符</th></tr>
+  <tr><th>操作符</th><th>含义</th><th>典型用途</th></tr>
+  <tr><td class="fn"><code>None</code></td><td class="desc">无约束，直接使用取到的值</td><td class="desc">透传上一步输出给下一步</td></tr>
+  <tr><td class="fn"><code>Gte</code></td><td class="desc">&ge; 指定值</td><td class="desc">滑点保护：swap 输出必须 &ge; 最低可接受金额</td></tr>
+  <tr><td class="fn"><code>Lte</code></td><td class="desc">&le; 指定值</td><td class="desc">价格上限：预言机价格不能超过某阈值</td></tr>
+  <tr><td class="fn"><code>Eq</code></td><td class="desc">= 指定值</td><td class="desc">精确匹配：确认合约状态符合预期</td></tr>
+  <tr><td class="fn"><code>Neq</code></td><td class="desc">&ne; 指定值</td><td class="desc">防止某状态发生：如 pool 未被暂停</td></tr>
+</table>
+</div>
+
+<p>Constraint 与 Fetcher 的组合覆盖了 DeFi 中绝大多数的"前提条件"需求。过去需要在链下预估然后硬编码的参数，现在可以在链上执行时动态验证——更实时，也更安全。</p>
+
+<h3 id="predicates">Predicates &mdash; 纯断言门控</h3>
+
+<p>Predicate 是一种特殊的 <code>ComposableExecution</code> 入口：它的 <code>target</code> 字段被设为 <code>address(0)</code>，表示这个步骤<strong>不发起任何合约调用</strong>，只做链上条件断言。</p>
+
+<p>如果 Predicate 的断言失败，整个批次 revert。Predicate 通常被插入两个操作步骤之间，充当"阶段门"：</p>
+
+<div class="flow-step-list">
+  <div class="flow-step">
+    <div class="flow-step-num">1</div>
+    <div class="flow-step-body">
+      <h4>操作：Swap WETH &rarr; USDC</h4>
+      <p>Uniswap Router.exactInputSingle()，amountIn 由 Balance Fetcher 实时读取</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">P</div>
+    <div class="flow-step-body">
+      <h4>Predicate：USDC 余额 &ge; 最低存款门槛（如 900 USDC）</h4>
+      <p>target = address(0)，StaticCall 读取 USDC.balanceOf(account)，Gte constraint 校验</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-step-num">2</div>
+    <div class="flow-step-body">
+      <h4>操作：Supply USDC to Aave</h4>
+      <p>Aave Pool.supply()，amount 由 Balance Fetcher 读取上一步实际输出</p>
+    </div>
+  </div>
+</div>
+
+<div class="box note">
+  <div class="box-label">设计哲学</div>
+  <p>Predicate 使用与普通操作相同的 Fetcher + Constraint 解析路径，没有特殊的运行时分支。<code>address(0)</code> 就是信号——执行引擎识别后跳过调用，只做断言。这让整个标准保持极简。</p>
+</div>
+
+<h2 id="interface">Solidity 接口参考 <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<p>ERC-8211 定义在合约编码层，不修改任何 EVM 协议。接口由核心数据结构和一个执行函数组成：</p>
+
+<div class="iface-section">
+
+<div class="iface-block">
+  <div class="iface-header">
+    <span class="iface-tag">enum</span>
+    <span class="iface-header-title">FetcherType &mdash; 参数值的来源</span>
+  </div>
+  <div class="iface-body">
+    <pre><span class="c-kw">enum</span> <span class="c-tp">FetcherType</span> {
+    Literal,      <span class="c-cm">// 内联字节，签名时直接写死</span>
+    StaticCall,   <span class="c-cm">// 执行时 staticcall view 函数，取返回值</span>
+    Balance       <span class="c-cm">// 执行时读取 ERC-20 balanceOf(account)</span>
+}</pre>
+  </div>
+  <div class="iface-fields">
+    <table>
+      <tr><th>值</th><th>取值方式</th><th>典型用途</th></tr>
+      <tr><td class="f-name">Literal</td><td class="f-type">inline bytes</td><td class="f-desc">已知常量：合约地址、固定金额</td></tr>
+      <tr><td class="f-name">StaticCall</td><td class="f-type">view call</td><td class="f-desc">预言机价格、池子储量、swap 输出估算</td></tr>
+      <tr><td class="f-name">Balance</td><td class="f-type">balanceOf()</td><td class="f-desc">上一步 swap 实际输出，传给下一步存款</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="iface-block">
+  <div class="iface-header">
+    <span class="iface-tag">enum</span>
+    <span class="iface-header-title">ConstraintOp &mdash; 参数必须满足的条件</span>
+  </div>
+  <div class="iface-body">
+    <pre><span class="c-kw">enum</span> <span class="c-tp">ConstraintOp</span> {
+    None,   <span class="c-cm">// 无约束，直接透传</span>
+    Gte,    <span class="c-cm">// &gt;=  滑点保护：输出 &ge; 最低可接受金额</span>
+    Lte,    <span class="c-cm">// &lt;=  价格上限：不超过某阈值</span>
+    Eq,     <span class="c-cm">// ==  精确匹配合约状态</span>
+    Neq     <span class="c-cm">// !=  防止某状态出现（如 pool 被暂停）</span>
+}</pre>
+  </div>
+</div>
+
+<div class="iface-block">
+  <div class="iface-header">
+    <span class="iface-tag blue">struct</span>
+    <span class="iface-header-title">ParamEntry &mdash; 单个参数声明</span>
+  </div>
+  <div class="iface-body">
+    <pre><span class="c-kw">struct</span> <span class="c-tp">ParamEntry</span> {
+    <span class="c-tp">FetcherType</span>  fetcherType;
+    <span class="c-kw">address</span>      fetchTarget;   <span class="c-cm">// StaticCall / Balance 的目标地址</span>
+    <span class="c-kw">bytes</span>        fetchData;     <span class="c-cm">// StaticCall 的 calldata；Balance 时忽略</span>
+    <span class="c-tp">ConstraintOp</span> constraintOp;
+    <span class="c-kw">uint256</span>      constraintVal; <span class="c-cm">// 约束右值</span>
+    <span class="c-kw">bytes32</span>      storeSlot;     <span class="c-cm">// 可选：存入临时 slot，供后续步骤引用</span>
+}</pre>
+  </div>
+  <div class="iface-fields">
+    <table>
+      <tr><th>字段</th><th>类型</th><th>说明</th></tr>
+      <tr><td class="f-name">fetcherType</td><td class="f-type">FetcherType</td><td class="f-desc">值从哪来（Literal / StaticCall / Balance）</td></tr>
+      <tr><td class="f-name">fetchTarget</td><td class="f-type">address</td><td class="f-desc">StaticCall 的合约地址，或 Balance 查询的 token 地址</td></tr>
+      <tr><td class="f-name">fetchData</td><td class="f-type">bytes</td><td class="f-desc">StaticCall 的 calldata（含 selector + 参数）</td></tr>
+      <tr><td class="f-name">constraintOp</td><td class="f-type">ConstraintOp</td><td class="f-desc">校验操作符；None 表示直接透传</td></tr>
+      <tr><td class="f-name">constraintVal</td><td class="f-type">uint256</td><td class="f-desc">约束右值，如最低滑点金额</td></tr>
+      <tr><td class="f-name">storeSlot</td><td class="f-type">bytes32</td><td class="f-desc">可选，将解析值缓存供后续步骤读取；bytes32(0) 表示不存储</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="iface-block">
+  <div class="iface-header">
+    <span class="iface-tag blue">struct</span>
+    <span class="iface-header-title">ComposableExecution &mdash; 单个批次入口</span>
+  </div>
+  <div class="iface-body">
+    <pre><span class="c-kw">struct</span> <span class="c-tp">ComposableExecution</span> {
+    <span class="c-kw">address</span>      target;   <span class="c-cm">// address(0) = Predicate（纯断言，不发起调用）</span>
+    <span class="c-kw">bytes4</span>       selector;
+    <span class="c-tp">ParamEntry</span>[] params;
+}</pre>
+  </div>
+  <div class="iface-fields">
+    <table>
+      <tr><th>字段</th><th>类型</th><th>说明</th></tr>
+      <tr><td class="f-name">target</td><td class="f-type">address</td><td class="f-desc"><code>address(0)</code> 表示 Predicate，只断言不调用；其他为目标合约</td></tr>
+      <tr><td class="f-name">selector</td><td class="f-type">bytes4</td><td class="f-desc">函数选择器，Predicate 时忽略</td></tr>
+      <tr><td class="f-name">params</td><td class="f-type">ParamEntry[]</td><td class="f-desc">参数声明列表，每个元素独立解析 + 校验</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="iface-block">
+  <div class="iface-header">
+    <span class="iface-tag green">function</span>
+    <span class="iface-header-title">IERC8211.execute &mdash; 执行入口</span>
+  </div>
+  <div class="iface-body">
+    <pre><span class="c-kw">function</span> <span class="c-fn">execute</span>(
+    <span class="c-tp">ComposableExecution</span>[] <span class="c-kw">calldata</span> <span class="c-var">batch</span>
+) <span class="c-kw">external returns</span> (<span class="c-kw">bytes</span>[] <span class="c-kw">memory</span> results);</pre>
+  </div>
+  <div class="iface-fields">
+    <table>
+      <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+      <tr><td class="f-name">batch</td><td class="f-type">ComposableExecution[]</td><td class="f-desc">按顺序执行的批次入口数组；任意步骤失败则整批 revert</td></tr>
+      <tr><td class="f-name"><em>returns</em></td><td class="f-type">bytes[]</td><td class="f-desc">每个 Call 入口的原始返回值；Predicate 入口对应空 bytes</td></tr>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<div class="box note">
+  <div class="box-label">谁需要实现这套接口？</div>
+  <p>ERC-8211 是 <strong>wire format 标准</strong>，定义编码格式，不是开箱即用的合约库。按账户类型分层：</p>
+  <ul style="margin:8px 0 0 1.2rem;color:inherit">
+    <li><strong>普通 EOA</strong> — <strong>不能直接用</strong>。EOA 没有代码，无法运行 <code>execute()</code> 内部的 Fetcher 解析与 Constraint 校验逻辑。</li>
+    <li><strong>EOA + EIP-7702</strong> — 可以用。EOA 签一个 authorization 临时委托给 ERC-8211 executor 合约，该次交易期间 EOA 地址就具备了 <code>execute()</code> 能力。</li>
+    <li><strong>原生支持的智能账户</strong>（如 Biconomy Nexus）— 直接调用，无需额外工作。</li>
+    <li><strong>已有自己执行接口的智能账户</strong>（Safe、Kernel 等）— 写一层薄适配器模块：接收 <code>ComposableExecution[]</code>，调用共享解析引擎，再翻译成该账户原生的调用格式（如 Safe 的 <code>execTransaction()</code>）。核心解析逻辑来自 ERC-8211 共享库，适配器只负责"接入"。</li>
+  </ul>
+  <p style="margin-top:8px;margin-bottom:0">上述接口为概念参考版，以规范草案为准。</p>
+</div>
+
+<h2 id="flow">执行流程 <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<p>当 <code>execute(batch)</code> 被调用时，执行引擎按以下步骤处理每个 <code>ComposableExecution</code> 入口：</p>
+
+<div class="diagram">
+<svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:360px">
+  <defs>
+    <marker id="fc1" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#555"/></marker>
+    <marker id="fc2" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#d9534f"/></marker>
+  </defs>
+  <rect x="10" y="28" width="160" height="50" rx="5" fill="#1a1a1a"/>
+  <text x="90" y="50" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#f0a500" font-weight="700">&#9312; 遍历 batch[]</text>
+  <text x="90" y="68" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">取出当前入口</text>
+  <line x1="172" y1="53" x2="200" y2="53" stroke="#555" stroke-width="1.5" marker-end="url(#fc1)"/>
+  <rect x="202" y="28" width="160" height="50" rx="5" fill="#1a1a1a"/>
+  <text x="282" y="50" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#f0a500" font-weight="700">&#9313; Predicate 检测</text>
+  <text x="282" y="68" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">target == address(0)?</text>
+  <line x1="282" y1="80" x2="282" y2="118" stroke="#555" stroke-width="1.5" marker-end="url(#fc1)"/>
+  <text x="246" y="106" font-family="Courier New,monospace" font-size="11" fill="#888">yes</text>
+  <rect x="202" y="120" width="160" height="50" rx="5" fill="#1e3a2e" stroke="#27ae60" stroke-width="1"/>
+  <text x="282" y="142" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#3aaa5c" font-weight="700">断言校验</text>
+  <text x="282" y="160" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">失败 &rarr; revert(batch)</text>
+  <line x1="364" y1="53" x2="394" y2="53" stroke="#555" stroke-width="1.5" marker-end="url(#fc1)"/>
+  <text x="376" y="45" font-family="Courier New,monospace" font-size="11" fill="#888">no</text>
+  <rect x="396" y="28" width="160" height="50" rx="5" fill="#1a1a1a"/>
+  <text x="476" y="50" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#f0a500" font-weight="700">&#9314; 解析每个参数</text>
+  <text x="476" y="68" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">Fetcher &rarr; 取值</text>
+  <line x1="476" y1="80" x2="476" y2="118" stroke="#555" stroke-width="1.5" marker-end="url(#fc1)"/>
+  <rect x="396" y="120" width="160" height="50" rx="5" fill="#1a1a1a"/>
+  <text x="476" y="142" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#f0a500" font-weight="700">&#9315; Constraint 校验</text>
+  <text x="476" y="160" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">不满足 &rarr; revert(batch)</text>
+  <line x1="476" y1="172" x2="476" y2="210" stroke="#555" stroke-width="1.5" marker-end="url(#fc1)"/>
+  <rect x="396" y="212" width="160" height="50" rx="5" fill="#1a1a1a"/>
+  <text x="476" y="234" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#f0a500" font-weight="700">&#9316; 组装并调用</text>
+  <text x="476" y="252" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#aaa">call(target, calldata)</text>
+  <line x1="476" y1="264" x2="476" y2="288" stroke="#555" stroke-width="1.5" marker-end="url(#fc1)"/>
+  <rect x="396" y="288" width="160" height="24" rx="4" fill="#f0a500"/>
+  <text x="476" y="305" text-anchor="middle" font-family="Courier New,monospace" font-size="12" fill="#111" font-weight="700">返回 results[]</text>
+  <path d="M 558 53 Q 620 53 620 148 Q 620 243 558 243" stroke="#3a3a3a" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#fc1)"/>
+  <text x="638" y="153" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">下一个</text>
+  <text x="638" y="168" text-anchor="middle" font-family="Courier New,monospace" font-size="11" fill="#555">入口</text>
+</svg>
+<figcaption>图2 &mdash; execute() 对 batch[] 中每个入口的处理逻辑；任意步骤失败则整批原子 revert</figcaption>
+</div>
+
+<p>关键特性：<strong>原子性</strong>。整个 <code>batch[]</code> 要么全部成功，要么在任意失败点 revert，不存在部分执行的中间状态。这与传统多笔独立交易的最大区别——过去如果第 3 笔失败，前两笔已经上链，资金状态进入一个"半截"的中间状态。</p>
+
+<h2 id="example-defi">实战：4 步 DeFi 流 <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<p>以下是 ERC-8211 官方规范中给出的典型场景：将 WETH 通过 Uniswap 换成 USDC，校验余额，存入 Aave，最后质押凭证 token。整个流程打包进一笔原子交易。</p>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="4" style="background:#0f172a">4 步 DeFi 批次 &mdash; ComposableExecution[]</th></tr>
+  <tr><th>#</th><th>类型</th><th>操作</th><th>Fetcher / Constraint</th></tr>
+  <tr>
+    <td class="sz">1</td>
+    <td class="fn">Call</td>
+    <td class="desc"><code>UniswapRouter.exactInputSingle(WETH &rarr; USDC)</code><br>amountIn: 账户当前 WETH 余额</td>
+    <td class="desc"><strong>Balance</strong> Fetcher 读取 WETH 余额；<strong>Gte</strong> constraint 保证最低输入量</td>
+  </tr>
+  <tr class="seg">
+    <td class="sz">P</td>
+    <td class="fn" style="color:#27ae60">Predicate</td>
+    <td class="desc">断言：账户 USDC 余额 &ge; 最低存款门槛（如 900 USDC）</td>
+    <td class="desc"><strong>Balance</strong> Fetcher + <strong>Gte</strong> constraint；target = address(0)</td>
+  </tr>
+  <tr>
+    <td class="sz">2</td>
+    <td class="fn">Call</td>
+    <td class="desc"><code>AavePool.supply(USDC, amount, account)</code><br>amount: 上一步实际换得的 USDC 余额</td>
+    <td class="desc"><strong>Balance</strong> Fetcher 读取 USDC 当前余额（包含 swap 实际输出）</td>
+  </tr>
+  <tr>
+    <td class="sz">3</td>
+    <td class="fn">Call</td>
+    <td class="desc"><code>AaveStaking.stake(aUSDC, amount)</code><br>amount: 账户持有的 aUSDC 凭证数量</td>
+    <td class="desc"><strong>Balance</strong> Fetcher 读取 aUSDC 余额；<strong>Gte</strong> constraint 防止 dust 操作</td>
+  </tr>
+</table>
+</div>
+
+<div class="box tip">
+  <div class="box-label">关键点</div>
+  <p>步骤 2 的 <code>amount</code> 是 Uniswap swap <em>实际输出</em>，而非签名时预估的输出。Balance Fetcher 在步骤 2 执行前实时读取账户 USDC 余额，传入 Aave supply。这是静态批量永远无法做到的。</p>
+</div>
+
+<p>用静态批量完成同样的操作需要：4 笔独立交易 &times; 4 次用户签名，中间状态暴露在链上，任一步骤失败都需要手动恢复。ERC-8211 将这个流程压缩为 1 笔原子交易，gas 消耗降低约 89%。</p>
+
+<h2 id="example-sdk">TypeScript SDK <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<p>ERC-8211 配套了一套 TypeScript SDK，开发者在高层描述意图，SDK 自动编译为 <code>ComposableExecution[]</code> 的链上编码。下面是与 <a href="#example-defi">4 步 DeFi 流</a>对应的完整写法：</p>
+
+<div class="iface-block" style="margin-bottom:1.6rem">
+  <div class="iface-header">
+    <span class="iface-tag">import</span>
+    <span class="iface-header-title">依赖引入 &amp; 初始化</span>
+  </div>
+  <div class="iface-body">
+    <pre><span class="c-kw">import</span> { SmartBatch, FetcherType, ConstraintOp } <span class="c-kw">from</span> <span class="c-st">"@erc8211/sdk"</span>;
+<span class="c-kw">import</span> { UNISWAP_ROUTER, AAVE_POOL, AAVE_STAKING, WETH, USDC, aUSDC } <span class="c-kw">from</span> <span class="c-st">"./addresses"</span>;
+
+<span class="c-kw">const</span> <span class="c-var">batch</span> = <span class="c-kw">new</span> <span class="c-fn">SmartBatch</span>();</pre>
+  </div>
+</div>
+
+<div class="sdk-steps">
+
+  <div class="sdk-step">
+    <div class="sdk-step-header">
+      <div class="sdk-step-num">1</div>
+      <div class="sdk-step-title">addCall &mdash; Swap WETH &rarr; USDC</div>
+      <div class="sdk-step-badges">
+        <span class="sdk-badge fetcher">Balance Fetcher</span>
+        <span class="sdk-badge constraint">Gte</span>
+      </div>
+    </div>
+    <div class="sdk-step-body">
+      <pre><span class="c-var">batch</span>.<span class="c-fn">addCall</span>({
+  target:        UNISWAP_ROUTER,
+  selector:      <span class="c-st">"exactInputSingle"</span>,
+  params: [{
+    fetcherType:   FetcherType.<span class="c-tp">Balance</span>,   <span class="c-cm">// 执行时读取账户实时 WETH 余额</span>
+    fetchTarget:   WETH,
+    constraintOp:  ConstraintOp.<span class="c-tp">Gte</span>,
+    constraintVal: <span class="c-nu">1n</span>,                   <span class="c-cm">// 余额必须 &ge; 1 wei，防空仓</span>
+  }],
+});</pre>
+    </div>
+  </div>
+
+  <div class="sdk-step">
+    <div class="sdk-step-header">
+      <div class="sdk-step-num pred">P</div>
+      <div class="sdk-step-title">addPredicate &mdash; 断言 USDC 余额 &ge; 900</div>
+      <div class="sdk-step-badges">
+        <span class="sdk-badge fetcher">Balance Fetcher</span>
+        <span class="sdk-badge constraint">Gte</span>
+      </div>
+    </div>
+    <div class="sdk-step-body">
+      <pre><span class="c-var">batch</span>.<span class="c-fn">addPredicate</span>({
+  fetcherType:   FetcherType.<span class="c-tp">Balance</span>,
+  fetchTarget:   USDC,
+  constraintOp:  ConstraintOp.<span class="c-tp">Gte</span>,
+  constraintVal: <span class="c-fn">parseUnits</span>(<span class="c-st">"900"</span>, <span class="c-nu">6</span>), <span class="c-cm">// 不足 900 USDC &rarr; 整批 revert</span>
+});</pre>
+    </div>
+  </div>
+
+  <div class="sdk-step">
+    <div class="sdk-step-header">
+      <div class="sdk-step-num">2</div>
+      <div class="sdk-step-title">addCall &mdash; Supply USDC to Aave</div>
+      <div class="sdk-step-badges">
+        <span class="sdk-badge fetcher">Balance Fetcher</span>
+        <span class="sdk-badge none">None &mdash; 透传</span>
+      </div>
+    </div>
+    <div class="sdk-step-body">
+      <pre><span class="c-var">batch</span>.<span class="c-fn">addCall</span>({
+  target:   AAVE_POOL,
+  selector: <span class="c-st">"supply"</span>,
+  params: [{
+    fetcherType:  FetcherType.<span class="c-tp">Balance</span>,  <span class="c-cm">// 取 swap 后实际到账的 USDC 余额</span>
+    fetchTarget:  USDC,
+    constraintOp: ConstraintOp.<span class="c-tp">None</span>,   <span class="c-cm">// 无额外约束，全额存入</span>
+  }],
+});</pre>
+    </div>
+  </div>
+
+  <div class="sdk-step">
+    <div class="sdk-step-header">
+      <div class="sdk-step-num">3</div>
+      <div class="sdk-step-title">addCall &mdash; Stake aUSDC 凭证</div>
+      <div class="sdk-step-badges">
+        <span class="sdk-badge fetcher">Balance Fetcher</span>
+        <span class="sdk-badge constraint">Gte</span>
+      </div>
+    </div>
+    <div class="sdk-step-body">
+      <pre><span class="c-var">batch</span>.<span class="c-fn">addCall</span>({
+  target:   AAVE_STAKING,
+  selector: <span class="c-st">"stake"</span>,
+  params: [{
+    fetcherType:   FetcherType.<span class="c-tp">Balance</span>,
+    fetchTarget:   aUSDC,             <span class="c-cm">// Aave 存款后到账的 aUSDC 凭证</span>
+    constraintOp:  ConstraintOp.<span class="c-tp">Gte</span>,
+    constraintVal: <span class="c-fn">parseUnits</span>(<span class="c-st">"1"</span>, <span class="c-nu">6</span>), <span class="c-cm">// &lt; 1 USDC 的 dust 不质押</span>
+  }],
+});</pre>
+    </div>
+  </div>
+
+  <div class="sdk-step">
+    <div class="sdk-step-header">
+      <div class="sdk-step-num last">&rarr;</div>
+      <div class="sdk-step-title">encode() + execute() &mdash; 编译并单笔提交</div>
+    </div>
+    <div class="sdk-step-body">
+      <pre><span class="c-kw">const</span> <span class="c-var">encoded</span> = <span class="c-var">batch</span>.<span class="c-fn">encode</span>();        <span class="c-cm">// 编译为 ComposableExecution[] ABI 编码</span>
+<span class="c-kw">await</span> <span class="c-var">smartAccount</span>.<span class="c-fn">execute</span>(<span class="c-var">encoded</span>); <span class="c-cm">// 单笔原子提交，1 签名</span></pre>
+    </div>
+  </div>
+
+</div>
+
+<div class="box note">
+  <div class="box-label">SDK 编译逻辑</div>
+  <p><code>batch.encode()</code> 在本地将上述高层描述编译为 <code>ComposableExecution[]</code> ABI，编码中<strong>不包含任何当前链上状态</strong>——它只描述"执行时应该怎么取、怎么验"。这与静态批量的根本区别：静态批量编码的是当前值，Smart Batching 编码的是取值规则。</p>
+</div>
+
+<h2 id="compat">兼容标准 <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<p>ERC-8211 被设计为账户无关的编码标准，兼容现有所有主流账户抽象框架：</p>
+
+<div class="compat-list">
+  <span class="compat-badge">ERC-4337</span>
+  <span class="compat-badge">EIP-7702</span>
+  <span class="compat-badge">ERC-7579</span>
+  <span class="compat-badge">ERC-7683</span>
+  <span class="compat-badge">ERC-8004</span>
+  <span class="compat-badge">ERC-8183</span>
+</div>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3">兼容关系说明</th></tr>
+  <tr><th>标准</th><th>关系</th><th>说明</th></tr>
+  <tr>
+    <td class="fn"><a href="https://eips.ethereum.org/EIPS/eip-4337" target="_blank">ERC-4337</a></td>
+    <td class="sz">运行时</td>
+    <td class="desc">ComposableExecution[] 可封装进 UserOperation.callData，通过 EntryPoint 提交</td>
+  </tr>
+  <tr>
+    <td class="fn"><a href="eip-7702-guide.html">EIP-7702</a></td>
+    <td class="sz">运行时</td>
+    <td class="desc">委托账户可将 execute() 实现为 ERC-8211 接口，EOA 直接获得 Smart Batching 能力</td>
+  </tr>
+  <tr>
+    <td class="fn"><a href="https://eips.ethereum.org/EIPS/eip-7579" target="_blank">ERC-7579</a></td>
+    <td class="sz">模块</td>
+    <td class="desc">模块化账户可将 ERC-8211 打包为 Execution 模块，按需挂载</td>
+  </tr>
+  <tr>
+    <td class="fn"><a href="https://eips.ethereum.org/EIPS/eip-7683" target="_blank">ERC-7683</a></td>
+    <td class="sz">跨链</td>
+    <td class="desc">跨链 Intent 标准；ERC-8211 批次可在目标链等待桥接完成后继续执行，Predicate 做跨链状态门控</td>
+  </tr>
+  <tr>
+    <td class="fn"><a href="erc-8004-guide.html">ERC-8004</a></td>
+    <td class="sz">身份层</td>
+    <td class="desc">StaticCall Fetcher 可调用 ERC-8004 ReputationRegistry，将 Agent 声誉分作为批次前提条件</td>
+  </tr>
+  <tr>
+    <td class="fn"><a href="erc-8183-guide.html">ERC-8183</a></td>
+    <td class="sz">商业层</td>
+    <td class="desc">ERC-8183 的 Provider 在执行 Job 时，可将多步链上操作打包为 ERC-8211 批次，降低 gas 并保证原子交付</td>
+  </tr>
+</table>
+</div>
+
+<h3 id="erc8004">与 ERC-8004 的协作</h3>
+
+<p><a href="erc-8004-guide.html">ERC-8004</a> 解决"Agent 可不可信"，ERC-8211 解决"Agent 能不能执行"。两者分工明确，组合使用时，一个完整的 Agent DeFi 操作路径如下：</p>
+
+<ol>
+  <li>调用方通过 ERC-8004 ReputationRegistry 查询执行 Agent 的声誉分</li>
+  <li>声誉校验通过后，构造 <code>ComposableExecution[]</code> 批次</li>
+  <li>将声誉分 StaticCall 查询作为批次第一个 <strong>Predicate</strong>，链上实时确认身份信任</li>
+  <li>后续步骤原子执行 DeFi 操作</li>
+</ol>
+
+<div class="box tip">
+  <div class="box-label">实际意义</div>
+  <p>这意味着一个智能合约可以实现"只有声誉分 &ge; 80 的 Agent 才能执行此策略"——不需要链下白名单，不需要中心化管理员，链上一次调用完成身份验证 + 策略执行。</p>
+</div>
+
+<h3 id="erc8183">与 ERC-8183 的协作</h3>
+
+<p><a href="erc-8183-guide.html">ERC-8183</a> 定义了 Agent 之间的任务市场——Client 发布任务，Provider 执行并获得报酬。ERC-8211 让 Provider 在链上交付时更高效：</p>
+
+<ul>
+  <li>Provider 将任务所需的多步链上操作打包为 ERC-8211 批次</li>
+  <li>批次成功执行 = 交付完成，Evaluator 通过 <code>deliverable_hash</code> 验证</li>
+  <li>相比串行执行，单笔原子交易降低失败概率，减少争议产生</li>
+</ul>
+
+<h2 id="security">安全考量 <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<div class="ref-table-wrap">
+<table class="ref-table">
+  <tr><th colspan="3" style="background:#8b1e1e">安全风险与缓解措施</th></tr>
+  <tr><th>风险</th><th>场景</th><th>缓解</th></tr>
+  <tr>
+    <td class="fn">重放攻击</td>
+    <td class="desc">相同的 ComposableExecution[] 在不同区块被重复提交</td>
+    <td class="desc">依赖账户层的 nonce 机制（ERC-4337 / EIP-7702 均内置 nonce）</td>
+  </tr>
+  <tr>
+    <td class="fn">预言机操控</td>
+    <td class="desc">StaticCall Fetcher 引用的预言机被操控，导致 Constraint 被绕过</td>
+    <td class="desc">使用多来源聚合预言机（Chainlink、Pyth）；对高价值操作增加 TWAP 保护</td>
+  </tr>
+  <tr>
+    <td class="fn">Constraint 设置过宽</td>
+    <td class="desc">Gte(0) 等同于无约束，失去滑点保护</td>
+    <td class="desc">SDK 对零值约束抛出警告；审计时重点检查约束值</td>
+  </tr>
+  <tr>
+    <td class="fn">Fetcher gas 耗尽</td>
+    <td class="desc">StaticCall Fetcher 指向恶意合约，消耗大量 gas</td>
+    <td class="desc">在 execute() 实现中对每个 Fetcher 设置 gas 上限（推荐 50,000 gas）</td>
+  </tr>
+  <tr>
+    <td class="fn">storeSlot 污染</td>
+    <td class="desc">多个步骤写入相同 storeSlot 导致意外覆盖</td>
+    <td class="desc">SDK 编译时做 storeSlot 唯一性检查；避免手动指定相同 slot</td>
+  </tr>
+</table>
+</div>
+
+<div class="box caution">
+  <div class="box-label">重要提醒</div>
+  <p>ERC-8211 批次的安全边界由 Constraint 设置决定。过于宽松的约束（如 Gte(1)）在技术上合法，但等同于放弃了风险保护。在高价值 DeFi 策略中，每个参数的 Constraint 都应该经过独立审计。</p>
+</div>
+
+<h2 id="summary">总结速查 <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<table class="sum-table">
+  <tr><th>维度</th><th>内容</th></tr>
+  <tr><td><strong>提案编号</strong></td><td>ERC-8211</td></tr>
+  <tr><td><strong>提案方</strong></td><td>Biconomy + Ethereum Foundation</td></tr>
+  <tr><td><strong>发布时间</strong></td><td>2026 年 4 月 6 日</td></tr>
+  <tr><td><strong>核心概念</strong></td><td>Smart Batching &mdash; 参数延迟到执行时解析</td></tr>
+  <tr><td><strong>核心数据结构</strong></td><td><code>ComposableExecution[]</code></td></tr>
+  <tr><td><strong>三大机制</strong></td><td>Fetchers（取值）/ Constraints（校验）/ Predicates（门控）</td></tr>
+  <tr><td><strong>Fetcher 类型</strong></td><td>Literal / StaticCall / Balance</td></tr>
+  <tr><td><strong>Constraint 操作符</strong></td><td>None / Gte / Lte / Eq / Neq</td></tr>
+  <tr><td><strong>Predicate 标识</strong></td><td><code>target = address(0)</code></td></tr>
+  <tr><td><strong>原子性</strong></td><td>是——任意步骤失败则整批 revert</td></tr>
+  <tr><td><strong>协议层修改</strong></td><td>无——合约编码层标准，不需要 EVM 分叉</td></tr>
+  <tr><td><strong>账户兼容性</strong></td><td>ERC-4337 / EIP-7702 / ERC-7579，账户无关</td></tr>
+  <tr><td><strong>Gas 优化</strong></td><td>相比串行执行降低约 89%</td></tr>
+  <tr><td><strong>开发工具</strong></td><td>TypeScript SDK，高层 DSL 编译为 ComposableExecution[]</td></tr>
+</table>
+
+<h2 id="quiz">测验 <a href="#top" class="back-top">&#8593; top</a></h2>
+
+<p>5 道题，测试你对 ERC-8211 的理解：</p>
+
+<div id="quiz-container">
+  <div class="quiz-q" data-idx="0">
+    <p>1. ERC-8211 解决的核心问题是什么？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" data-correct="false">以太坊没有批量提交交易的能力</button>
+      <button class="quiz-opt" data-correct="false">智能合约不能读取链下数据</button>
+      <button class="quiz-opt" data-correct="true">静态批量的参数在签名时就固定，无法适应执行时的链上状态变化</button>
+      <button class="quiz-opt" data-correct="false">ERC-4337 不支持多步操作</button>
+    </div>
+    <div class="quiz-fb"></div>
+  </div>
+  <div class="quiz-q" data-idx="1">
+    <p>2. 你要实现"下一步存款金额 = 上一步 swap 的实际输出"，应该使用哪种 Fetcher？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" data-correct="false">Literal — 直接写死一个预估值</button>
+      <button class="quiz-opt" data-correct="true">Balance — 执行时读取账户的实时 ERC-20 余额</button>
+      <button class="quiz-opt" data-correct="false">StaticCall — 调用 Uniswap 的预估函数</button>
+      <button class="quiz-opt" data-correct="false">Predicate — 断言余额大于某个值</button>
+    </div>
+    <div class="quiz-fb"></div>
+  </div>
+  <div class="quiz-q" data-idx="2">
+    <p>3. 一个 ComposableExecution 入口的 target 字段被设为 address(0)，这意味着？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" data-correct="false">调用会被路由到 EntryPoint 合约</button>
+      <button class="quiz-opt" data-correct="false">这个步骤会向零地址转账</button>
+      <button class="quiz-opt" data-correct="true">这是一个 Predicate，只做链上断言，不发起任何合约调用</button>
+      <button class="quiz-opt" data-correct="false">整批次会跳过这个步骤</button>
+    </div>
+    <div class="quiz-fb"></div>
+  </div>
+  <div class="quiz-q" data-idx="3">
+    <p>4. 在一个 4 步批次中，第 2 步的 Constraint 校验失败。结果是？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" data-correct="false">第 1 步已上链，第 2-4 步被跳过</button>
+      <button class="quiz-opt" data-correct="true">整个批次原子 revert，第 1 步也不生效</button>
+      <button class="quiz-opt" data-correct="false">只有第 2 步失败，其他步骤继续执行</button>
+      <button class="quiz-opt" data-correct="false">批次暂停，等待用户重新签名</button>
+    </div>
+    <div class="quiz-fb"></div>
+  </div>
+  <div class="quiz-q" data-idx="4">
+    <p>5. ERC-8211 与 ERC-4337 的关系是？</p>
+    <div class="quiz-opts">
+      <button class="quiz-opt" data-correct="false">ERC-8211 替代了 ERC-4337，不再需要 UserOperation</button>
+      <button class="quiz-opt" data-correct="false">两者不兼容，智能账户只能选择其一</button>
+      <button class="quiz-opt" data-correct="true">ERC-8211 是编码层标准，ComposableExecution[] 可封装进 ERC-4337 的 UserOperation.callData</button>
+      <button class="quiz-opt" data-correct="false">ERC-8211 要求修改 ERC-4337 的 EntryPoint 合约</button>
+    </div>
+    <div class="quiz-fb"></div>
+  </div>
+  <div style="text-align:center;margin-top:1.4rem">
+    <button id="quiz-submit" style="font-family:'Courier New',monospace;font-size:1rem;padding:12px 32px;background:#2b2b2b;color:#fff;border:none;border-radius:4px;cursor:pointer">提交答案</button>
+  </div>
+  <div id="quiz-result">
+    <div class="score" id="quiz-score">0 / 5</div>
+    <p style="margin-top:8px;color:#555" id="quiz-msg"></p>
+  </div>
+</div>
+
+<hr>
+<footer>
+  ERC-8211 Smart Batching &middot; 整理自 Biconomy + Ethereum Foundation 规范 &middot;
+  <a href="https://ethereum-magicians.org/t/erc-8211-smart-batching/28135" target="_blank">Fellowship 原始讨论 &nearr;</a> &middot;
+  <a href="index.html">&larr; 返回首页</a>
+</footer>
+
+</main>
+<script>
+window.addEventListener("scroll",function(){var d=document.documentElement,h=d.scrollHeight-d.clientHeight,p=h>0?(window.scrollY/h)*100:0;document.getElementById("progressbar").style.width=p+"%"});
+var sections=document.querySelectorAll("h2[id],h3[id],p[id]"),links=document.querySelectorAll("#sidebar a[href^='#']");
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){var id=e.target.id;links.forEach(function(l){l.classList.toggle("active",l.getAttribute("href")==="#"+id)})}})},{rootMargin:"-20% 0px -70% 0px"});
+sections.forEach(function(s){obs.observe(s)});
+var qs=document.querySelectorAll(".quiz-q");
+qs.forEach(function(q){q.querySelectorAll(".quiz-opt").forEach(function(btn){btn.addEventListener("click",function(){if(q.dataset.answered)return;q.dataset.answered="1";var c=btn.dataset.correct==="true";btn.classList.add(c?"correct":"wrong");if(!c)q.querySelectorAll(".quiz-opt").forEach(function(b){if(b.dataset.correct==="true")b.classList.add("correct")});var fb=q.querySelector(".quiz-fb");fb.textContent=c?"&#10003; 正确！":"&#10007; 不对，请看高亮的正确答案。";fb.className="quiz-fb show "+(c?"ok":"bad")})})});
+document.getElementById("quiz-submit").addEventListener("click",function(){var score=0;qs.forEach(function(q){var clicked=[...q.querySelectorAll(".quiz-opt")].find(function(b){return b.classList.contains("correct")||b.classList.contains("wrong")});if(clicked&&clicked.dataset.correct==="true")score++});document.getElementById("quiz-score").textContent=score+" / 5";var msgs=["继续学习，再试一次吧。","有一定基础，再巩固一下。","不错，掌握了核心概念。","很好！对标准理解扎实。","完美！Smart Batching 已融会贯通。"];document.getElementById("quiz-msg").textContent=msgs[score]||"";var r=document.getElementById("quiz-result");r.style.display="block";r.scrollIntoView({behavior:"smooth",block:"center"})});
+</script>
+</body>
+</html>

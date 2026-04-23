@@ -1170,5 +1170,79 @@ window.addEventListener('scroll', function() {
   if (cur) cur.link.classList.add('active');
 });
 </script>
+<!-- ── SVG Lightbox ── -->
+<div id="svg-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;">
+  <button onclick="closeLightbox()" title="关闭 (Esc)" style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.4rem;width:36px;height:36px;border-radius:50%;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+  <div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);font-family:'Courier New',monospace;font-size:12px;color:rgba(255,255,255,.4);pointer-events:none;white-space:nowrap;">滚轮缩放 · 拖动平移 · ESC 关闭</div>
+  <div style="position:absolute;bottom:50px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;z-index:2;">
+    <button onclick="lbZoom(1.25)" style="background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1.15rem;width:32px;height:32px;border-radius:4px;cursor:pointer;line-height:1;">+</button>
+    <span id="lb-scale-label" style="font-family:'Courier New',monospace;font-size:13px;color:rgba(255,255,255,.65);min-width:46px;text-align:center;">100%</span>
+    <button onclick="lbZoom(0.8)" style="background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1.15rem;width:32px;height:32px;border-radius:4px;cursor:pointer;line-height:1;">−</button>
+    <button onclick="lbReset()" style="background:rgba(255,255,255,.18);border:none;color:rgba(255,255,255,.65);font-family:'Courier New',monospace;font-size:12px;padding:0 10px;height:32px;border-radius:4px;cursor:pointer;">重置</button>
+  </div>
+  <div id="lb-stage" style="position:absolute;inset:44px 0 86px 0;overflow:hidden;touch-action:none;cursor:grab;">
+    <div id="lb-inner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"></div>
+  </div>
+  <div id="lb-caption" style="position:absolute;bottom:16px;left:0;right:0;text-align:center;font-family:'Courier New',monospace;font-size:13px;color:rgba(255,255,255,.45);pointer-events:none;padding:0 56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+</div>
+<script>
+(function(){
+  var _s=1,_tx=0,_ty=0,_drag=false,_dx=0,_dy=0,_dtx=0,_dty=0,_pinchDist=0,_lastTouches=null;
+  function _applyTransform(){
+    document.getElementById('lb-inner').style.transform='translate('+_tx+'px,'+_ty+'px) scale('+_s+')';
+    document.getElementById('lb-scale-label').textContent=Math.round(_s*100)+'%';
+  }
+  window.lbZoom=function(factor,screenX,screenY){
+    var stage=document.getElementById('lb-stage'),r=stage.getBoundingClientRect();
+    var mx=(screenX!==undefined?screenX:r.left+r.width/2)-r.left-r.width/2;
+    var my=(screenY!==undefined?screenY:r.top+r.height/2)-r.top-r.height/2;
+    var ns=Math.min(Math.max(_s*factor,0.2),12);
+    _tx=mx-(mx-_tx)/_s*ns; _ty=my-(my-_ty)/_s*ns; _s=ns; _applyTransform();
+  };
+  window.lbReset=function(){_s=1;_tx=0;_ty=0;_applyTransform();document.getElementById('lb-stage').style.cursor='grab';};
+  function _open(svgEl,caption){
+    var clone=svgEl.cloneNode(true);
+    var vb=(svgEl.getAttribute('viewBox')||''). split(/[\s,]+/);
+    var natW=parseFloat(vb[2])||parseFloat(svgEl.getAttribute('width'))||800;
+    var natH=parseFloat(vb[3])||parseFloat(svgEl.getAttribute('height'))||400;
+    clone.setAttribute('width',natW); clone.setAttribute('height',natH);
+    clone.style.cssText='display:block;';
+    var wrap=document.createElement('div');
+    wrap.style.cssText='background:#f8faff;border-radius:8px;padding:28px;border:1px solid #e2e8f0;display:inline-block;line-height:0;';
+    wrap.appendChild(clone);
+    var inner=document.getElementById('lb-inner');
+    inner.innerHTML=''; inner.appendChild(wrap);
+    document.getElementById('lb-caption').textContent=caption||'';;
+    _s=1.5; _tx=0; _ty=0; _applyTransform();
+    document.getElementById('svg-lightbox').style.display='block';
+    document.getElementById('lb-stage').style.cursor='grab';
+    document.body.style.overflow='hidden';
+  }
+  function closeLightbox(){
+    document.getElementById('svg-lightbox').style.display='none';
+    document.getElementById('lb-inner').innerHTML='';
+    document.body.style.overflow='';
+  }
+  window.closeLightbox=closeLightbox;
+  function initLightbox(){
+    document.querySelectorAll('.diagram').forEach(function(d){
+      var svg=d.querySelector('svg'); if(!svg) return;
+      d.style.cursor='zoom-in'; d.title='点击放大';
+      d.addEventListener('click',function(){ _open(svg,(d.querySelector('figcaption')||{}).textContent||'')); });
+    });
+    var stage=document.getElementById('lb-stage');
+    stage.addEventListener('wheel',function(e){e.preventDefault();lbZoom(e.deltaY<0?1.12:1/1.12,e.clientX,e.clientY);},{passive:false});
+    stage.addEventListener('mousedown',function(e){if(e.button!==0)return;_drag=true;_dx=e.clientX;_dy=e.clientY;_dtx=_tx;_dty=_ty;stage.style.cursor='grabbing';e.preventDefault();});
+    window.addEventListener('mousemove',function(e){if(!_drag)return;_tx=_dtx+(e.clientX-_dx);_ty=_dty+(e.clientY-_dy);_applyTransform();});
+    window.addEventListener('mouseup',function(){if(_drag){_drag=false;stage.style.cursor='grab';}});
+    stage.addEventListener('touchstart',function(e){_lastTouches=Array.from(e.touches).map(function(t){return{x:t.clientX,y:t.clientY};});if(e.touches.length===2)_pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);},{passive:true});
+    stage.addEventListener('touchmove',function(e){e.preventDefault();var ts=Array.from(e.touches).map(function(t){return{x:t.clientX,y:t.clientY};});if(e.touches.length===2&&_lastTouches&&_lastTouches.length>=2){var dist=Math.hypot(ts[0].x-ts[1].x,ts[0].y-ts[1].y);var cx=(ts[0].x+ts[1].x)/2,cy=(ts[0].y+ts[1].y)/2;if(_pinchDist>0)lbZoom(dist/_pinchDist,cx,cy);_pinchDist=dist;}else if(e.touches.length===1&&_lastTouches&&_lastTouches.length>=1){_tx+=ts[0].x-_lastTouches[0].x;_ty+=ts[0].y-_lastTouches[0].y;_applyTransform();}_lastTouches=ts;},{passive:false});
+    stage.addEventListener('touchend',function(e){_lastTouches=Array.from(e.touches).map(function(t){return{x:t.clientX,y:t.clientY};});});
+    document.getElementById('svg-lightbox').addEventListener('click',function(e){if(e.target===this)closeLightbox();});
+  }
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initLightbox);}else{initLightbox();}
+})();
+</script>
 </body>
 </html>
